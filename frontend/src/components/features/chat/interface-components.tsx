@@ -43,7 +43,7 @@ export function LoadingScreen({ onBack }: BackButtonProps) {
       <div className="flex-1 flex flex-col justify-center items-center p-8 rounded-xl">
         <div className="text-center max-w-md">
           <div className="mb-6">
-            <div className="w-16 h-16 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+            <div className="w-16 h-16 border-4 border-white border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
             <h2 className="text-xl font-semibold text-content mb-2">Initializing Project</h2>
             <p className="text-sm text-content-secondary">
               Setting up your development environment...

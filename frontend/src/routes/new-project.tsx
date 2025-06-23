@@ -147,7 +147,7 @@ function AppContent() {
               onClick={() => handleRightPanelViewChange('loading')}
               className="flex items-center justify-center gap-2 bg-base rounded-lg px-4 py-3 text-sm font-medium border border-border hover:bg-base-tertiary transition-colors w-full"
             >
-              <div className="w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
+              <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
               Loading Screen
             </button>
           </div>
