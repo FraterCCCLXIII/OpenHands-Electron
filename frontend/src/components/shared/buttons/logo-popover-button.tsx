@@ -2,6 +2,10 @@ import React from "react";
 import { Popover, PopoverTrigger, PopoverContent } from "@heroui/react";
 import AllHandsLogo from "#/assets/branding/all-hands-logo.svg?react";
 import AllHandsLogoWhite from "#/assets/branding/all-hands-logo-white.svg?react";
+import AllHands1 from "#/assets/branding/allhands-1.svg?react";
+import AllHands2 from "#/assets/branding/allhands-2.svg?react";
+import AllHands3 from "#/assets/branding/allhands-3.svg?react";
+import AllHands4 from "#/assets/branding/allhands-4.svg?react";
 import { cn } from "#/utils/utils";
 import { useTheme } from "#/context/theme-context";
 
@@ -13,11 +17,42 @@ interface PopoverCardProps {
   title: string;
   description: string;
   href: string;
-  imageUrl: string;
+  imageComponent: React.ComponentType<{ className?: string }>;
 }
 
-function PopoverCard({ title, description, href, imageUrl }: PopoverCardProps) {
+function PopoverCard({ title, description, href, imageComponent: ImageComponent }: PopoverCardProps) {
   const { theme } = useTheme();
+
+  // Create specific color wrappers for each SVG
+  const getColorWrapper = (component: React.ComponentType<any>) => {
+    if (component === AllHands1) {
+      return (
+        <div className="[&_.st0]:fill-[#231f20] [&_.st1]:fill-[#f3e9e4] [&_.st2]:fill-[#fcde6c] [&_.st3]:fill-[#ea6e6c] [&_.st4]:fill-[#fdd749]">
+          <ImageComponent className="w-full h-full" />
+        </div>
+      );
+    } else if (component === AllHands2) {
+      return (
+        <div className="[&_.st0]:fill-[#cf7b6b] [&_.st1]:fill-[#231f20] [&_.st2]:fill-[#f9af8b] [&_.st3]:fill-[#c28e66] [&_.st4]:fill-[#fdd749]">
+          <ImageComponent className="w-full h-full" />
+        </div>
+      );
+    } else if (component === AllHands3) {
+      return (
+        <div className="[&_.st0]:fill-[#ef4650] [&_.st1]:fill-[#afb4b6] [&_.st2]:fill-[#fcde6c] [&_.st3]:fill-[#dfe1e1] [&_.st4]:fill-[#fdd749] [&_.st5]:fill-[#18171c]">
+          <ImageComponent className="w-full h-full" />
+        </div>
+      );
+    } else if (component === AllHands4) {
+      return (
+        <div className="[&_.st0]:fill-[#e7e7e5] [&_.st1]:fill-[#231f20] [&_.st2]:fill-[#afb4b6] [&_.st3]:fill-[#fff] [&_.st4]:fill-[#fdd749] [&_.st5]:fill-[#c3c5c4]">
+          <ImageComponent className="w-full h-full" />
+        </div>
+      );
+    }
+    // Default wrapper for other components
+    return <ImageComponent className="w-full h-full" />;
+  };
 
   return (
     <a
@@ -32,24 +67,14 @@ function PopoverCard({ title, description, href, imageUrl }: PopoverCardProps) {
       )}
     >
       <div className="flex flex-col gap-3">
-        <div className="w-full h-24 rounded-md overflow-hidden bg-gray-700 flex items-center justify-center">
-          <img
-            src={imageUrl}
-            alt={title}
-            className="w-full h-full object-cover"
-            onError={(e) => {
-              // Fallback to a placeholder if image fails to load
-              e.currentTarget.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%23F3CE49'/%3E%3Ctext x='50' y='50' font-family='Arial' font-size='12' fill='black' text-anchor='middle' dy='.3em'%3E" + title + "%3C/text%3E%3C/svg%3E";
-            }}
-          />
+        <div className="w-24 h-24 rounded-md overflow-hidden bg-gray-700 flex items-center justify-center">
+          {getColorWrapper(ImageComponent)}
         </div>
         <div className="flex-1 min-w-0">
-          <h3 className="font-semibold text-sm text-content group-hover:text-content transition-colors duration-150">
+          <h3 className="text-sm font-medium text-content group-hover:text-content-secondary transition-colors">
             {title}
           </h3>
-          <p className="text-xs text-content-secondary mt-1 leading-relaxed">
-            {description}
-          </p>
+          <p className="text-xs text-content-secondary mt-1">{description}</p>
         </div>
       </div>
     </a>
@@ -91,25 +116,25 @@ export function LogoPopoverButton({ className }: LogoPopoverButtonProps) {
       title: "About AllHands",
       description: "Learn about our mission to democratize AI-powered software development and our journey so far.",
       href: "https://all-hands.dev",
-      imageUrl: "https://images.unsplash.com/photo-1517077304055-6e89abbf09b0?w=200&h=100&fit=crop&crop=center",
+      imageComponent: AllHands1,
     },
     {
       title: "Community",
       description: "Join thousands of developers in our Slack and Discord communities. Share ideas, get help, and contribute.",
       href: "https://join.slack.com/t/openhands-ai/shared_invite/zt-34zm4j0gj-Qz5kRHoca8DFCbqXPS~f_A",
-      imageUrl: "https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=200&h=100&fit=crop&crop=center",
+      imageComponent: AllHands2,
     },
     {
       title: "Join Team",
       description: "We're hiring! Join our team of engineers, researchers, and designers building the future of AI development.",
       href: "https://all-hands.dev/careers",
-      imageUrl: "https://images.unsplash.com/photo-1552664730-d307ca884978?w=200&h=100&fit=crop&crop=center",
+      imageComponent: AllHands3,
     },
     {
       title: "Learning Center",
       description: "Explore tutorials, guides, and resources to master AI-powered development with OpenHands.",
       href: "https://docs.all-hands.dev",
-      imageUrl: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200&h=100&fit=crop&crop=center",
+      imageComponent: AllHands4,
     },
   ];
 
@@ -167,7 +192,7 @@ export function LogoPopoverButton({ className }: LogoPopoverButtonProps) {
               title={card.title}
               description={card.description}
               href={card.href}
-              imageUrl={card.imageUrl}
+              imageComponent={card.imageComponent}
             />
           ))}
         </div>
