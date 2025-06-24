@@ -2,13 +2,13 @@ import React from "react";
 import { useTranslation } from "react-i18next";
 import { I18nKey } from "#/i18n/declaration";
 import { useIsAuthed } from "#/hooks/query/use-is-authed";
-import { Paperclip, Send, Pause, MessageSquare, Code, Loader, Layers } from "lucide-react";
+import { Send, Pause, MessageSquare, Code, Loader, Layers } from "lucide-react";
 import { LoadingScreen, TabbedInterface, CodeViewer, ThreadSimulator } from "./interface-components";
 
 // Interface view types
 type InterfaceView = 'main' | 'loading' | 'tabbed' | 'code' | 'thread';
 
-export function NewProjectChatInterface() {
+export function NewProjectChatInterface({ isRightPanelVisible = true }: { isRightPanelVisible?: boolean }) {
   console.log("🔍 [DEBUG] NewProjectChatInterface component starting...");
 
   const { t } = useTranslation();
@@ -52,7 +52,7 @@ export function NewProjectChatInterface() {
 
     // Default main view
     return (
-      <div className="flex-1 flex items-center justify-center p-8">
+      <div className={`flex-1 flex items-center justify-center p-8 ${!isRightPanelVisible ? 'max-w-[700px] mx-auto' : ''}`}>
         <div className="text-center max-w-md">
           <h2 className="text-xl font-semibold text-content mb-4">
             Project Interface
@@ -128,12 +128,9 @@ export function NewProjectChatInterface() {
       {renderCanvasContent()}
 
       {/* Chat input area - always visible at bottom */}
-      <div className="px-4 pb-2">
+      <div className={`px-4 pb-2 ${!isRightPanelVisible ? 'max-w-[700px] mx-auto' : ''}`}>
         <div className="rounded-xl bg-base-secondary flex flex-col">
           <div className="flex items-center px-4 pt-3 pb-2">
-            <button className="mr-3 text-content-secondary hover:text-content" aria-label="Attach file">
-              <Paperclip className="w-4 h-4" />
-            </button>
             <input
               type="text"
               placeholder="What do you want to build?"
@@ -165,7 +162,7 @@ export function NewProjectChatInterface() {
       </div>
 
       {/* GIT CONTROLS - always visible at bottom */}
-      <div className="flex flex-wrap gap-2 px-4 pb-4">
+      <div className={`flex flex-wrap gap-2 px-4 pb-4 ${!isRightPanelVisible ? 'max-w-[700px] mx-auto' : ''}`}>
         <button className="flex items-center gap-1 bg-base-secondary rounded-full px-4 py-1.5 text-content font-medium text-xs focus:outline-none">
           {/* Lucide GitBranch icon */}
           <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M6 3v12"/><circle cx="6" cy="18" r="3"/><circle cx="6" cy="3" r="3"/><circle cx="18" cy="6" r="3"/><path d="M6 6h12"/></svg>

@@ -1,6 +1,5 @@
-import { useDisclosure } from "@heroui/react";
 import React from "react";
-import { useNavigate } from "react-router";
+import { useNavigate, useParams } from "react-router";
 import { useDispatch, useSelector } from "react-redux";
 import { FaServer, FaExternalLinkAlt } from "react-icons/fa";
 import { useTranslation } from "react-i18next";
@@ -9,7 +8,6 @@ import { VscCode } from "react-icons/vsc";
 import { I18nKey } from "#/i18n/declaration";
 import { RUNTIME_INACTIVE_STATES } from "#/types/agent-state";
 import { useConversationId } from "#/hooks/use-conversation-id";
-import { Controls } from "#/components/features/controls/controls";
 import { clearTerminal } from "#/state/command-slice";
 import { useEffectOnce } from "#/hooks/use-effect-once";
 import GlobeIcon from "#/icons/globe.svg?react";
@@ -26,7 +24,6 @@ import {
   Orientation,
   ResizablePanel,
 } from "#/components/layout/resizable-panel";
-import Security from "#/components/shared/modals/security/security";
 import { useActiveConversation } from "#/hooks/query/use-active-conversation";
 import { ServedAppLabel } from "#/components/layout/served-app-label";
 import { useSettings } from "#/hooks/query/use-settings";
@@ -37,6 +34,10 @@ import { transformVSCodeUrl } from "#/utils/vscode-url-helper";
 import OpenHands from "#/api/open-hands";
 import { TabContent } from "#/components/layout/tab-content";
 import { useIsAuthed } from "#/hooks/query/use-is-authed";
+import { ConversationTopNav } from "#/components/features/nav/conversation-top-nav";
+import { useGetTrajectory } from "#/hooks/mutation/use-get-trajectory";
+import { downloadTrajectory } from "#/utils/download-trajectory";
+import { FeedbackModal } from "#/components/features/feedback/feedback-modal";
 
 function AppContent() {
   useConversationConfig();
@@ -45,6 +46,7 @@ function AppContent() {
   const { conversationId } = useConversationId();
   const { data: conversation, isFetched } = useActiveConversation();
   const { data: isAuthed } = useIsAuthed();
+  const params = useParams();
 
   const { curAgentState } = useSelector((state: RootState) => state.agent);
   const dispatch = useDispatch();
@@ -54,6 +56,13 @@ function AppContent() {
   useDocumentTitleFromState();
 
   const [width, setWidth] = React.useState(window.innerWidth);
+  const [isRightPanelVisible, setIsRightPanelVisible] = React.useState(true);
+  const [feedbackPolarity, setFeedbackPolarity] = React.useState<
+    "positive" | "negative"
+  >("positive");
+  const [feedbackModalIsOpen, setFeedbackModalIsOpen] = React.useState(false);
+
+  const { mutate: getTrajectory } = useGetTrajectory();
 
   React.useEffect(() => {
     if (isFetched && !conversation && isAuthed) {
@@ -85,19 +94,53 @@ function AppContent() {
     };
   }, []);
 
-  const {
-    isOpen: securityModalIsOpen,
-    onOpen: onSecurityModalOpen,
-    onOpenChange: onSecurityModalOpenChange,
-  } = useDisclosure();
+  const handleShare = () => {
+    // Implement share functionality
+    console.log("Share clicked");
+  };
+
+  const handleRun = () => {
+    // Implement run functionality
+    console.log("Run clicked");
+  };
+
+  const handleDrawerToggle = () => {
+    setIsRightPanelVisible(!isRightPanelVisible);
+  };
+
+  const onClickShareFeedbackActionButton = async (
+    polarity: "positive" | "negative",
+  ) => {
+    setFeedbackModalIsOpen(true);
+    setFeedbackPolarity(polarity);
+  };
+
+  const onClickExportTrajectoryButton = () => {
+    if (!params.conversationId) {
+      displayErrorToast(t(I18nKey.CONVERSATION$DOWNLOAD_ERROR));
+      return;
+    }
+
+    getTrajectory(params.conversationId, {
+      onSuccess: async (data) => {
+        await downloadTrajectory(
+          params.conversationId ?? t(I18nKey.CONVERSATION$UNKNOWN),
+          data.trajectory,
+        );
+      },
+      onError: () => {
+        displayErrorToast(t(I18nKey.CONVERSATION$DOWNLOAD_ERROR));
+      },
+    });
+  };
 
   function renderMain() {
     const basePath = `/conversations/${conversationId}`;
 
     if (width <= 640) {
       return (
-        <div className="rounded-xl overflow-hidden border border-neutral-600 w-full">
-          <ChatInterface />
+        <div className="rounded-xl overflow-hidden w-full">
+          <ChatInterface isRightPanelVisible={false} />
         </div>
       );
     }
@@ -106,9 +149,9 @@ function AppContent() {
         orientation={Orientation.HORIZONTAL}
         className="grow h-full min-h-0 min-w-0"
         initialSize={500}
-        firstClassName="rounded-xl overflow-hidden border border-neutral-600"
+        firstClassName="rounded-xl overflow-hidden"
         secondClassName="flex flex-col overflow-hidden"
-        firstChild={<ChatInterface />}
+        firstChild={<ChatInterface isRightPanelVisible={isRightPanelVisible} />}
         secondChild={
           <Container
             className="h-full w-full"
@@ -159,7 +202,7 @@ function AppContent() {
                 to: "terminal",
                 icon: <TerminalIcon />,
               },
-              { label: "Jupyter", to: "jupyter", icon: <JupyterIcon /> },
+              // { label: "Jupyter", to: "jupyter", icon: <JupyterIcon /> },
               {
                 label: <ServedAppLabel />,
                 to: "served",
@@ -182,6 +225,8 @@ function AppContent() {
             </div>
           </Container>
         }
+        isSecondPanelVisible={isRightPanelVisible}
+        onSecondPanelToggle={handleDrawerToggle}
       />
     );
   }
@@ -190,19 +235,21 @@ function AppContent() {
     <WsClientProvider conversationId={conversationId}>
       <EventHandler>
         <div data-testid="app-route" className="flex flex-col h-full gap-3">
+          <ConversationTopNav
+            onShare={handleShare}
+            onRun={handleRun}
+            onDrawerToggle={handleDrawerToggle}
+            onPositiveFeedback={() => onClickShareFeedbackActionButton("positive")}
+            onNegativeFeedback={() => onClickShareFeedbackActionButton("negative")}
+            onExportTrajectory={onClickExportTrajectoryButton}
+          />
           <div className="flex h-full overflow-auto">{renderMain()}</div>
 
-          <Controls
-            setSecurityOpen={onSecurityModalOpen}
-            showSecurityLock={!!settings?.SECURITY_ANALYZER}
+          <FeedbackModal
+            isOpen={feedbackModalIsOpen}
+            onClose={() => setFeedbackModalIsOpen(false)}
+            polarity={feedbackPolarity}
           />
-          {settings && (
-            <Security
-              isOpen={securityModalIsOpen}
-              onOpenChange={onSecurityModalOpenChange}
-              securityAnalyzer={settings.SECURITY_ANALYZER}
-            />
-          )}
         </div>
       </EventHandler>
     </WsClientProvider>

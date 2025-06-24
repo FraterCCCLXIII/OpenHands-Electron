@@ -117,21 +117,24 @@ function HomeScreen() {
             </div>
           </div>
 
-          {/* Recent Projects Section */}
-          <div className="mt-8">
-            <h3 className="text-sm mb-3 font-medium text-content">Recent Projects</h3>
-            <div className="text-sm text-content-secondary">
-              <p className="mt-1">No recent projects found.</p>
-              <p className="mt-1">Your recent projects will appear here once you start working on them.</p>
+          {/* Recent Projects and Recommended Tasks - Two Column Layout */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mt-8">
+            {/* Recent Projects Section */}
+            <div>
+              <h3 className="text-sm mb-3 font-medium text-content">Recent Projects</h3>
+              <div className="text-sm text-content-secondary">
+                <p className="mt-1">No recent projects found.</p>
+                <p className="mt-1">Your recent projects will appear here once you start working on them.</p>
+              </div>
             </div>
-          </div>
 
-          {/* Recommended Tasks Section */}
-          <div className="mt-6">
-            <h3 className="text-sm mb-3 font-medium text-content">Recommended Tasks</h3>
-            <div className="text-sm text-content-secondary">
-              <p className="mt-1">No recommended tasks available.</p>
-              <p className="mt-1">Tasks will be recommended based on your project activity and preferences.</p>
+            {/* Recommended Tasks Section */}
+            <div>
+              <h3 className="text-sm mb-3 font-medium text-content">Recommended Tasks</h3>
+              <div className="text-sm text-content-secondary">
+                <p className="mt-1">No recommended tasks available.</p>
+                <p className="mt-1">Tasks will be recommended based on your project activity and preferences.</p>
+              </div>
             </div>
           </div>
 

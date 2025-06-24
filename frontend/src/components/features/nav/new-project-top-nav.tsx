@@ -1,7 +1,7 @@
 import React from "react";
 import { IoShareOutline } from "react-icons/io5";
 import { VscPlay } from "react-icons/vsc";
-import { HiOutlineMenuAlt2 } from "react-icons/hi";
+import { Monitor } from "lucide-react";
 import { Button } from "#/components/ui/button";
 
 interface NewProjectTopNavProps {
@@ -49,7 +49,7 @@ export function NewProjectTopNav({
           onClick={onDrawerToggle}
           className="text-content-secondary hover:text-content"
         >
-          <HiOutlineMenuAlt2 className="w-5 h-5" />
+          <Monitor className="w-5 h-5" />
         </Button>
       </div>
     </div>

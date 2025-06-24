@@ -1,6 +1,7 @@
 import React from "react";
 import { FaArrowRotateRight } from "react-icons/fa6";
 import { FaExternalLinkAlt, FaHome } from "react-icons/fa";
+import { Globe, Play } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { useActiveHost } from "#/hooks/query/use-active-host";
 import { PathForm } from "#/components/features/served-host/path-form";
@@ -40,6 +41,12 @@ function ServedApp() {
     }
   };
 
+  const handleStartWebServer = () => {
+    // This would trigger the agent to start a web server
+    console.log("Starting web server...");
+    // You can implement the actual logic here to send a message to the agent
+  };
+
   React.useEffect(() => {
     resetUrl();
   }, [activeHost]);
@@ -48,10 +55,33 @@ function ServedApp() {
 
   if (!currentActiveHost) {
     return (
-      <div className="flex items-center justify-center w-full h-full p-10">
-        <span className="text-neutral-400 font-bold">
-          If you tell OpenHands to start a web server, the app will appear here.
-        </span>
+      <div className="h-full flex items-center justify-center">
+        <div className="text-center max-w-md">
+          <div className="mb-6">
+            <div className="w-16 h-16 mx-auto mb-4 flex items-center justify-center">
+              <Globe className="w-12 h-12 text-content" />
+            </div>
+            <h2 className="text-xl font-semibold text-content mb-2">Web Server</h2>
+            <p className="text-sm text-content-secondary">
+              Start a web server to see your application here
+            </p>
+          </div>
+
+          <div className="space-y-4">
+            <div className="flex items-center gap-3 p-3 bg-base rounded-lg">
+              <Globe className="w-5 h-5 text-content" />
+              <span className="text-sm text-content">Ready to serve your app</span>
+            </div>
+
+            <button
+              onClick={handleStartWebServer}
+              className="flex items-center justify-center gap-2 bg-white text-black rounded-lg px-6 py-3 text-sm font-medium hover:bg-gray-100 transition-colors w-full"
+            >
+              <Play className="w-4 h-4" />
+              Start Web Server
+            </button>
+          </div>
+        </div>
       </div>
     );
   }

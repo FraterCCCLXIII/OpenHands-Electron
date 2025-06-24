@@ -161,23 +161,12 @@ function AppContent() {
     if (width <= 640) {
       return (
         <div className="rounded-xl overflow-hidden w-full">
-          <NewProjectChatInterface />
+          <NewProjectChatInterface isRightPanelVisible={false} />
         </div>
       );
     }
 
-    // If drawer is closed, only show the main chat interface
-    if (!isDrawerOpen) {
-      return (
-        <div className="flex justify-center w-full">
-          <div className="rounded-xl overflow-hidden w-full max-w-[800px]">
-            <NewProjectChatInterface />
-          </div>
-        </div>
-      );
-    }
-
-    // If drawer is open, show both panels
+    // Always render ResizablePanel, but control visibility with props
     return (
       <ResizablePanel
         orientation={Orientation.HORIZONTAL}
@@ -185,8 +174,10 @@ function AppContent() {
         initialSize={500}
         firstClassName="rounded-xl overflow-hidden"
         secondClassName="flex flex-col overflow-hidden"
-        firstChild={<NewProjectChatInterface />}
+        firstChild={<NewProjectChatInterface isRightPanelVisible={isDrawerOpen} />}
         secondChild={renderRightPanel()}
+        isSecondPanelVisible={isDrawerOpen}
+        onSecondPanelToggle={handleDrawerToggle}
       />
     );
   }

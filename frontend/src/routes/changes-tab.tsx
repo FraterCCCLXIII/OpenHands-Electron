@@ -7,7 +7,8 @@ import { useGetGitChanges } from "#/hooks/query/use-get-git-changes";
 import { I18nKey } from "#/i18n/declaration";
 import { RootState } from "#/store";
 import { RUNTIME_INACTIVE_STATES } from "#/types/agent-state";
-import { RandomTip } from "#/components/features/tips/random-tip";
+import { EnhancedProTip } from "#/components/features/tips/enhanced-pro-tip";
+import { InitializationScreen } from "#/components/features/initialization/initialization-screen";
 
 // Error message patterns
 const GIT_REPO_ERROR_PATTERN = /not a git repository/i;
@@ -22,49 +23,47 @@ function StatusMessage({ children }: React.PropsWithChildren) {
 
 function GitChanges() {
   const { t } = useTranslation();
+  const { curAgentState } = useSelector((state: RootState) => state.agent);
+  const isRuntimeInactive = RUNTIME_INACTIVE_STATES.includes(curAgentState);
+
   const {
     data: gitChanges,
     isSuccess,
     isError,
     error,
-    isLoading: loadingGitChanges,
   } = useGetGitChanges();
 
-  const [statusMessage, setStatusMessage] = React.useState<string[] | null>(
-    null,
-  );
+  // Show initialization screen when runtime is inactive
+  if (isRuntimeInactive) {
+    return <InitializationScreen />;
+  }
 
-  const { curAgentState } = useSelector((state: RootState) => state.agent);
-  const runtimeIsActive = !RUNTIME_INACTIVE_STATES.includes(curAgentState);
+  // Handle error states
+  if (isError && error) {
+    const errorMessage = retrieveAxiosErrorMessage(error);
+    const isGitRepoError = GIT_REPO_ERROR_PATTERN.test(errorMessage);
 
-  const isNotGitRepoError =
-    error && GIT_REPO_ERROR_PATTERN.test(retrieveAxiosErrorMessage(error));
-
-  React.useEffect(() => {
-    if (!runtimeIsActive) {
-      setStatusMessage([I18nKey.DIFF_VIEWER$WAITING_FOR_RUNTIME]);
-    } else if (error) {
-      const errorMessage = retrieveAxiosErrorMessage(error);
-      if (GIT_REPO_ERROR_PATTERN.test(errorMessage)) {
-        setStatusMessage([
-          I18nKey.DIFF_VIEWER$NOT_A_GIT_REPO,
-          I18nKey.DIFF_VIEWER$ASK_OH,
-        ]);
-      } else {
-        setStatusMessage([errorMessage]);
-      }
-    } else if (loadingGitChanges) {
-      setStatusMessage([I18nKey.DIFF_VIEWER$LOADING]);
-    } else {
-      setStatusMessage(null);
+    if (isGitRepoError) {
+      return (
+        <StatusMessage>
+          {t(I18nKey.DIFF_VIEWER$NO_CHANGES)}
+        </StatusMessage>
+      );
     }
-  }, [
-    runtimeIsActive,
-    isNotGitRepoError,
-    loadingGitChanges,
-    error,
-    setStatusMessage,
-  ]);
+
+    return (
+      <StatusMessage>
+        {errorMessage}
+      </StatusMessage>
+    );
+  }
+
+  // Show status message while loading or when no changes
+  const statusMessage = !isSuccess
+    ? [I18nKey.DIFF_VIEWER$NO_CHANGES]
+    : gitChanges?.length === 0
+    ? [I18nKey.DIFF_VIEWER$NO_CHANGES]
+    : null;
 
   return (
     <main className="h-full overflow-y-scroll px-4 py-3 gap-3 flex flex-col items-center">
@@ -83,19 +82,26 @@ function GitChanges() {
           <div className="absolute inset-x-0 bottom-0">
             {!isError && gitChanges?.length === 0 && (
               <div className="max-w-2xl mb-4 text-m bg-tertiary rounded-xl p-4 text-left mx-auto">
-                <RandomTip />
+                <EnhancedProTip />
               </div>
             )}
           </div>
         </div>
       ) : (
-        gitChanges.map((change) => (
-          <FileDiffViewer
-            key={change.path}
-            path={change.path}
-            type={change.status}
-          />
-        ))
+        <>
+          {gitChanges.map((change) => (
+            <FileDiffViewer
+              key={change.path}
+              path={change.path}
+              type={change.status}
+            />
+          ))}
+
+          {/* ProTip at the bottom when there are changes */}
+          <div className="max-w-2xl mt-4 text-m bg-tertiary rounded-xl p-4 text-left mx-auto">
+            <EnhancedProTip />
+          </div>
+        </>
       )}
     </main>
   );

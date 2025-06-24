@@ -5,6 +5,7 @@ import { I18nKey } from "#/i18n/declaration";
 import { RootState } from "#/store";
 import { RUNTIME_INACTIVE_STATES } from "#/types/agent-state";
 import { useVSCodeUrl } from "#/hooks/query/use-vscode-url";
+import { InitializationScreen } from "#/components/features/initialization/initialization-screen";
 
 function VSCodeTab() {
   const { t } = useTranslation();
@@ -14,19 +15,11 @@ function VSCodeTab() {
   const iframeRef = React.useRef<HTMLIFrameElement>(null);
 
   if (isRuntimeInactive) {
-    return (
-      <div className="w-full h-full flex items-center text-center justify-center text-2xl text-tertiary-light">
-        {t("DIFF_VIEWER$WAITING_FOR_RUNTIME")}
-      </div>
-    );
+    return <InitializationScreen />;
   }
 
   if (isLoading) {
-    return (
-      <div className="w-full h-full flex items-center text-center justify-center text-2xl text-tertiary-light">
-        {t("DIFF_VIEWER$WAITING_FOR_RUNTIME")}
-      </div>
-    );
+    return <InitializationScreen />;
   }
 
   if (error || (data && data.error) || !data?.url) {

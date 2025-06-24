@@ -5,13 +5,11 @@ import { useParams } from "react-router";
 import { useTranslation } from "react-i18next";
 import { I18nKey } from "#/i18n/declaration";
 import { convertImageToBase64 } from "#/utils/convert-image-to-base-64";
-import { TrajectoryActions } from "../trajectory/trajectory-actions";
 import { createChatMessage } from "#/services/chat-service";
 import { InteractiveChatBox } from "./interactive-chat-box";
 import { RootState } from "#/store";
 import { AgentState } from "#/types/agent-state";
 import { generateAgentStateChangeEvent } from "#/services/agent-state-service";
-import { FeedbackModal } from "../feedback/feedback-modal";
 import { useScrollToBottom } from "#/hooks/use-scroll-to-bottom";
 import { TypingIndicator } from "./typing-indicator";
 import { useWsClient } from "#/context/ws-client-provider";
@@ -21,13 +19,11 @@ import { ActionSuggestions } from "./action-suggestions";
 
 import { ScrollToBottomButton } from "#/components/shared/buttons/scroll-to-bottom-button";
 import { LoadingSpinner } from "#/components/shared/loading-spinner";
-import { useGetTrajectory } from "#/hooks/mutation/use-get-trajectory";
-import { downloadTrajectory } from "#/utils/download-trajectory";
-import { displayErrorToast } from "#/utils/custom-toast-handlers";
 import { useOptimisticUserMessage } from "#/hooks/use-optimistic-user-message";
 import { useWSErrorMessage } from "#/hooks/use-ws-error-message";
 import { ErrorMessageBanner } from "./error-message-banner";
 import { shouldRenderEvent } from "./event-content-helpers/should-render-event";
+import { GitControls } from "#/components/features/git/git-controls";
 
 function getEntryPoint(
   hasRepository: boolean | null,
@@ -38,7 +34,7 @@ function getEntryPoint(
   return "direct";
 }
 
-export function ChatInterface() {
+export function ChatInterface({ isRightPanelVisible = true }: { isRightPanelVisible?: boolean }) {
   const { getErrorMessage } = useWSErrorMessage();
   const { send, isLoadingMessages, parsedEvents } = useWsClient();
   const { setOptimisticUserMessage, getOptimisticUserMessage } =
@@ -50,16 +46,10 @@ export function ChatInterface() {
 
   const { curAgentState } = useSelector((state: RootState) => state.agent);
 
-  const [feedbackPolarity, setFeedbackPolarity] = React.useState<
-    "positive" | "negative"
-  >("positive");
-  const [feedbackModalIsOpen, setFeedbackModalIsOpen] = React.useState(false);
   const [messageToSend, setMessageToSend] = React.useState<string | null>(null);
   const { selectedRepository, replayJson } = useSelector(
     (state: RootState) => state.initialQuery,
   );
-  const params = useParams();
-  const { mutate: getTrajectory } = useGetTrajectory();
 
   const optimisticUserMessage = getOptimisticUserMessage();
   const errorMessage = getErrorMessage();
@@ -96,32 +86,6 @@ export function ChatInterface() {
     send(generateAgentStateChangeEvent(AgentState.STOPPED));
   };
 
-  const onClickShareFeedbackActionButton = async (
-    polarity: "positive" | "negative",
-  ) => {
-    setFeedbackModalIsOpen(true);
-    setFeedbackPolarity(polarity);
-  };
-
-  const onClickExportTrajectoryButton = () => {
-    if (!params.conversationId) {
-      displayErrorToast(t(I18nKey.CONVERSATION$DOWNLOAD_ERROR));
-      return;
-    }
-
-    getTrajectory(params.conversationId, {
-      onSuccess: async (data) => {
-        await downloadTrajectory(
-          params.conversationId ?? t(I18nKey.CONVERSATION$UNKNOWN),
-          data.trajectory,
-        );
-      },
-      onError: () => {
-        displayErrorToast(t(I18nKey.CONVERSATION$DOWNLOAD_ERROR));
-      },
-    });
-  };
-
   const isWaitingForUserInput =
     curAgentState === AgentState.AWAITING_USER_INPUT ||
     curAgentState === AgentState.FINISHED;
@@ -129,7 +93,7 @@ export function ChatInterface() {
   return (
     <div className="h-full flex flex-col justify-between">
       {events.length === 0 && !optimisticUserMessage && (
-        <ChatSuggestions onSuggestionsClick={setMessageToSend} />
+        <ChatSuggestions onSuggestionsClick={setMessageToSend} isRightPanelVisible={isRightPanelVisible} />
       )}
 
       <div
@@ -162,17 +126,7 @@ export function ChatInterface() {
       </div>
 
       <div className="flex flex-col gap-[6px] px-4 pb-4">
-        <div className="flex justify-between relative">
-          <TrajectoryActions
-            onPositiveFeedback={() =>
-              onClickShareFeedbackActionButton("positive")
-            }
-            onNegativeFeedback={() =>
-              onClickShareFeedbackActionButton("negative")
-            }
-            onExportTrajectory={() => onClickExportTrajectoryButton()}
-          />
-
+        <div className="flex justify-center relative">
           <div className="absolute left-1/2 transform -translate-x-1/2 bottom-0">
             {curAgentState === AgentState.RUNNING && <TypingIndicator />}
           </div>
@@ -192,14 +146,11 @@ export function ChatInterface() {
           mode={curAgentState === AgentState.RUNNING ? "stop" : "submit"}
           value={messageToSend ?? undefined}
           onChange={setMessageToSend}
+          isRightPanelVisible={isRightPanelVisible}
         />
       </div>
 
-      <FeedbackModal
-        isOpen={feedbackModalIsOpen}
-        onClose={() => setFeedbackModalIsOpen(false)}
-        polarity={feedbackPolarity}
-      />
+      <GitControls isRightPanelVisible={isRightPanelVisible} />
     </div>
   );
 }

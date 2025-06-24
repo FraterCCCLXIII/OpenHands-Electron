@@ -27,6 +27,9 @@ type ResizablePanelProps = {
   className: string | undefined;
   orientation: Orientation;
   initialSize: number;
+  // External control props
+  isSecondPanelVisible?: boolean;
+  onSecondPanelToggle?: () => void;
 };
 
 export function ResizablePanel({
@@ -37,13 +40,25 @@ export function ResizablePanel({
   className,
   orientation,
   initialSize,
+  isSecondPanelVisible = true,
+  onSecondPanelToggle,
 }: ResizablePanelProps): JSX.Element {
   const [firstSize, setFirstSize] = useState<number>(initialSize);
   const [dividerPosition, setDividerPosition] = useState<number | null>(null);
+  const [isHovering, setIsHovering] = useState(false);
   const firstRef = useRef<HTMLDivElement>(null);
   const secondRef = useRef<HTMLDivElement>(null);
   const [collapse, setCollapse] = useState<Collapse>(Collapse.SPLIT);
   const isHorizontal = orientation === Orientation.HORIZONTAL;
+
+  // Sync with external control
+  useEffect(() => {
+    if (!isSecondPanelVisible) {
+      setCollapse(Collapse.FILLED);
+    } else {
+      setCollapse(Collapse.SPLIT);
+    }
+  }, [isSecondPanelVisible]);
 
   useEffect(() => {
     if (dividerPosition == null || !firstRef.current) {
@@ -86,7 +101,7 @@ export function ResizablePanel({
       document.removeEventListener("mousemove", onMouseMove);
       document.removeEventListener("mouseup", onMouseUp);
     };
-  }, [dividerPosition, firstSize, orientation]);
+  }, [dividerPosition, firstSize, isHorizontal]);
 
   const onMouseDown = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -155,6 +170,18 @@ export function ResizablePanel({
     }
   };
 
+  const handleToggleSecondPanel = () => {
+    if (onSecondPanelToggle) {
+      onSecondPanelToggle();
+    } else {
+      if (collapse === Collapse.SPLIT) {
+        setCollapse(Collapse.FILLED);
+      } else {
+        setCollapse(Collapse.SPLIT);
+      }
+    }
+  };
+
   return (
     <div className={twMerge("flex", !isHorizontal && "flex-col", className)}>
       <div
@@ -165,19 +192,25 @@ export function ResizablePanel({
         {firstChild}
       </div>
       <div
-        className={`${isHorizontal ? "cursor-ew-resize w-3 flex-col" : "cursor-ns-resize h-3 flex-row"} shrink-0 flex justify-center items-center`}
+        className={`${isHorizontal ? "cursor-ew-resize w-3 flex-col" : "cursor-ns-resize h-3 flex-row"} shrink-0 flex justify-center items-center group`}
         onMouseDown={collapse === Collapse.SPLIT ? onMouseDown : undefined}
+        onMouseEnter={() => setIsHovering(true)}
+        onMouseLeave={() => setIsHovering(false)}
       >
-        <IconButton
-          icon={isHorizontal ? <VscChevronLeft /> : <VscChevronUp />}
-          ariaLabel="Collapse"
-          onClick={onCollapse}
-        />
-        <IconButton
-          icon={isHorizontal ? <VscChevronRight /> : <VscChevronDown />}
-          ariaLabel="Expand"
-          onClick={onExpand}
-        />
+        {isHovering && (
+          <>
+            <IconButton
+              icon={isHorizontal ? <VscChevronLeft /> : <VscChevronUp />}
+              ariaLabel="Collapse"
+              onClick={onCollapse}
+            />
+            <IconButton
+              icon={isHorizontal ? <VscChevronRight /> : <VscChevronDown />}
+              ariaLabel="Expand"
+              onClick={handleToggleSecondPanel}
+            />
+          </>
+        )}
       </div>
       <div
         ref={secondRef}
