@@ -12,23 +12,40 @@ interface SuggestionItemProps {
 export function SuggestionItem({ suggestion, onClick }: SuggestionItemProps) {
   const { t } = useTranslation();
 
-  // Map suggestion labels to icons
-  const getIcon = (label: string) => {
+  // Map suggestion labels to icons and colors
+  const getIconAndColor = (label: string) => {
     const labelText = t(label as I18nKey);
     if (labelText.includes("test") || labelText.includes("coverage")) {
-      return <TestTube className="w-4 h-4" />;
+      return {
+        icon: <TestTube className="w-4 h-4" />,
+        color: "text-blue-500"
+      };
     }
     if (labelText.includes("PR") || labelText.includes("merge")) {
-      return <GitPullRequest className="w-4 h-4" />;
+      return {
+        icon: <GitPullRequest className="w-4 h-4" />,
+        color: "text-green-500"
+      };
     }
     if (labelText.includes("README")) {
-      return <FileText className="w-4 h-4" />;
+      return {
+        icon: <FileText className="w-4 h-4" />,
+        color: "text-purple-500"
+      };
     }
     if (labelText.includes("dependenc")) {
-      return <Package className="w-4 h-4" />;
+      return {
+        icon: <Package className="w-4 h-4" />,
+        color: "text-orange-500"
+      };
     }
-    return null;
+    return {
+      icon: null,
+      color: "text-primary"
+    };
   };
+
+  const { icon, color } = getIconAndColor(suggestion.label);
 
   return (
     <li className="list-none border border-border rounded-xl hover:bg-tertiary flex-1">
@@ -36,9 +53,11 @@ export function SuggestionItem({ suggestion, onClick }: SuggestionItemProps) {
         type="button"
         data-testid="suggestion"
         onClick={() => onClick(suggestion.value)}
-        className="text-[16px] leading-6 -tracking-[0.01em] text-center w-full p-3 font-semibold flex items-center justify-center gap-2"
+        className="text-xs leading-5 tracking-tight text-center w-full p-3 font-normal flex items-center justify-center gap-2"
       >
-        {getIcon(suggestion.label)}
+        <span className={color}>
+          {icon}
+        </span>
         {t(suggestion.label)}
       </button>
     </li>

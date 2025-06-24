@@ -3,6 +3,7 @@ import { IoShareOutline } from "react-icons/io5";
 import { VscPlay } from "react-icons/vsc";
 import { Monitor } from "lucide-react";
 import { Button } from "#/components/ui/button";
+import { ShareModal } from "#/components/shared/modals/share-modal";
 
 interface NewProjectTopNavProps {
   onShare?: () => void;
@@ -17,41 +18,55 @@ export function NewProjectTopNav({
 }: NewProjectTopNavProps) {
   // Demo project name - replace with actual hook when available
   const projectName = "My Project";
+  const [shareModalIsOpen, setShareModalIsOpen] = React.useState(false);
+
+  const handleShare = () => {
+    setShareModalIsOpen(true);
+    onShare?.();
+  };
 
   return (
-    <div className="flex items-center justify-between px-4 py-2 bg-base">
-      <div className="flex items-center">
-        <h1 className="text-lg font-semibold text-content">{projectName}</h1>
+    <>
+      <div className="flex items-center justify-between px-4 py-2 bg-base">
+        <div className="flex items-center">
+          <h1 className="text-lg font-semibold text-content">{projectName}</h1>
+        </div>
+
+        <div className="flex items-center gap-2">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={handleShare}
+            className="text-content-secondary hover:text-content"
+          >
+            <IoShareOutline className="w-5 h-5" />
+          </Button>
+
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={onRun}
+            className="text-content-secondary hover:text-content"
+          >
+            <VscPlay className="w-5 h-5" />
+          </Button>
+
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={onDrawerToggle}
+            className="text-content-secondary hover:text-content"
+          >
+            <Monitor className="w-5 h-5" />
+          </Button>
+        </div>
       </div>
 
-      <div className="flex items-center gap-2">
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={onShare}
-          className="text-content-secondary hover:text-content"
-        >
-          <IoShareOutline className="w-5 h-5" />
-        </Button>
-
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={onRun}
-          className="text-content-secondary hover:text-content"
-        >
-          <VscPlay className="w-5 h-5" />
-        </Button>
-
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={onDrawerToggle}
-          className="text-content-secondary hover:text-content"
-        >
-          <Monitor className="w-5 h-5" />
-        </Button>
-      </div>
-    </div>
+      <ShareModal
+        isOpen={shareModalIsOpen}
+        onClose={() => setShareModalIsOpen(false)}
+        shareUrl={`${window.location.origin}/new-project`}
+      />
+    </>
   );
 }

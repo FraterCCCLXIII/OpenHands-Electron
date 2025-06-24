@@ -1,4 +1,5 @@
 import React from "react";
+import { Settings, Package, Server } from "lucide-react";
 
 interface InitializationScreenProps {
   title?: string;
@@ -29,6 +30,17 @@ export function InitializationScreen({
     }
   };
 
+  const getIcon = (label: string) => {
+    if (label.includes("Environment setup")) {
+      return <Settings className="w-4 h-4 text-content-secondary" />;
+    } else if (label.includes("Dependencies")) {
+      return <Package className="w-4 h-4 text-content-secondary" />;
+    } else if (label.includes("development server")) {
+      return <Server className="w-4 h-4 text-content-secondary" />;
+    }
+    return null;
+  };
+
   return (
     <div className="h-full flex items-center justify-center">
       <div className="text-center max-w-md">
@@ -41,6 +53,7 @@ export function InitializationScreen({
           {statusItems.map((item, index) => (
             <div key={index} className="flex items-center gap-3 p-3 bg-base rounded-lg">
               {getStatusIndicator(item.status)}
+              {getIcon(item.label)}
               <span className="text-sm text-content">{item.label}</span>
             </div>
           ))}

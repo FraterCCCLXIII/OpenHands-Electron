@@ -38,6 +38,7 @@ import { ConversationTopNav } from "#/components/features/nav/conversation-top-n
 import { useGetTrajectory } from "#/hooks/mutation/use-get-trajectory";
 import { downloadTrajectory } from "#/utils/download-trajectory";
 import { FeedbackModal } from "#/components/features/feedback/feedback-modal";
+import { ShareModal } from "#/components/shared/modals/share-modal";
 
 function AppContent() {
   useConversationConfig();
@@ -61,6 +62,7 @@ function AppContent() {
     "positive" | "negative"
   >("positive");
   const [feedbackModalIsOpen, setFeedbackModalIsOpen] = React.useState(false);
+  const [shareModalIsOpen, setShareModalIsOpen] = React.useState(false);
 
   const { mutate: getTrajectory } = useGetTrajectory();
 
@@ -95,8 +97,7 @@ function AppContent() {
   }, []);
 
   const handleShare = () => {
-    // Implement share functionality
-    console.log("Share clicked");
+    setShareModalIsOpen(true);
   };
 
   const handleRun = () => {
@@ -132,6 +133,27 @@ function AppContent() {
         displayErrorToast(t(I18nKey.CONVERSATION$DOWNLOAD_ERROR));
       },
     });
+  };
+
+  // New menu item handlers
+  const handleDownloadVSCode = () => {
+    console.log("Download via VS Code clicked");
+    // Implement VS Code download functionality
+  };
+
+  const handleDisplayCost = () => {
+    console.log("Display Cost clicked");
+    // Implement cost display functionality
+  };
+
+  const handleShowAgentTools = () => {
+    console.log("Show Agent Tools & Metadata clicked");
+    // Implement agent tools display functionality
+  };
+
+  const handleShowMicroagents = () => {
+    console.log("Show Available Microagents clicked");
+    // Implement microagents display functionality
   };
 
   function renderMain() {
@@ -242,6 +264,10 @@ function AppContent() {
             onPositiveFeedback={() => onClickShareFeedbackActionButton("positive")}
             onNegativeFeedback={() => onClickShareFeedbackActionButton("negative")}
             onExportTrajectory={onClickExportTrajectoryButton}
+            onDownloadVSCode={handleDownloadVSCode}
+            onDisplayCost={handleDisplayCost}
+            onShowAgentTools={handleShowAgentTools}
+            onShowMicroagents={handleShowMicroagents}
           />
           <div className="flex h-full overflow-auto">{renderMain()}</div>
 
@@ -249,6 +275,12 @@ function AppContent() {
             isOpen={feedbackModalIsOpen}
             onClose={() => setFeedbackModalIsOpen(false)}
             polarity={feedbackPolarity}
+          />
+
+          <ShareModal
+            isOpen={shareModalIsOpen}
+            onClose={() => setShareModalIsOpen(false)}
+            shareUrl={`${window.location.origin}/conversations/${conversationId}`}
           />
         </div>
       </EventHandler>

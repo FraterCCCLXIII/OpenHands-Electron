@@ -21,6 +21,10 @@ interface ConversationTopNavProps {
   onPositiveFeedback?: () => void;
   onNegativeFeedback?: () => void;
   onExportTrajectory?: () => void;
+  onDownloadVSCode?: () => void;
+  onDisplayCost?: () => void;
+  onShowAgentTools?: () => void;
+  onShowMicroagents?: () => void;
 }
 
 export function ConversationTopNav({
@@ -30,6 +34,10 @@ export function ConversationTopNav({
   onPositiveFeedback,
   onNegativeFeedback,
   onExportTrajectory,
+  onDownloadVSCode,
+  onDisplayCost,
+  onShowAgentTools,
+  onShowMicroagents,
 }: ConversationTopNavProps) {
   const { data: conversation } = useActiveConversation();
   const { t } = useTranslation();
@@ -75,8 +83,28 @@ export function ConversationTopNav({
     setIsDropdownOpen(false);
   };
 
+  const handleDownloadVSCode = () => {
+    onDownloadVSCode?.();
+    setIsDropdownOpen(false);
+  };
+
+  const handleDisplayCost = () => {
+    onDisplayCost?.();
+    setIsDropdownOpen(false);
+  };
+
+  const handleShowAgentTools = () => {
+    onShowAgentTools?.();
+    setIsDropdownOpen(false);
+  };
+
+  const handleShowMicroagents = () => {
+    onShowMicroagents?.();
+    setIsDropdownOpen(false);
+  };
+
   return (
-    <div className="flex items-center justify-between px-4 py-2 bg-base">
+    <div className="flex items-center justify-between px-4 bg-base">
       <div className="flex items-center">
         <h1 className="text-lg font-semibold text-content">{conversationName}</h1>
       </div>
@@ -123,6 +151,40 @@ export function ConversationTopNav({
                 <div className="flex items-center gap-2">
                   <Monitor className="w-4 h-4" />
                   <span>Toggle Drawer</span>
+                </div>
+              </ContextMenuListItem>
+
+              {/* New menu items */}
+              <ContextMenuListItem
+                testId="download-vscode-button"
+                onClick={handleDownloadVSCode}
+              >
+                <div className="flex items-center gap-2">
+                  <span>Download via VS Code</span>
+                </div>
+              </ContextMenuListItem>
+              <ContextMenuListItem
+                testId="display-cost-button"
+                onClick={handleDisplayCost}
+              >
+                <div className="flex items-center gap-2">
+                  <span>Display Cost</span>
+                </div>
+              </ContextMenuListItem>
+              <ContextMenuListItem
+                testId="show-agent-tools-button"
+                onClick={handleShowAgentTools}
+              >
+                <div className="flex items-center gap-2">
+                  <span>Show Agent Tools & Metadata</span>
+                </div>
+              </ContextMenuListItem>
+              <ContextMenuListItem
+                testId="show-microagents-button"
+                onClick={handleShowMicroagents}
+              >
+                <div className="flex items-center gap-2">
+                  <span>Show Available Microagents</span>
                 </div>
               </ContextMenuListItem>
 

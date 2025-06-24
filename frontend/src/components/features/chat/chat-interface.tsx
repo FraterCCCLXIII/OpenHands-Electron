@@ -125,7 +125,7 @@ export function ChatInterface({ isRightPanelVisible = true }: { isRightPanelVisi
           )}
       </div>
 
-      <div className="flex flex-col gap-[6px] px-4 pb-4">
+      <div className="flex flex-col gap-[6px] px-4">
         <div className="flex justify-center relative">
           <div className="absolute left-1/2 transform -translate-x-1/2 bottom-0">
             {curAgentState === AgentState.RUNNING && <TypingIndicator />}

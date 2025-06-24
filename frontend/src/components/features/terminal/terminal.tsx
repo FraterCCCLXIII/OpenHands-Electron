@@ -11,7 +11,14 @@ function Terminal() {
   });
 
   return (
-    <div className="h-full p-2 min-h-0 flex-grow">
+    <div className="h-full min-h-0 flex-grow">
+      <style>
+        {`
+          .xterm-viewport {
+            padding: 1rem !important;
+          }
+        `}
+      </style>
       <div ref={ref} className="h-full w-full" />
     </div>
   );

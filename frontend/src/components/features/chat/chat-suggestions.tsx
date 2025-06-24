@@ -15,7 +15,7 @@ export function ChatSuggestions({ onSuggestionsClick, isRightPanelVisible = true
   return (
     <div className={`flex flex-col gap-6 h-full px-4 items-center justify-center ${!isRightPanelVisible ? 'max-w-[700px] mx-auto' : ''}`}>
       <div className="flex flex-col items-center p-4 rounded-xl w-full">
-        <BuildIt width={45} height={54} className="animate-wave" />
+        <BuildIt width={60} height={72} className="animate-wave mb-8" />
         <span className="font-semibold text-[20px] leading-6 -tracking-[0.01em] gap-1">
           {t(I18nKey.LANDING$TITLE)}
         </span>
