@@ -5,10 +5,12 @@ import { UserActions } from "./user-actions";
 import { AllHandsLogoButton } from "#/components/shared/buttons/all-hands-logo-button";
 import { NewProjectButton } from "#/components/shared/buttons/new-project-button";
 import { ConversationPanelButton } from "#/components/shared/buttons/conversation-panel-button";
+import { DemoButton } from "#/components/shared/buttons/demo-button";
 import { SettingsModal } from "#/components/shared/modals/settings/settings-modal";
 import { useSettings } from "#/hooks/query/use-settings";
 import { ConversationPanel } from "../conversation-panel/conversation-panel";
 import { ConversationPanelWrapper } from "../conversation-panel/conversation-panel-wrapper";
+import { ConversationDemo } from "../../demo/conversation-demo";
 import { useLogout } from "#/hooks/mutation/use-logout";
 import { useConfig } from "#/hooks/query/use-config";
 import { displayErrorToast } from "#/utils/custom-toast-handlers";
@@ -30,6 +32,11 @@ export function Sidebar() {
 
   const [conversationPanelIsOpen, setConversationPanelIsOpen] =
     React.useState(false);
+
+  const [demoPanelIsOpen, setDemoPanelIsOpen] =
+    React.useState(false);
+
+
 
   // TODO: Remove HIDE_LLM_SETTINGS check once released
   const shouldHideLlmSettings =
@@ -83,6 +90,15 @@ export function Sidebar() {
               }
               disabled={settings?.EMAIL_VERIFIED === false}
             />
+            <DemoButton
+              isOpen={demoPanelIsOpen}
+              onClick={() =>
+                settings?.EMAIL_VERIFIED === false
+                  ? null
+                  : setDemoPanelIsOpen((prev) => !prev)
+              }
+              disabled={settings?.EMAIL_VERIFIED === false}
+            />
             {!shouldHideMicroagentManagement && (
               <MicroagentManagementButton
                 disabled={settings?.EMAIL_VERIFIED === false}
@@ -108,6 +124,17 @@ export function Sidebar() {
             />
           </ConversationPanelWrapper>
         )}
+        {demoPanelIsOpen && (
+          <ConversationPanelWrapper
+            isOpen={demoPanelIsOpen}
+            onClose={() => setDemoPanelIsOpen(false)}
+          >
+            <ConversationDemo
+              onClose={() => setDemoPanelIsOpen(false)}
+            />
+          </ConversationPanelWrapper>
+        )}
+
       </aside>
 
       {settingsModalIsOpen && (

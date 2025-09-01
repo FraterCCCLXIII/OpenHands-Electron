@@ -13,8 +13,8 @@ export function GitProviderIcon({
   return (
     <>
       {gitProvider === "github" && <FaGithub size={14} className={className} />}
-      {gitProvider === "gitlab" && <FaGitlab className={className} />}
-      {gitProvider === "bitbucket" && <FaBitbucket className={className} />}
+      {gitProvider === "gitlab" && <FaGitlab size={14} className={className} />}
+      {gitProvider === "bitbucket" && <FaBitbucket size={14} className={className} />}
     </>
   );
 }

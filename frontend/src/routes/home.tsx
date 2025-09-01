@@ -8,6 +8,7 @@ import { GitRepository } from "#/types/git";
 import { NewConversation } from "#/components/features/home/new-conversation";
 import { RecentConversations } from "#/components/features/home/recent-conversations/recent-conversations";
 
+
 <PrefetchPageLinks page="/conversations/:conversationId" />;
 
 function HomeScreen() {
@@ -42,6 +43,13 @@ function HomeScreen() {
         >
           <RecentConversations />
           {providersAreSet && <TaskSuggestions filterFor={selectedRepo} />}
+        </div>
+      </div>
+
+      {/* Conversation Demo Section */}
+      <div className="pt-8 flex justify-center">
+        <div className="w-full max-w-6xl">
+
         </div>
       </div>
     </div>
