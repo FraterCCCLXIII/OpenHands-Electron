@@ -325,8 +325,7 @@ const ConvoDash: React.FC = () => {
             {expandedRepos.has(repoGroup.name) && (
               <div className="p-4 space-y-4">
                 {repoGroup.pullRequests.map((pr) => (
-                  <div key={pr.id} className="bg-[#32353A] rounded-lg border border-[#3A3D42]">
-                    {/* PR Header */}
+                  <div key={pr.id} className="border-b border-[#3A3D42] last:border-b-0">
                     <div className="p-3 flex items-center gap-3 pb-2">
                       <div className="flex items-center gap-2">
                         <svg width="12" height="16" viewBox="0 0 12 16" fill="none" xmlns="http://www.w3.org/2000/svg">
