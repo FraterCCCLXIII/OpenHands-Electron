@@ -327,7 +327,7 @@ const ConvoDash: React.FC = () => {
               <div className="space-y-0">
                 {repoGroup.pullRequests.map((pr) => (
                   <div key={pr.id} className="border-b border-[#3A3D42] last:border-b-0">
-                    <div 
+                    <div
                       className="p-3 flex items-center gap-3 pb-2 cursor-pointer hover:bg-[#32353A] transition-colors"
                       onClick={() => togglePRExpanded(pr.id)}
                     >
@@ -363,9 +363,9 @@ const ConvoDash: React.FC = () => {
                         </div>
                         <div className="text-[#A3A3A3] hover:text-white transition-colors">
                           {expandedPRs.has(pr.id) ? (
-                            <FaMinus className="w-4 h-4" />
+                            <FaMinus className="w-3 h-3" />
                           ) : (
-                            <FaPlus className="w-4 h-4" />
+                            <FaPlus className="w-3 h-3" />
                           )}
                         </div>
                       </div>
@@ -525,6 +525,89 @@ const ConvoDash: React.FC = () => {
                             </div>
                           </div>
                         ))}
+                      </div>
+                    )}
+
+                    {/* Inactive Conversations Section */}
+                    {expandedPRs.has(pr.id) && (
+                      <div className="mt-4 pt-4 border-t border-[#3A3D42]">
+                        <div className="flex items-center gap-2 mb-3">
+                          <span className="text-[#A3A3A3] text-sm font-medium">Inactive Conversations</span>
+                          <div className="flex items-center gap-1 bg-[#32353A] px-2 py-1 rounded-full">
+                            <FaComment className="w-3 h-3 text-white" />
+                            <span className="text-white text-xs font-medium">3</span>
+                          </div>
+                        </div>
+                        <div className="space-y-2">
+                          <div className="flex flex-col p-2 bg-[#2A2D32] rounded border border-[#3A3D42] hover:border-[#4A4D52] transition-colors cursor-pointer">
+                            <div className="flex items-start justify-between mb-1">
+                              <div className="flex-1">
+                                <div className="flex items-center gap-2 mb-1">
+                                  <h4 className="text-[#A3A3A3] text-sm font-medium">Initial setup discussion</h4>
+                                  <span className="text-xs px-2 py-1 rounded-full text-gray-500 bg-gray-500/20">completed</span>
+                                </div>
+                              </div>
+                              <div className="flex items-center gap-1 ml-2">
+                                <button className="text-[#808080] hover:text-[#A3A3A3] transition-colors">
+                                  <FaEye className="w-3 h-3" />
+                                </button>
+                                <button className="text-[#808080] hover:text-[#A3A3A3] transition-colors">
+                                  <FaComment className="w-3 h-3" />
+                                </button>
+                              </div>
+                            </div>
+                            <div>
+                              <p className="text-[#808080] text-xs line-clamp-1">Initial project setup and configuration...</p>
+                              <p className="text-[#666666] text-xs mt-1">3 days ago</p>
+                            </div>
+                          </div>
+
+                          <div className="flex flex-col p-2 bg-[#2A2D32] rounded border border-[#3A3D42] hover:border-[#4A4D52] transition-colors cursor-pointer">
+                            <div className="flex items-start justify-between mb-1">
+                              <div className="flex-1">
+                                <div className="flex items-center gap-2 mb-1">
+                                  <h4 className="text-[#A3A3A3] text-sm font-medium">API integration planning</h4>
+                                  <span className="text-xs px-2 py-1 rounded-full text-gray-500 bg-gray-500/20">completed</span>
+                                </div>
+                              </div>
+                              <div className="flex items-center gap-1 ml-2">
+                                <button className="text-[#808080] hover:text-[#A3A3A3] transition-colors">
+                                  <FaEye className="w-3 h-3" />
+                                </button>
+                                <button className="text-[#808080] hover:text-[#A3A3A3] transition-colors">
+                                  <FaComment className="w-3 h-3" />
+                                </button>
+                              </div>
+                            </div>
+                            <div>
+                              <p className="text-[#808080] text-xs line-clamp-1">Planning the API integration approach...</p>
+                              <p className="text-[#666666] text-xs mt-1">1 week ago</p>
+                            </div>
+                          </div>
+
+                          <div className="flex flex-col p-2 bg-[#2A2D32] rounded border border-[#3A3D42] hover:border-[#4A4D52] transition-colors cursor-pointer">
+                            <div className="flex items-start justify-between mb-1">
+                              <div className="flex-1">
+                                <div className="flex items-center gap-2 mb-1">
+                                  <h4 className="text-[#A3A3A3] text-sm font-medium">Database schema review</h4>
+                                  <span className="text-xs px-2 py-1 rounded-full text-gray-500 bg-gray-500/20">completed</span>
+                                </div>
+                              </div>
+                              <div className="flex items-center gap-1 ml-2">
+                                <button className="text-[#808080] hover:text-[#A3A3A3] transition-colors">
+                                  <FaEye className="w-3 h-3" />
+                                </button>
+                                <button className="text-[#808080] hover:text-[#A3A3A3] transition-colors">
+                                  <FaComment className="w-3 h-3" />
+                                </button>
+                              </div>
+                            </div>
+                            <div>
+                              <p className="text-[#808080] text-xs line-clamp-1">Reviewing the database schema design...</p>
+                              <p className="text-[#666666] text-xs mt-1">2 weeks ago</p>
+                            </div>
+                          </div>
+                        </div>
                       </div>
                     )}
                   </div>
