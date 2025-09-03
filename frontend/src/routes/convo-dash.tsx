@@ -3,6 +3,7 @@ import { useTranslation } from "react-i18next";
 import { Card, CardBody, CardHeader } from "@heroui/react";
 import { FaGithub, FaGitlab, FaBitbucket } from "react-icons/fa";
 import { MdFolder } from "react-icons/md";
+import { FaCodeBranch, FaRobot, FaArrowUp, FaArrowDown, FaCodePullRequest } from "react-icons/fa";
 
 interface Conversation {
   id: string;
@@ -12,6 +13,8 @@ interface Conversation {
   repoName: string;
   repoType: "github" | "gitlab" | "bitbucket" | "local";
   status: "active" | "archived" | "completed";
+  gitStatus: "clean" | "modified" | "ahead" | "behind" | "conflict";
+  agentStatus: "idle" | "working" | "error" | "success";
 }
 
 interface RepoGroup {
@@ -22,6 +25,8 @@ interface RepoGroup {
 
 function ConvoDashScreen() {
   const { t } = useTranslation();
+  const [selectedConversation, setSelectedConversation] = React.useState<string | null>(null);
+  const [chatInput, setChatInput] = React.useState("");
 
   // Mock data for demonstration
   const repoGroups: RepoGroup[] = [
@@ -37,6 +42,8 @@ function ConvoDashScreen() {
           repoName: "openhands/OpenHands-XP",
           repoType: "github",
           status: "active",
+          gitStatus: "modified",
+          agentStatus: "working",
         },
         {
           id: "2",
@@ -46,6 +53,8 @@ function ConvoDashScreen() {
           repoName: "openhands/OpenHands-XP",
           repoType: "github",
           status: "active",
+          gitStatus: "ahead",
+          agentStatus: "idle",
         },
       ],
     },
@@ -61,6 +70,8 @@ function ConvoDashScreen() {
           repoName: "my-company/frontend-app",
           repoType: "gitlab",
           status: "active",
+          gitStatus: "clean",
+          agentStatus: "success",
         },
       ],
     },
@@ -76,6 +87,8 @@ function ConvoDashScreen() {
           repoName: "personal/project-utils",
           repoType: "local",
           status: "completed",
+          gitStatus: "behind",
+          agentStatus: "error",
         },
       ],
     },
@@ -104,6 +117,87 @@ function ConvoDashScreen() {
         return "text-blue-500";
       default:
         return "text-gray-400";
+    }
+  };
+
+  const getGitStatusColor = (status: string) => {
+    switch (status) {
+      case "clean":
+        return "text-green-500";
+      case "modified":
+        return "text-yellow-500";
+      case "ahead":
+        return "text-blue-500";
+      case "behind":
+        return "text-red-500";
+      case "conflict":
+        return "text-orange-500";
+      default:
+        return "text-gray-400";
+    }
+  };
+
+  const getAgentStatusColor = (status: string) => {
+    switch (status) {
+      case "idle":
+        return "text-gray-500";
+      case "working":
+        return "text-blue-500";
+      case "success":
+        return "text-green-500";
+      case "error":
+        return "text-red-500";
+      default:
+        return "text-gray-400";
+    }
+  };
+
+  const getGitStatusText = (status: string) => {
+    switch (status) {
+      case "clean":
+        return "Clean";
+      case "modified":
+        return "Modified";
+      case "ahead":
+        return "Ahead";
+      case "behind":
+        return "Behind";
+      case "conflict":
+        return "Conflict";
+      default:
+        return "Unknown";
+    }
+  };
+
+  const getAgentStatusText = (status: string) => {
+    switch (status) {
+      case "idle":
+        return "Idle";
+      case "working":
+        return "Working";
+      case "success":
+        return "Success";
+      case "error":
+        return "Error";
+      default:
+        return "Unknown";
+    }
+  };
+
+  const handleConversationClick = (conversationId: string) => {
+    setSelectedConversation(selectedConversation === conversationId ? null : conversationId);
+    setChatInput("");
+  };
+
+  const handleGitAction = (action: string) => {
+    console.log(`Git action: ${action} for conversation ${selectedConversation}`);
+    // Here you would implement the actual Git actions
+  };
+
+  const handleSendMessage = () => {
+    if (chatInput.trim()) {
+      console.log(`Sending message: ${chatInput} to conversation ${selectedConversation}`);
+      setChatInput("");
     }
   };
 
@@ -147,47 +241,102 @@ function ConvoDashScreen() {
             <CardBody className="pt-0">
               <div className="space-y-3">
                 {repoGroup.conversations.map((conversation) => (
-                  <div
-                    key={conversation.id}
-                    className="flex items-center justify-between p-3 bg-[#32353A] rounded-lg border border-[#3A3D42] hover:border-[#4A4D52] transition-colors cursor-pointer"
-                  >
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2 mb-1">
-                        <h3 className="text-white font-medium">{conversation.title}</h3>
-                        <span className={`text-xs px-2 py-1 rounded-full ${getStatusColor(conversation.status)} bg-opacity-20`}>
-                          {conversation.status}
-                        </span>
-                      </div>
-                      <div className="relative overflow-hidden">
-                        {conversation.status === "active" ? (
-                          <div className="ticker-container">
-                            <p className="text-[#A3A3A3] text-sm ticker-text">
-                              {conversation.lastMessage}
-                            </p>
+                  <div key={conversation.id}>
+                    <div
+                      className="flex items-center justify-between p-3 bg-[#32353A] rounded-lg border border-[#3A3D42] hover:border-[#4A4D52] transition-colors cursor-pointer"
+                      onClick={() => handleConversationClick(conversation.id)}
+                    >
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2 mb-1">
+                          <h3 className="text-white font-medium">{conversation.title}</h3>
+                          <span className={`text-xs px-2 py-1 rounded-full ${getStatusColor(conversation.status)} bg-opacity-20`}>
+                            {conversation.status}
+                          </span>
+                        </div>
+                        
+                        {/* Status Indicators */}
+                        <div className="flex items-center gap-3 mb-2">
+                          <div className="flex items-center gap-1">
+                            <FaCodeBranch className={`w-3 h-3 ${getGitStatusColor(conversation.gitStatus)}`} />
+                            <span className={`text-xs ${getGitStatusColor(conversation.gitStatus)}`}>
+                              {getGitStatusText(conversation.gitStatus)}
+                            </span>
                           </div>
-                        ) : (
-                          <p className="text-[#A3A3A3] text-sm line-clamp-1">
-                            {conversation.lastMessage}
-                          </p>
-                        )}
+                          <div className="flex items-center gap-1">
+                            <FaRobot className={`w-3 h-3 ${getAgentStatusColor(conversation.agentStatus)}`} />
+                            <span className={`text-xs ${getAgentStatusColor(conversation.agentStatus)}`}>
+                              {getAgentStatusText(conversation.agentStatus)}
+                            </span>
+                          </div>
+                        </div>
+                        
+                        <p className="text-[#A3A3A3] text-sm line-clamp-1">
+                          {conversation.lastMessage}
+                        </p>
+                        <p className="text-[#808080] text-xs mt-1">
+                          {conversation.lastUpdated}
+                        </p>
                       </div>
-                      <p className="text-[#808080] text-xs mt-1">
-                        {conversation.lastUpdated}
-                      </p>
+                      <div className="flex items-center gap-2">
+                        <button className="text-[#A3A3A3] hover:text-white transition-colors">
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                          </svg>
+                        </button>
+                        <button className="text-[#A3A3A3] hover:text-white transition-colors">
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                          </svg>
+                        </button>
+                      </div>
                     </div>
-                    <div className="flex items-center gap-2">
-                      <button className="text-[#A3A3A3] hover:text-white transition-colors">
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                        </svg>
-                      </button>
-                      <button className="text-[#A3A3A3] hover:text-white transition-colors">
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-                        </svg>
-                      </button>
-                    </div>
+
+                    {/* Chat Input Section */}
+                    {selectedConversation === conversation.id && (
+                      <div className="mt-3 p-3 bg-[#2A2D32] rounded-lg border border-[#3A3D42]">
+                        <div className="flex items-center gap-2 mb-3">
+                          <button
+                            onClick={() => handleGitAction("push")}
+                            className="flex items-center gap-1 px-3 py-1 bg-green-600 hover:bg-green-700 text-white text-xs rounded transition-colors"
+                          >
+                            <FaArrowUp className="w-3 h-3" />
+                            Push
+                          </button>
+                          <button
+                            onClick={() => handleGitAction("pull")}
+                            className="flex items-center gap-1 px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white text-xs rounded transition-colors"
+                          >
+                            <FaArrowDown className="w-3 h-3" />
+                            Pull
+                          </button>
+                          <button
+                            onClick={() => handleGitAction("pr")}
+                            className="flex items-center gap-1 px-3 py-1 bg-purple-600 hover:bg-purple-700 text-white text-xs rounded transition-colors"
+                          >
+                            <FaCodePullRequest className="w-3 h-3" />
+                            Create PR
+                          </button>
+                        </div>
+                        
+                        <div className="flex items-center gap-2">
+                          <input
+                            type="text"
+                            value={chatInput}
+                            onChange={(e) => setChatInput(e.target.value)}
+                            placeholder="Type your message..."
+                            className="flex-1 px-3 py-2 bg-[#32353A] border border-[#3A3D42] rounded text-white text-sm placeholder-[#808080] focus:outline-none focus:border-[#4A4D52]"
+                            onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
+                          />
+                          <button
+                            onClick={handleSendMessage}
+                            className="px-4 py-2 bg-primary hover:bg-primary/80 text-white rounded text-sm transition-colors"
+                          >
+                            Send
+                          </button>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 ))}
               </div>
@@ -208,33 +357,6 @@ function ConvoDashScreen() {
           </div>
         </div>
       )}
-
-      <style jsx>{`
-        .ticker-container {
-          overflow: hidden;
-          white-space: nowrap;
-          position: relative;
-        }
-        
-        .ticker-text {
-          display: inline-block;
-          animation: ticker 15s linear infinite;
-          white-space: nowrap;
-        }
-        
-        @keyframes ticker {
-          0% {
-            transform: translateX(100%);
-          }
-          100% {
-            transform: translateX(-100%);
-          }
-        }
-        
-        .ticker-container:hover .ticker-text {
-          animation-play-state: paused;
-        }
-      `}</style>
     </div>
   );
 }
