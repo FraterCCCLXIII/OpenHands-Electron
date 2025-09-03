@@ -776,6 +776,7 @@ const ConvoDash: React.FC = () => {
         ))}
       </div>
     </div>
+  </div>
   );
 };
 
