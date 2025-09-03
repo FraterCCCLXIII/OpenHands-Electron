@@ -158,9 +158,19 @@ function ConvoDashScreen() {
                           {conversation.status}
                         </span>
                       </div>
-                      <p className="text-[#A3A3A3] text-sm line-clamp-1">
-                        {conversation.lastMessage}
-                      </p>
+                      <div className="relative overflow-hidden">
+                        {conversation.status === "active" ? (
+                          <div className="ticker-container">
+                            <p className="text-[#A3A3A3] text-sm ticker-text">
+                              {conversation.lastMessage}
+                            </p>
+                          </div>
+                        ) : (
+                          <p className="text-[#A3A3A3] text-sm line-clamp-1">
+                            {conversation.lastMessage}
+                          </p>
+                        )}
+                      </div>
                       <p className="text-[#808080] text-xs mt-1">
                         {conversation.lastUpdated}
                       </p>
@@ -198,6 +208,33 @@ function ConvoDashScreen() {
           </div>
         </div>
       )}
+
+      <style jsx>{`
+        .ticker-container {
+          overflow: hidden;
+          white-space: nowrap;
+          position: relative;
+        }
+        
+        .ticker-text {
+          display: inline-block;
+          animation: ticker 15s linear infinite;
+          white-space: nowrap;
+        }
+        
+        @keyframes ticker {
+          0% {
+            transform: translateX(100%);
+          }
+          100% {
+            transform: translateX(-100%);
+          }
+        }
+        
+        .ticker-container:hover .ticker-text {
+          animation-play-state: paused;
+        }
+      `}</style>
     </div>
   );
 }
