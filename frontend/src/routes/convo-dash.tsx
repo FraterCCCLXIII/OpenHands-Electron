@@ -295,6 +295,18 @@ const ConvoDash: React.FC = () => {
     console.log('Delete conversation:', conversationId);
   };
 
+  const handleStartRuntime = (conversationId: string) => {
+    console.log('Start runtime for conversation:', conversationId);
+  };
+
+  const handleOpenInNewTab = (conversationId: string) => {
+    console.log('Open in new tab for conversation:', conversationId);
+  };
+
+  const handleDeleteInactiveConversation = (conversationId: string) => {
+    console.log('Delete inactive conversation:', conversationId);
+  };
+
   return (
     <div className="p-6 max-w-7xl mx-auto">
       <div className="mb-8">
@@ -578,12 +590,26 @@ const ConvoDash: React.FC = () => {
                              <p className="text-[#666666] text-xs mt-1">3 days ago</p>
                            </div>
                            <div className="flex items-center gap-1 ml-2">
-                             <button className="text-[#808080] hover:text-[#A3A3A3] transition-colors">
-                               <FaEye className="w-3 h-3" />
-                             </button>
-                             <button className="text-[#808080] hover:text-[#A3A3A3] transition-colors">
-                               <FaPowerOff className="w-3 h-3" />
-                             </button>
+                             <Dropdown classNames={{
+                               content: "bg-[#454545] rounded-xl border border-[#717888]"
+                             }}>
+                               <DropdownTrigger>
+                                 <button className="text-[#808080] hover:text-[#A3A3A3] transition-colors">
+                                   <FaEllipsisV className="w-3 h-3" />
+                                 </button>
+                               </DropdownTrigger>
+                               <DropdownMenu>
+                                 <DropdownItem key="start-runtime" onClick={() => handleStartRuntime("inactive-1")}>
+                                   Start Runtime
+                                 </DropdownItem>
+                                 <DropdownItem key="open-in-new-tab" onClick={() => handleOpenInNewTab("inactive-1")}>
+                                   Open in New Tab
+                                 </DropdownItem>
+                                 <DropdownItem key="delete" onClick={() => handleDeleteInactiveConversation("inactive-1")}>
+                                   Delete
+                                 </DropdownItem>
+                               </DropdownMenu>
+                             </Dropdown>
                            </div>
                          </div>
 
@@ -593,12 +619,26 @@ const ConvoDash: React.FC = () => {
                              <p className="text-[#666666] text-xs mt-1">1 week ago</p>
                            </div>
                            <div className="flex items-center gap-1 ml-2">
-                             <button className="text-[#808080] hover:text-[#A3A3A3] transition-colors">
-                               <FaEye className="w-3 h-3" />
-                             </button>
-                             <button className="text-[#808080] hover:text-[#A3A3A3] transition-colors">
-                               <FaPowerOff className="w-3 h-3" />
-                             </button>
+                             <Dropdown classNames={{
+                               content: "bg-[#454545] rounded-xl border border-[#717888]"
+                             }}>
+                               <DropdownTrigger>
+                                 <button className="text-[#808080] hover:text-[#A3A3A3] transition-colors">
+                                   <FaEllipsisV className="w-3 h-3" />
+                                 </button>
+                               </DropdownTrigger>
+                               <DropdownMenu>
+                                 <DropdownItem key="start-runtime" onClick={() => handleStartRuntime("inactive-2")}>
+                                   Start Runtime
+                                 </DropdownItem>
+                                 <DropdownItem key="open-in-new-tab" onClick={() => handleOpenInNewTab("inactive-2")}>
+                                   Open in New Tab
+                                 </DropdownItem>
+                                 <DropdownItem key="delete" onClick={() => handleDeleteInactiveConversation("inactive-2")}>
+                                   Delete
+                                 </DropdownItem>
+                               </DropdownMenu>
+                             </Dropdown>
                            </div>
                          </div>
 
@@ -608,12 +648,26 @@ const ConvoDash: React.FC = () => {
                              <p className="text-[#666666] text-xs mt-1">2 weeks ago</p>
                            </div>
                            <div className="flex items-center gap-1 ml-2">
-                             <button className="text-[#808080] hover:text-[#A3A3A3] transition-colors">
-                               <FaEye className="w-3 h-3" />
-                             </button>
-                             <button className="text-[#808080] hover:text-[#A3A3A3] transition-colors">
-                               <FaPowerOff className="w-3 h-3" />
-                             </button>
+                             <Dropdown classNames={{
+                               content: "bg-[#454545] rounded-xl border border-[#717888]"
+                             }}>
+                               <DropdownTrigger>
+                                 <button className="text-[#808080] hover:text-[#A3A3A3] transition-colors">
+                                   <FaEllipsisV className="w-3 h-3" />
+                                 </button>
+                               </DropdownTrigger>
+                               <DropdownMenu>
+                                 <DropdownItem key="start-runtime" onClick={() => handleStartRuntime("inactive-3")}>
+                                   Start Runtime
+                                 </DropdownItem>
+                                 <DropdownItem key="open-in-new-tab" onClick={() => handleOpenInNewTab("inactive-3")}>
+                                   Open in New Tab
+                                 </DropdownItem>
+                                 <DropdownItem key="delete" onClick={() => handleDeleteInactiveConversation("inactive-3")}>
+                                   Delete
+                                 </DropdownItem>
+                               </DropdownMenu>
+                             </Dropdown>
                            </div>
                          </div>
                        </div>
