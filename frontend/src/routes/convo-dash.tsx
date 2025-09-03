@@ -528,10 +528,10 @@ const ConvoDash: React.FC = () => {
                       </div>
                     )}
 
-                    {/* Inactive Conversations Section */}
-                    {expandedPRs.has(pr.id) && (
-                      <div className="mt-4 pt-4 px-4">
-                        <div className="flex items-center gap-2 mb-3">
+                                       {/* Inactive Conversations Section */}
+                   {expandedPRs.has(pr.id) && (
+                     <div className="px-4">
+                       <div className="flex items-center gap-2 mb-3">
                           <span className="text-[#A3A3A3] text-sm font-medium">Inactive Conversations</span>
                           <div className="flex items-center gap-1 bg-[#32353A] px-2 py-1 rounded-full">
                             <FaComment className="w-3 h-3 text-white" />
