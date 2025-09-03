@@ -415,21 +415,7 @@ const ConvoDash: React.FC = () => {
                                     </span>
                                   </div>
 
-                                  {/* Status Indicators */}
-                                  <div className="flex items-center gap-3 mb-2">
-                                    <div className="flex items-center gap-1">
-                                      <FaCodeBranch className={`w-3 h-3 ${getGitStatusColor(conversation.gitStatus)}`} />
-                                      <span className={`text-xs ${getGitStatusColor(conversation.gitStatus)}`}>
-                                        {getGitStatusText(conversation.gitStatus)}
-                                      </span>
-                                    </div>
-                                    <div className="flex items-center gap-1">
-                                      <FaRobot className={`w-3 h-3 ${getAgentStatusColor(conversation.agentStatus)}`} />
-                                      <span className={`text-xs ${getAgentStatusColor(conversation.agentStatus)}`}>
-                                        {getAgentStatusText(conversation.agentStatus)}
-                                      </span>
-                                    </div>
-                                  </div>
+
                                 </div>
 
                                 {/* Action Buttons - Top right */}
@@ -474,16 +460,20 @@ const ConvoDash: React.FC = () => {
                                   </p>
                                   <div className="flex items-center gap-3">
                                     <div className="flex items-center gap-1">
-                                      <svg stroke="currentColor" fill="currentColor" strokeWidth="0" viewBox="0 0 384 512" className="w-3 h-3 text-yellow-500" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg">
+                                      <svg stroke="currentColor" fill="currentColor" strokeWidth="0" viewBox="0 0 384 512" className={`w-3 h-3 ${conversation.gitStatus === 'clean' ? 'text-green-500' : conversation.gitStatus === 'modified' ? 'text-yellow-500' : 'text-red-500'}`} height="1em" width="1em" xmlns="http://www.w3.org/2000/svg">
                                         <path d="M384 144c0-44.2-35.8-80-80-80s-80 35.8-80 80c0 36.4 24.3 67.1 57.5 76.8-.6 16.1-4.2 28.5-11 36.9-15.4 19.2-49.3 22.4-85.2 25.7-28.2 2.6-57.4 5.4-81.3 16.9v-144c32.5-10.2 56-40.5 56-76.3 0-44.2-35.8-80-80-80S0 35.8 0 80c0 35.8 23.5 66.1 56 76.3v199.3C23.5 365.9 0 396.2 0 432c0 44.2 35.8 80 80 80s80-35.8 80-80c0-34-21.2-63.1-51.2-74.6 3.1-5.2 7.8-9.8 14.9-13.4 16.2-8.2 40.4-10.4 66.1-12.8 42.2-3.9 90-8.4 118.2-43.4 14-17.4 21.1-39.8 21.6-67.9 31.6-10.8 54.4-40.7 54.4-75.9zM80 64c8.8 0 16 7.2 16 16s-7.2 16-16 16-16-7.2-16-16 7.2-16 16-16zm0 384c-8.8 0-16-7.2-16-16s7.2-16 16-16 16 7.2 16 16-7.2 16-16 16zm224-320c8.8 0 16 7.2 16 16s-7.2 16-16 16-16-7.2-16-16 7.2-16 16-16z"></path>
                                       </svg>
-                                      <span className="text-xs text-yellow-500">Modified</span>
+                                      <span className={`text-xs ${conversation.gitStatus === 'clean' ? 'text-green-500' : conversation.gitStatus === 'modified' ? 'text-yellow-500' : 'text-red-500'}`}>
+                                        {conversation.gitStatus === 'clean' ? 'Clean' : conversation.gitStatus === 'modified' ? 'Modified' : 'Conflict'}
+                                      </span>
                                     </div>
                                     <div className="flex items-center gap-1">
-                                      <svg stroke="currentColor" fill="currentColor" strokeWidth="0" viewBox="0 0 640 512" className="w-3 h-3 text-blue-500" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg">
+                                      <svg stroke="currentColor" fill="currentColor" strokeWidth="0" viewBox="0 0 640 512" className={`w-3 h-3 ${conversation.agentStatus === 'idle' ? 'text-gray-500' : conversation.agentStatus === 'working' ? 'text-blue-500' : 'text-red-500'}`} height="1em" width="1em" xmlns="http://www.w3.org/2000/svg">
                                         <path d="M32,224H64V416H32A31.96166,31.96166,0,0,1,0,384V256A31.96166,31.96166,0,0,1,32,224Zm512-48V448a64.06328,64.06328,0,0,1-64,64H160a64.06328,64.06328,0,0,1-64-64V176a79.974,79.974,0,0,1,80-80H288V32a32,32,0,0,1,64,0V96H464A79.974,79.974,0,0,1,544,176ZM264,256a40,40,0,1,0-40,40A39.997,39.997,0,0,0,264,256Zm-8,128H192v32h64Zm96,0H288v32h64ZM456,256a40,40,0,1,0-40,40A39.997,39.997,0,0,0,456,256Zm-8,128H384v32h64ZM640,256V384a31.96166,31.96166,0,0,1-32,32H576V224h32A31.96166,31.96166,0,0,1,640,256Z"></path>
                                       </svg>
-                                      <span className="text-xs text-blue-500">Working</span>
+                                      <span className={`text-xs ${conversation.agentStatus === 'idle' ? 'text-gray-500' : conversation.agentStatus === 'working' ? 'text-blue-500' : 'text-red-500'}`}>
+                                        {conversation.agentStatus === 'idle' ? 'Idle' : conversation.agentStatus === 'working' ? 'Working' : 'Error'}
+                                      </span>
                                     </div>
                                   </div>
                                 </div>
