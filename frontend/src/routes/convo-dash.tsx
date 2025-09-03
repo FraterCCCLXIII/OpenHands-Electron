@@ -279,8 +279,52 @@ function ConvoDashScreen() {
                         {/* Chat Input Section - Inside the conversation card */}
                         {selectedConversation === conversation.id && (
                           <div className="mt-4 pt-4 border-t border-[#3A3D42]">
-                            {/* Git Control Bar - Using existing styling */}
-                            <div className="flex flex-row gap-2.5 items-center mb-4">
+                            {/* Chat Input - Single line with up arrow button */}
+                            <div className="w-full">
+                              {/* Chat Input Component */}
+                              <div
+                                className="bg-[#25272D] box-border content-stretch flex flex-col items-start justify-center p-[16px] relative rounded-[15px] w-full"
+                                onClick={(e) => e.stopPropagation()}
+                              >
+                                {/* Main Input Row */}
+                                <div className="box-border content-stretch flex flex-row items-end justify-between p-0 relative shrink-0 w-full pb-[18px] gap-2">
+                                  <div className="basis-0 box-border content-stretch flex flex-row gap-4 grow items-end justify-start min-h-px min-w-px p-0 relative shrink-0">
+                                    {/* Chat Input Area */}
+                                    <div
+                                      className="box-border content-stretch flex flex-row items-center justify-start min-h-6 p-0 relative shrink-0 flex-1"
+                                      data-name="Text & caret"
+                                    >
+                                      <div className="basis-0 flex flex-col font-normal grow justify-center leading-[0] min-h-px min-w-px overflow-ellipsis overflow-hidden relative shrink-0 text-[#d0d9fa] text-[16px] text-left">
+                                        <input
+                                          type="text"
+                                          value={chatInput}
+                                          onChange={(e) => setChatInput(e.target.value)}
+                                          placeholder="Type your message..."
+                                          className="chat-input bg-transparent text-white text-[16px] font-normal leading-[20px] outline-none resize-none custom-scrollbar min-h-[20px] max-h-[20px] [text-overflow:inherit] [text-wrap-mode:inherit] [white-space-collapse:inherit] block whitespace-pre-wrap"
+                                          onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
+                                          onClick={(e) => e.stopPropagation()}
+                                        />
+                                      </div>
+                                    </div>
+                                  </div>
+
+                                  {/* Send Button - Using up arrow */}
+                                  <button
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      handleSendMessage();
+                                    }}
+                                    className="flex items-center justify-center rounded-full border border-white size-[35px] cursor-pointer hover:bg-[#959CB2]"
+                                    data-testid="submit-button"
+                                  >
+                                    <FaArrowUp color="white" />
+                                  </button>
+                                </div>
+                              </div>
+                            </div>
+
+                            {/* Git Control Bar - Below chat input */}
+                            <div className="flex flex-row gap-2.5 items-center mt-4">
                               <button
                                 onClick={(e) => {
                                   e.stopPropagation();
@@ -323,49 +367,6 @@ function ConvoDashScreen() {
                                   Create PR
                                 </div>
                               </button>
-                            </div>
-
-                            {/* Chat Input - Using exact CustomChatInput structure */}
-                            <div className="w-full">
-                              {/* Chat Input Component */}
-                              <div
-                                className="bg-[#25272D] box-border content-stretch flex flex-col items-start justify-center p-[16px] relative rounded-[15px] w-full"
-                                onClick={(e) => e.stopPropagation()}
-                              >
-                                {/* Main Input Row */}
-                                <div className="box-border content-stretch flex flex-row items-end justify-between p-0 relative shrink-0 w-full pb-[18px] gap-2">
-                                  <div className="basis-0 box-border content-stretch flex flex-row gap-4 grow items-end justify-start min-h-px min-w-px p-0 relative shrink-0">
-                                    {/* Chat Input Area */}
-                                    <div
-                                      className="box-border content-stretch flex flex-row items-center justify-start min-h-6 p-0 relative shrink-0 flex-1"
-                                      data-name="Text & caret"
-                                    >
-                                      <div className="basis-0 flex flex-col font-normal grow justify-center leading-[0] min-h-px min-w-px overflow-ellipsis overflow-hidden relative shrink-0 text-[#d0d9fa] text-[16px] text-left">
-                                        <input
-                                          type="text"
-                                          value={chatInput}
-                                          onChange={(e) => setChatInput(e.target.value)}
-                                          placeholder="Type your message..."
-                                          className="chat-input bg-transparent text-white text-[16px] font-normal leading-[20px] outline-none resize-none custom-scrollbar min-h-[20px] max-h-[450px] [text-overflow:inherit] [text-wrap-mode:inherit] [white-space-collapse:inherit] block whitespace-pre-wrap"
-                                          onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
-                                          onClick={(e) => e.stopPropagation()}
-                                        />
-                                      </div>
-                                    </div>
-                                  </div>
-
-                                  {/* Send Button */}
-                                  <button
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      handleSendMessage();
-                                    }}
-                                    className="translate-y-[3px] flex items-center justify-center px-4 py-2 bg-primary hover:bg-primary/80 text-white rounded text-sm transition-colors"
-                                  >
-                                    Send
-                                  </button>
-                                </div>
-                              </div>
                             </div>
                           </div>
                         )}
