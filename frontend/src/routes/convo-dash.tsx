@@ -544,9 +544,14 @@ const ConvoDash: React.FC = () => {
                              <h4 className="text-[#A3A3A3] text-sm font-medium">Initial setup discussion</h4>
                              <p className="text-[#666666] text-xs mt-1">3 days ago</p>
                            </div>
-                           <button className="text-[#808080] hover:text-[#A3A3A3] transition-colors ml-2">
-                             <FaEye className="w-3 h-3" />
-                           </button>
+                           <div className="flex items-center gap-1 ml-2">
+                             <button className="text-[#808080] hover:text-[#A3A3A3] transition-colors">
+                               <FaEye className="w-3 h-3" />
+                             </button>
+                             <button className="text-[#808080] hover:text-[#A3A3A3] transition-colors">
+                               <FaPlus className="w-3 h-3" />
+                             </button>
+                           </div>
                          </div>
 
                          <div className="flex items-center justify-between p-2 bg-[#2A2D32] rounded border border-[#3A3D42] hover:border-[#4A4D52] transition-colors cursor-pointer">
@@ -554,9 +559,14 @@ const ConvoDash: React.FC = () => {
                              <h4 className="text-[#A3A3A3] text-sm font-medium">API integration planning</h4>
                              <p className="text-[#666666] text-xs mt-1">1 week ago</p>
                            </div>
-                           <button className="text-[#808080] hover:text-[#A3A3A3] transition-colors ml-2">
-                             <FaEye className="w-3 h-3" />
-                           </button>
+                           <div className="flex items-center gap-1 ml-2">
+                             <button className="text-[#808080] hover:text-[#A3A3A3] transition-colors">
+                               <FaEye className="w-3 h-3" />
+                             </button>
+                             <button className="text-[#808080] hover:text-[#A3A3A3] transition-colors">
+                               <FaPlus className="w-3 h-3" />
+                             </button>
+                           </div>
                          </div>
 
                          <div className="flex items-center justify-between p-2 bg-[#2A2D32] rounded border border-[#3A3D42] hover:border-[#4A4D52] transition-colors cursor-pointer">
@@ -564,9 +574,14 @@ const ConvoDash: React.FC = () => {
                              <h4 className="text-[#A3A3A3] text-sm font-medium">Database schema review</h4>
                              <p className="text-[#666666] text-xs mt-1">2 weeks ago</p>
                            </div>
-                           <button className="text-[#808080] hover:text-[#A3A3A3] transition-colors ml-2">
-                             <FaEye className="w-3 h-3" />
-                           </button>
+                           <div className="flex items-center gap-1 ml-2">
+                             <button className="text-[#808080] hover:text-[#A3A3A3] transition-colors">
+                               <FaEye className="w-3 h-3" />
+                             </button>
+                             <button className="text-[#808080] hover:text-[#A3A3A3] transition-colors">
+                               <FaPlus className="w-3 h-3" />
+                             </button>
+                           </div>
                          </div>
                        </div>
                       </div>
