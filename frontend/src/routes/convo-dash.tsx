@@ -287,8 +287,8 @@ function ConvoDashScreen() {
                                 onClick={(e) => e.stopPropagation()}
                               >
                                 {/* Main Input Row */}
-                                <div className="box-border content-stretch flex flex-row items-end justify-between p-0 relative shrink-0 w-full gap-2">
-                                  <div className="basis-0 box-border content-stretch flex flex-row gap-4 grow items-end justify-start min-h-px min-w-px p-0 relative shrink-0">
+                                <div className="box-border content-stretch flex flex-row items-center justify-between p-0 relative shrink-0 w-full gap-2">
+                                  <div className="basis-0 box-border content-stretch flex flex-row gap-4 grow items-center justify-start min-h-px min-w-px p-0 relative shrink-0">
                                     {/* Chat Input Area */}
                                     <div
                                       className="box-border content-stretch flex flex-row items-center justify-start min-h-6 p-0 relative shrink-0 flex-1"
