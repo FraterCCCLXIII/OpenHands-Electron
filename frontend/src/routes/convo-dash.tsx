@@ -377,9 +377,10 @@ const ConvoDash: React.FC = () => {
                             e.stopPropagation();
                             handleNewConversation(pr.id);
                           }}
-                          className="flex items-center gap-1 px-3 py-1 bg-primary hover:bg-primary/80 text-white rounded text-sm transition-colors"
+                          className="flex items-center gap-1 px-2 py-1 border border-[#717888] hover:border-[#A3A3A3] text-[#A3A3A3] hover:text-white rounded-full text-xs transition-colors"
                         >
                           <FaPlus className="w-3 h-3" />
+                          <FaComment className="w-3 h-3" />
                           New Conversation
                         </button>
                         <div className="flex items-center gap-1 bg-[#32353A] px-2 py-1 rounded-full">
