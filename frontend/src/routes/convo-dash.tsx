@@ -394,13 +394,7 @@ const ConvoDash: React.FC = () => {
                           <FaComments className="w-3 h-3 text-white" />
                           <span className="text-white text-xs font-medium">5</span>
                         </div>
-                        <div className="text-[#A3A3A3] hover:text-white transition-colors">
-                          {expandedPRs.has(pr.id) ? (
-                            <FaMinus className="w-3 h-3" />
-                          ) : (
-                            <FaPlus className="w-3 h-3" />
-                          )}
-                        </div>
+
                       </div>
                     </div>
 
