@@ -98,25 +98,26 @@ export default defineConfig(({ mode }) => {
           ws: true,
           changeOrigin: true,
           secure: !INSECURE_SKIP_VERIFY,
-          // rewriteWsOrigin: true,
         },
       },
-      watch: {
-        ignored: ["**/node_modules/**", "**/.git/**"],
-      },
     },
-    ssr: {
-      noExternal: ["react-syntax-highlighter"],
-    },
-    clearScreen: false,
     test: {
+      globals: true,
       environment: "jsdom",
-      setupFiles: ["vitest.setup.ts"],
-      exclude: [...configDefaults.exclude, "tests"],
-      coverage: {
-        reporter: ["text", "json", "html", "lcov", "text-summary"],
-        reportsDirectory: "coverage",
-        include: ["src/**/*.{ts,tsx}"],
+      setupFiles: ["./vitest.setup.ts"],
+      exclude: [
+        ...configDefaults.exclude,
+        "**/node_modules/**",
+        "**/dist/**",
+        "**/build/**",
+        "**/.{idea,git,cache,output,temp}/**",
+        "**/{karma,rollup,webpack,vite,vitest,jest,ava,babel,nyc,cypress,tsup,build}.config.*",
+      ],
+    },
+    build: {
+      buildEnd: async () => {
+        const { unpackClientDirectory } = await import("./react-router.config.ts");
+        await unpackClientDirectory();
       },
     },
   };

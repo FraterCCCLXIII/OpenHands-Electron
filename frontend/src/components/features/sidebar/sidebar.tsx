@@ -6,6 +6,7 @@ import { AllHandsLogoButton } from "#/components/shared/buttons/all-hands-logo-b
 import { NewProjectButton } from "#/components/shared/buttons/new-project-button";
 import { ConversationPanelButton } from "#/components/shared/buttons/conversation-panel-button";
 import { DemoButton } from "#/components/shared/buttons/demo-button";
+import { ConvoDashButton } from "#/components/shared/buttons/convo-dash-button";
 import { SettingsModal } from "#/components/shared/modals/settings/settings-modal";
 import { useSettings } from "#/hooks/query/use-settings";
 import { ConversationPanel } from "../conversation-panel/conversation-panel";
@@ -90,6 +91,7 @@ export function Sidebar() {
               }
               disabled={settings?.EMAIL_VERIFIED === false}
             />
+            <ConvoDashButton disabled={settings?.EMAIL_VERIFIED === false} />
             <DemoButton
               isOpen={demoPanelIsOpen}
               onClick={() =>
