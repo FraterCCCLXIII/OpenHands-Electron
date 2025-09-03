@@ -321,11 +321,11 @@ const ConvoDash: React.FC = () => {
                     {/* PR Header */}
                     <div className="p-3 flex items-center gap-3 pb-2">
                       <div className="flex items-center gap-2">
+                        <span className="text-white font-medium">PR #{pr.number}</span>
+                        <span className="text-white">{pr.title}</span>
                         <span className={`text-sm ${getPrStatusColor(pr.status)} px-2 py-1 rounded-full text-xs font-medium`}>
                           {getPrStatusText(pr.status)}
                         </span>
-                        <span className="text-white font-medium">PR #{pr.number}</span>
-                        <span className="text-white">{pr.title}</span>
                       </div>
                       <div className="ml-auto flex items-center gap-2">
                         <button
