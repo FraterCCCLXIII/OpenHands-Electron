@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { FaCodeBranch, FaRobot, FaArrowUp, FaArrowDown, FaEye, FaComment, FaChevronDown, FaChevronRight, FaPlus, FaMinus } from 'react-icons/fa';
+import { FaCodeBranch, FaRobot, FaArrowUp, FaArrowDown, FaEye, FaComment, FaChevronDown, FaChevronRight, FaPlus, FaMinus, FaPowerOff } from 'react-icons/fa';
 
 interface Conversation {
   id: string;
@@ -549,7 +549,7 @@ const ConvoDash: React.FC = () => {
                                <FaEye className="w-3 h-3" />
                              </button>
                              <button className="text-[#808080] hover:text-[#A3A3A3] transition-colors">
-                               <FaPlus className="w-3 h-3" />
+                               <FaPowerOff className="w-3 h-3" />
                              </button>
                            </div>
                          </div>
@@ -564,7 +564,7 @@ const ConvoDash: React.FC = () => {
                                <FaEye className="w-3 h-3" />
                              </button>
                              <button className="text-[#808080] hover:text-[#A3A3A3] transition-colors">
-                               <FaPlus className="w-3 h-3" />
+                               <FaPowerOff className="w-3 h-3" />
                              </button>
                            </div>
                          </div>
@@ -579,7 +579,7 @@ const ConvoDash: React.FC = () => {
                                <FaEye className="w-3 h-3" />
                              </button>
                              <button className="text-[#808080] hover:text-[#A3A3A3] transition-colors">
-                               <FaPlus className="w-3 h-3" />
+                               <FaPowerOff className="w-3 h-3" />
                              </button>
                            </div>
                          </div>
