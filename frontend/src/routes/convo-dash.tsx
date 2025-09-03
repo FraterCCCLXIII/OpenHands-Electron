@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { FaCodeBranch, FaRobot, FaArrowUp, FaArrowDown, FaEye, FaComment, FaChevronDown, FaChevronRight, FaPlus, FaMinus, FaPowerOff } from 'react-icons/fa';
+import { Dropdown, DropdownTrigger, DropdownMenu, DropdownItem } from '@heroui/react';
+import { FaCodeBranch, FaRobot, FaArrowUp, FaArrowDown, FaEye, FaComment, FaChevronDown, FaChevronRight, FaPlus, FaMinus, FaPowerOff, FaEllipsisH } from 'react-icons/fa';
 
 interface Conversation {
   id: string;
@@ -282,6 +283,18 @@ const ConvoDash: React.FC = () => {
     // Handle new conversation creation here
   };
 
+  const handleStopRuntime = (conversationId: string) => {
+    console.log('Stop runtime for conversation:', conversationId);
+  };
+
+  const handleOpenInTab = (conversationId: string) => {
+    console.log('Open in tab for conversation:', conversationId);
+  };
+
+  const handleDeleteConversation = (conversationId: string) => {
+    console.log('Delete conversation:', conversationId);
+  };
+
   return (
     <div className="p-6 max-w-7xl mx-auto">
       <div className="mb-8">
@@ -415,6 +428,24 @@ const ConvoDash: React.FC = () => {
                                   <button className="text-[#A3A3A3] hover:text-white transition-colors">
                                     <FaComment className="w-4 h-4" />
                                   </button>
+                                  <Dropdown>
+                                    <DropdownTrigger>
+                                      <button className="text-[#A3A3A3] hover:text-white transition-colors">
+                                        <FaEllipsisH className="w-4 h-4" />
+                                      </button>
+                                    </DropdownTrigger>
+                                    <DropdownMenu>
+                                      <DropdownItem key="stop-runtime" onClick={() => handleStopRuntime(conversation.id)}>
+                                        Stop Runtime
+                                      </DropdownItem>
+                                      <DropdownItem key="open-in-tab" onClick={() => handleOpenInTab(conversation.id)}>
+                                        Open in Tab
+                                      </DropdownItem>
+                                      <DropdownItem key="delete" onClick={() => handleDeleteConversation(conversation.id)}>
+                                        Delete
+                                      </DropdownItem>
+                                    </DropdownMenu>
+                                  </Dropdown>
                                 </div>
                               </div>
 
