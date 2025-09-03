@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Dropdown, DropdownTrigger, DropdownMenu, DropdownItem } from '@heroui/react';
-import { FaCodeBranch, FaRobot, FaArrowUp, FaArrowDown, FaEye, FaComment, FaChevronDown, FaChevronRight, FaPlus, FaMinus, FaPowerOff, FaEllipsisV } from 'react-icons/fa';
+import { FaCodeBranch, FaRobot, FaArrowUp, FaArrowDown, FaEye, FaComment, FaChevronDown, FaChevronRight, FaPlus, FaMinus, FaPowerOff, FaEllipsisV, FaCheckCircle, FaComments } from 'react-icons/fa';
 
 interface Conversation {
   id: string;
@@ -385,6 +385,14 @@ const ConvoDash: React.FC = () => {
                         <div className="flex items-center gap-1 bg-[#32353A] px-2 py-1 rounded-full">
                           <FaComment className="w-3 h-3 text-white" />
                           <span className="text-white text-xs font-medium">{pr.conversations.length}</span>
+                        </div>
+                        <div className="flex items-center gap-1 bg-[#32353A] px-2 py-1 rounded-full">
+                          <FaCheckCircle className="w-3 h-3 text-white" />
+                          <span className="text-white text-xs font-medium">2</span>
+                        </div>
+                        <div className="flex items-center gap-1 bg-[#32353A] px-2 py-1 rounded-full">
+                          <FaComments className="w-3 h-3 text-white" />
+                          <span className="text-white text-xs font-medium">5</span>
                         </div>
                         <div className="text-[#A3A3A3] hover:text-white transition-colors">
                           {expandedPRs.has(pr.id) ? (
