@@ -410,9 +410,6 @@ const ConvoDash: React.FC = () => {
                                 <div className="flex-1">
                                   <div className="flex items-center gap-2 mb-1">
                                     <h3 className="text-white font-medium">{conversation.title}</h3>
-                                    <span className={`text-xs px-2 py-1 rounded-full ${getStatusColor(conversation.status)} bg-opacity-20`}>
-                                      {conversation.status}
-                                    </span>
                                   </div>
 
 
