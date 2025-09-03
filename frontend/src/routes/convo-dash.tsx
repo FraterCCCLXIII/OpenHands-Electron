@@ -293,21 +293,23 @@ const ConvoDash: React.FC = () => {
         {repoGroups.map((repoGroup) => (
           <div key={repoGroup.name} className="bg-[#2A2D32] rounded-lg border border-[#3A3D42]">
             {/* Repository Header */}
-            <div 
+            <div
               className="p-3 z-10 w-full justify-start shrink-0 overflow-inherit color-inherit subpixel-antialiased rounded-t-large flex items-center gap-3 pb-2 cursor-pointer hover:bg-[#32353A] transition-colors"
               onClick={() => toggleRepoExpanded(repoGroup.name)}
             >
               <div className="flex items-center gap-2">
+                {getRepoIcon(repoGroup.type)}
+                <span className="text-white font-semibold">{repoGroup.name}</span>
+              </div>
+              <div className="ml-auto flex items-center gap-2">
+                <span className="text-[#A3A3A3] text-sm">
+                  {repoGroup.pullRequests.length} PR{repoGroup.pullRequests.length !== 1 ? 's' : ''}
+                </span>
                 {expandedRepos.has(repoGroup.name) ? (
                   <FaChevronDown className="w-4 h-4 text-[#A3A3A3]" />
                 ) : (
                   <FaChevronRight className="w-4 h-4 text-[#A3A3A3]" />
                 )}
-                {getRepoIcon(repoGroup.type)}
-                <span className="text-white font-semibold">{repoGroup.name}</span>
-              </div>
-              <div className="ml-auto text-[#A3A3A3] text-sm">
-                {repoGroup.pullRequests.length} PR{repoGroup.pullRequests.length !== 1 ? 's' : ''}
               </div>
             </div>
 
@@ -319,16 +321,6 @@ const ConvoDash: React.FC = () => {
                     {/* PR Header */}
                     <div className="p-3 flex items-center gap-3 pb-2">
                       <div className="flex items-center gap-2">
-                        <button
-                          onClick={() => togglePRExpanded(pr.id)}
-                          className="text-[#A3A3A3] hover:text-white transition-colors"
-                        >
-                          {expandedPRs.has(pr.id) ? (
-                            <FaChevronDown className="w-4 h-4" />
-                          ) : (
-                            <FaChevronRight className="w-4 h-4" />
-                          )}
-                        </button>
                         <span className={`text-sm ${getPrStatusColor(pr.status)} px-2 py-1 rounded-full text-xs font-medium`}>
                           {getPrStatusText(pr.status)}
                         </span>
@@ -349,6 +341,16 @@ const ConvoDash: React.FC = () => {
                         <span className="text-[#A3A3A3] text-sm">
                           {pr.conversations.length} conversation{pr.conversations.length !== 1 ? 's' : ''}
                         </span>
+                        <button
+                          onClick={() => togglePRExpanded(pr.id)}
+                          className="text-[#A3A3A3] hover:text-white transition-colors"
+                        >
+                          {expandedPRs.has(pr.id) ? (
+                            <FaChevronDown className="w-4 h-4" />
+                          ) : (
+                            <FaChevronRight className="w-4 h-4" />
+                          )}
+                        </button>
                       </div>
                     </div>
 
