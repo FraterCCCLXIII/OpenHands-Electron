@@ -291,45 +291,68 @@ function ConvoDashScreen() {
                       </div>
                     </div>
 
-                    {/* Chat Input Section */}
+                    {/* Chat Input Section - Nested inside conversation div */}
                     {selectedConversation === conversation.id && (
-                      <div className="mt-3 p-3 bg-[#2A2D32] rounded-lg border border-[#3A3D42]">
-                        <div className="flex items-center gap-2 mb-3">
+                      <div className="mt-3 p-4 bg-[#2A2D32] rounded-lg border border-[#3A3D42]">
+                        {/* Git Control Bar - Using existing styling */}
+                        <div className="flex flex-row gap-2.5 items-center mb-4">
                           <button
                             onClick={() => handleGitAction("push")}
-                            className="flex items-center gap-1 px-3 py-1 bg-green-600 hover:bg-green-700 text-white text-xs rounded transition-colors"
+                            className="flex flex-row gap-1 items-center justify-center px-0.5 py-1 rounded-[100px] w-[77px] min-w-[77px] bg-[#25272D] hover:bg-[#525662] cursor-pointer"
                           >
-                            <FaArrowUp className="w-3 h-3" />
-                            Push
+                            <div className="w-3 h-3 flex items-center justify-center">
+                              <FaArrowUp className="w-3 h-3 text-white" />
+                            </div>
+                            <div className="font-normal text-white text-sm leading-5">
+                              Push
+                            </div>
                           </button>
                           <button
                             onClick={() => handleGitAction("pull")}
-                            className="flex items-center gap-1 px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white text-xs rounded transition-colors"
+                            className="flex flex-row gap-1 items-center justify-center px-0.5 py-1 rounded-[100px] w-[76px] min-w-[76px] bg-[#25272D] hover:bg-[#525662] cursor-pointer"
                           >
-                            <FaArrowDown className="w-3 h-3" />
-                            Pull
+                            <div className="w-3 h-3 flex items-center justify-center">
+                              <FaArrowDown className="w-3 h-3 text-white" />
+                            </div>
+                            <div className="font-normal text-white text-sm leading-5">
+                              Pull
+                            </div>
                           </button>
                           <button
                             onClick={() => handleGitAction("pr")}
-                            className="flex items-center gap-1 px-3 py-1 bg-purple-600 hover:bg-purple-700 text-white text-xs rounded transition-colors"
+                            className="flex flex-row gap-[11px] items-center justify-center px-2 py-1 rounded-[100px] w-[126px] min-w-[126px] h-7 bg-[#25272D] hover:bg-[#525662] cursor-pointer"
                           >
-                            <FaCodeBranch className="w-3 h-3" />
-                            Create PR
+                            <div className="w-3 h-3 flex items-center justify-center">
+                              <FaCodeBranch className="w-3 h-3 text-white" />
+                            </div>
+                            <div className="font-normal text-white text-sm leading-5">
+                              Create PR
+                            </div>
                           </button>
                         </div>
 
-                        <div className="flex items-center gap-2">
-                          <input
-                            type="text"
-                            value={chatInput}
-                            onChange={(e) => setChatInput(e.target.value)}
-                            placeholder="Type your message..."
-                            className="flex-1 px-3 py-2 bg-[#32353A] border border-[#3A3D42] rounded text-white text-sm placeholder-[#808080] focus:outline-none focus:border-[#4A4D52]"
-                            onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
-                          />
+                        {/* Chat Input - Using existing CustomChatInput styling */}
+                        <div className="box-border content-stretch flex flex-row items-end justify-between p-0 relative shrink-0 w-full pb-[18px] gap-2">
+                          <div className="basis-0 box-border content-stretch flex flex-row gap-4 grow items-end justify-start min-h-px min-w-px p-0 relative shrink-0">
+                            {/* Chat Input Area */}
+                            <div className="box-border content-stretch flex flex-row items-center justify-start min-h-6 p-0 relative shrink-0 flex-1">
+                              <div className="basis-0 flex flex-col font-normal grow justify-center leading-[0] min-h-px min-w-px overflow-ellipsis overflow-hidden relative shrink-0 text-[#d0d9fa] text-[16px] text-left">
+                                <input
+                                  type="text"
+                                  value={chatInput}
+                                  onChange={(e) => setChatInput(e.target.value)}
+                                  placeholder="Type your message..."
+                                  className="chat-input bg-transparent text-white text-[16px] font-normal leading-[20px] outline-none resize-none custom-scrollbar min-h-[20px] max-h-[450px] block whitespace-pre-wrap px-3 py-2 bg-[#32353A] border border-[#3A3D42] rounded text-white text-sm placeholder-[#808080] focus:outline-none focus:border-[#4A4D52]"
+                                  onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
+                                />
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* Send Button */}
                           <button
                             onClick={handleSendMessage}
-                            className="px-4 py-2 bg-primary hover:bg-primary/80 text-white rounded text-sm transition-colors"
+                            className="translate-y-[3px] flex items-center justify-center px-4 py-2 bg-primary hover:bg-primary/80 text-white rounded text-sm transition-colors"
                           >
                             Send
                           </button>
