@@ -1,9 +1,8 @@
 import React from "react";
 import { useTranslation } from "react-i18next";
 import { Card, CardBody, CardHeader } from "@heroui/react";
-import { FaGithub, FaGitlab, FaBitbucket } from "react-icons/fa";
+import { FaGithub, FaGitlab, FaBitbucket, FaCodeBranch, FaRobot, FaArrowUp, FaArrowDown } from "react-icons/fa";
 import { MdFolder } from "react-icons/md";
-import { FaCodeBranch, FaRobot, FaArrowUp, FaArrowDown, FaCodePullRequest } from "react-icons/fa";
 
 interface Conversation {
   id: string;
@@ -253,7 +252,7 @@ function ConvoDashScreen() {
                             {conversation.status}
                           </span>
                         </div>
-                        
+
                         {/* Status Indicators */}
                         <div className="flex items-center gap-3 mb-2">
                           <div className="flex items-center gap-1">
@@ -269,7 +268,7 @@ function ConvoDashScreen() {
                             </span>
                           </div>
                         </div>
-                        
+
                         <p className="text-[#A3A3A3] text-sm line-clamp-1">
                           {conversation.lastMessage}
                         </p>
@@ -314,11 +313,11 @@ function ConvoDashScreen() {
                             onClick={() => handleGitAction("pr")}
                             className="flex items-center gap-1 px-3 py-1 bg-purple-600 hover:bg-purple-700 text-white text-xs rounded transition-colors"
                           >
-                            <FaCodePullRequest className="w-3 h-3" />
+                            <FaCodeBranch className="w-3 h-3" />
                             Create PR
                           </button>
                         </div>
-                        
+
                         <div className="flex items-center gap-2">
                           <input
                             type="text"
