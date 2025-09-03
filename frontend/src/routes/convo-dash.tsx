@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { FaCodeBranch, FaRobot, FaArrowUp, FaArrowDown, FaEye, FaComment } from 'react-icons/fa';
+import { FaCodeBranch, FaRobot, FaArrowUp, FaArrowDown, FaEye, FaComment, FaChevronDown, FaChevronRight, FaPlus } from 'react-icons/fa';
 
 interface Conversation {
   id: string;
@@ -30,6 +30,8 @@ interface RepoGroup {
 const ConvoDash: React.FC = () => {
   const [selectedConversation, setSelectedConversation] = useState<string | null>(null);
   const [chatInput, setChatInput] = useState('');
+  const [expandedRepos, setExpandedRepos] = useState<Set<string>>(new Set());
+  const [expandedPRs, setExpandedPRs] = useState<Set<string>>(new Set());
 
   // Mock data - Grouped by repository
   const repoGroups: RepoGroup[] = [
@@ -215,14 +217,47 @@ const ConvoDash: React.FC = () => {
   const getPrStatusColor = (status: string) => {
     switch (status) {
       case 'open':
-        return 'text-green-500';
+        return 'text-green-500 bg-green-500/20';
       case 'closed':
-        return 'text-red-500';
+        return 'text-red-500 bg-red-500/20';
       case 'merged':
-        return 'text-blue-500';
+        return 'text-blue-500 bg-blue-500/20';
       default:
-        return 'text-gray-500';
+        return 'text-gray-500 bg-gray-500/20';
     }
+  };
+
+  const getPrStatusText = (status: string) => {
+    switch (status) {
+      case 'open':
+        return 'Open';
+      case 'closed':
+        return 'Closed';
+      case 'merged':
+        return 'Merged';
+      default:
+        return 'Unknown';
+    }
+  };
+
+  const toggleRepoExpanded = (repoName: string) => {
+    const newExpanded = new Set(expandedRepos);
+    if (newExpanded.has(repoName)) {
+      newExpanded.delete(repoName);
+    } else {
+      newExpanded.add(repoName);
+    }
+    setExpandedRepos(newExpanded);
+  };
+
+  const togglePRExpanded = (prId: string) => {
+    const newExpanded = new Set(expandedPRs);
+    if (newExpanded.has(prId)) {
+      newExpanded.delete(prId);
+    } else {
+      newExpanded.add(prId);
+    }
+    setExpandedPRs(newExpanded);
   };
 
   const handleConversationClick = (conversationId: string) => {
@@ -242,6 +277,11 @@ const ConvoDash: React.FC = () => {
     }
   };
 
+  const handleNewConversation = (prId: string) => {
+    console.log(`Creating new conversation for PR: ${prId}`);
+    // Handle new conversation creation here
+  };
+
   return (
     <div className="p-6 max-w-7xl mx-auto">
       <div className="mb-8">
@@ -253,8 +293,16 @@ const ConvoDash: React.FC = () => {
         {repoGroups.map((repoGroup) => (
           <div key={repoGroup.name} className="bg-[#2A2D32] rounded-lg border border-[#3A3D42]">
             {/* Repository Header */}
-            <div className="p-3 z-10 w-full justify-start shrink-0 overflow-inherit color-inherit subpixel-antialiased rounded-t-large flex items-center gap-3 pb-2">
+            <div 
+              className="p-3 z-10 w-full justify-start shrink-0 overflow-inherit color-inherit subpixel-antialiased rounded-t-large flex items-center gap-3 pb-2 cursor-pointer hover:bg-[#32353A] transition-colors"
+              onClick={() => toggleRepoExpanded(repoGroup.name)}
+            >
               <div className="flex items-center gap-2">
+                {expandedRepos.has(repoGroup.name) ? (
+                  <FaChevronDown className="w-4 h-4 text-[#A3A3A3]" />
+                ) : (
+                  <FaChevronRight className="w-4 h-4 text-[#A3A3A3]" />
+                )}
                 {getRepoIcon(repoGroup.type)}
                 <span className="text-white font-semibold">{repoGroup.name}</span>
               </div>
@@ -263,180 +311,207 @@ const ConvoDash: React.FC = () => {
               </div>
             </div>
 
-            {/* Pull Requests */}
-            <div className="p-4 space-y-4">
-              {repoGroup.pullRequests.map((pr) => (
-                <div key={pr.id} className="bg-[#32353A] rounded-lg border border-[#3A3D42]">
-                  {/* PR Header */}
-                  <div className="p-3 flex items-center gap-3 pb-2">
-                    <div className="flex items-center gap-2">
-                      <span className={`text-sm ${getPrStatusColor(pr.status)}`}>
-                        PR #{pr.number}
-                      </span>
-                      <span className="text-white font-medium">{pr.title}</span>
-                    </div>
-                    <div className="ml-auto text-[#A3A3A3] text-sm">
-                      {pr.conversations.length} conversation{pr.conversations.length !== 1 ? 's' : ''}
-                    </div>
-                  </div>
-
-                  {/* Conversations */}
-                  <div className="p-4 space-y-3">
-                    {pr.conversations.map((conversation) => (
-                      <div key={conversation.id}>
-                        <div
-                          className="flex flex-col p-3 bg-[#32353A] rounded-lg border border-[#3A3D42] hover:border-[#4A4D52] transition-colors cursor-pointer"
-                          onClick={() => handleConversationClick(conversation.id)}
+            {/* Pull Requests - Only show if repo is expanded */}
+            {expandedRepos.has(repoGroup.name) && (
+              <div className="p-4 space-y-4">
+                {repoGroup.pullRequests.map((pr) => (
+                  <div key={pr.id} className="bg-[#32353A] rounded-lg border border-[#3A3D42]">
+                    {/* PR Header */}
+                    <div className="p-3 flex items-center gap-3 pb-2">
+                      <div className="flex items-center gap-2">
+                        <button
+                          onClick={() => togglePRExpanded(pr.id)}
+                          className="text-[#A3A3A3] hover:text-white transition-colors"
                         >
-                          {/* Top section with title, status, and action buttons */}
-                          <div className="flex items-start justify-between mb-2">
-                            <div className="flex-1">
-                              <div className="flex items-center gap-2 mb-1">
-                                <h3 className="text-white font-medium">{conversation.title}</h3>
-                                <span className={`text-xs px-2 py-1 rounded-full ${getStatusColor(conversation.status)} bg-opacity-20`}>
-                                  {conversation.status}
-                                </span>
+                          {expandedPRs.has(pr.id) ? (
+                            <FaChevronDown className="w-4 h-4" />
+                          ) : (
+                            <FaChevronRight className="w-4 h-4" />
+                          )}
+                        </button>
+                        <span className={`text-sm ${getPrStatusColor(pr.status)} px-2 py-1 rounded-full text-xs font-medium`}>
+                          {getPrStatusText(pr.status)}
+                        </span>
+                        <span className="text-white font-medium">PR #{pr.number}</span>
+                        <span className="text-white">{pr.title}</span>
+                      </div>
+                      <div className="ml-auto flex items-center gap-2">
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleNewConversation(pr.id);
+                          }}
+                          className="flex items-center gap-1 px-3 py-1 bg-primary hover:bg-primary/80 text-white rounded text-sm transition-colors"
+                        >
+                          <FaPlus className="w-3 h-3" />
+                          New Conversation
+                        </button>
+                        <span className="text-[#A3A3A3] text-sm">
+                          {pr.conversations.length} conversation{pr.conversations.length !== 1 ? 's' : ''}
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Conversations - Only show if PR is expanded */}
+                    {expandedPRs.has(pr.id) && (
+                      <div className="p-4 space-y-3">
+                        {pr.conversations.map((conversation) => (
+                          <div key={conversation.id}>
+                            <div
+                              className="flex flex-col p-3 bg-[#32353A] rounded-lg border border-[#3A3D42] hover:border-[#4A4D52] transition-colors cursor-pointer"
+                              onClick={() => handleConversationClick(conversation.id)}
+                            >
+                              {/* Top section with title, status, and action buttons */}
+                              <div className="flex items-start justify-between mb-2">
+                                <div className="flex-1">
+                                  <div className="flex items-center gap-2 mb-1">
+                                    <h3 className="text-white font-medium">{conversation.title}</h3>
+                                    <span className={`text-xs px-2 py-1 rounded-full ${getStatusColor(conversation.status)} bg-opacity-20`}>
+                                      {conversation.status}
+                                    </span>
+                                  </div>
+
+                                  {/* Status Indicators */}
+                                  <div className="flex items-center gap-3 mb-2">
+                                    <div className="flex items-center gap-1">
+                                      <FaCodeBranch className={`w-3 h-3 ${getGitStatusColor(conversation.gitStatus)}`} />
+                                      <span className={`text-xs ${getGitStatusColor(conversation.gitStatus)}`}>
+                                        {getGitStatusText(conversation.gitStatus)}
+                                      </span>
+                                    </div>
+                                    <div className="flex items-center gap-1">
+                                      <FaRobot className={`w-3 h-3 ${getAgentStatusColor(conversation.agentStatus)}`} />
+                                      <span className={`text-xs ${getAgentStatusColor(conversation.agentStatus)}`}>
+                                        {getAgentStatusText(conversation.agentStatus)}
+                                      </span>
+                                    </div>
+                                  </div>
+                                </div>
+
+                                {/* Action Buttons - Top right */}
+                                <div className="flex items-center gap-2 ml-4 flex-shrink-0">
+                                  <button className="text-[#A3A3A3] hover:text-white transition-colors">
+                                    <FaEye className="w-4 h-4" />
+                                  </button>
+                                  <button className="text-[#A3A3A3] hover:text-white transition-colors">
+                                    <FaComment className="w-4 h-4" />
+                                  </button>
+                                </div>
                               </div>
 
-                              {/* Status Indicators */}
-                              <div className="flex items-center gap-3 mb-2">
-                                <div className="flex items-center gap-1">
-                                  <FaCodeBranch className={`w-3 h-3 ${getGitStatusColor(conversation.gitStatus)}`} />
-                                  <span className={`text-xs ${getGitStatusColor(conversation.gitStatus)}`}>
-                                    {getGitStatusText(conversation.gitStatus)}
-                                  </span>
-                                </div>
-                                <div className="flex items-center gap-1">
-                                  <FaRobot className={`w-3 h-3 ${getAgentStatusColor(conversation.agentStatus)}`} />
-                                  <span className={`text-xs ${getAgentStatusColor(conversation.agentStatus)}`}>
-                                    {getAgentStatusText(conversation.agentStatus)}
-                                  </span>
-                                </div>
+                              {/* Message content */}
+                              <div className="mb-2">
+                                <p className="text-[#A3A3A3] text-sm line-clamp-1">
+                                  {conversation.lastMessage}
+                                </p>
+                                <p className="text-[#808080] text-xs mt-1">
+                                  {conversation.lastUpdated}
+                                </p>
                               </div>
-                            </div>
 
-                            {/* Action Buttons - Top right */}
-                            <div className="flex items-center gap-2 ml-4 flex-shrink-0">
-                              <button className="text-[#A3A3A3] hover:text-white transition-colors">
-                                <FaEye className="w-4 h-4" />
-                              </button>
-                              <button className="text-[#A3A3A3] hover:text-white transition-colors">
-                                <FaComment className="w-4 h-4" />
-                              </button>
-                            </div>
-                          </div>
-
-                          {/* Message content */}
-                          <div className="mb-2">
-                            <p className="text-[#A3A3A3] text-sm line-clamp-1">
-                              {conversation.lastMessage}
-                            </p>
-                            <p className="text-[#808080] text-xs mt-1">
-                              {conversation.lastUpdated}
-                            </p>
-                          </div>
-
-                          {/* Chat Input Section - Inside the conversation card */}
-                          {selectedConversation === conversation.id && (
-                            <div className="mt-4 pt-4 border-t border-[#3A3D42]">
-                              {/* Chat Input - Single line with up arrow button */}
-                              <div className="w-full">
-                                {/* Chat Input Component */}
-                                <div
-                                  className="bg-[#25272D] box-border content-stretch flex flex-col items-start justify-center p-[8px] relative rounded-[15px] w-full"
-                                  onClick={(e) => e.stopPropagation()}
-                                >
-                                  {/* Main Input Row */}
-                                  <div className="box-border content-stretch flex flex-row items-center justify-between p-0 relative shrink-0 w-full gap-2">
-                                    <div className="basis-0 box-border content-stretch flex flex-row gap-4 grow items-center justify-start min-h-px min-w-px p-0 relative shrink-0">
-                                      {/* Chat Input Area */}
-                                      <div
-                                        className="box-border content-stretch flex flex-row items-center justify-start min-h-6 p-0 relative shrink-0 flex-1"
-                                        data-name="Text & caret"
-                                      >
-                                        <div className="basis-0 flex flex-col font-normal grow justify-center leading-[0] min-h-px min-w-px overflow-ellipsis overflow-hidden relative shrink-0 text-[#d0d9fa] text-[16px] text-left">
-                                          <input
-                                            type="text"
-                                            value={chatInput}
-                                            onChange={(e) => setChatInput(e.target.value)}
-                                            placeholder="Type your message..."
-                                            className="chat-input bg-transparent text-white text-[16px] font-normal leading-[20px] outline-none resize-none custom-scrollbar min-h-[20px] max-h-[20px] [text-overflow:inherit] [text-wrap-mode:inherit] [white-space-collapse:inherit] block whitespace-pre-wrap"
-                                            onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
-                                            onClick={(e) => e.stopPropagation()}
-                                          />
+                              {/* Chat Input Section - Inside the conversation card */}
+                              {selectedConversation === conversation.id && (
+                                <div className="mt-4 pt-4 border-t border-[#3A3D42]">
+                                  {/* Chat Input - Single line with up arrow button */}
+                                  <div className="w-full">
+                                    {/* Chat Input Component */}
+                                    <div
+                                      className="bg-[#25272D] box-border content-stretch flex flex-col items-start justify-center p-[8px] relative rounded-[15px] w-full"
+                                      onClick={(e) => e.stopPropagation()}
+                                    >
+                                      {/* Main Input Row */}
+                                      <div className="box-border content-stretch flex flex-row items-center justify-between p-0 relative shrink-0 w-full gap-2">
+                                        <div className="basis-0 box-border content-stretch flex flex-row gap-4 grow items-center justify-start min-h-px min-w-px p-0 relative shrink-0">
+                                          {/* Chat Input Area */}
+                                          <div
+                                            className="box-border content-stretch flex flex-row items-center justify-start min-h-6 p-0 relative shrink-0 flex-1"
+                                            data-name="Text & caret"
+                                          >
+                                            <div className="basis-0 flex flex-col font-normal grow justify-center leading-[0] min-h-px min-w-px overflow-ellipsis overflow-hidden relative shrink-0 text-[#d0d9fa] text-[16px] text-left">
+                                              <input
+                                                type="text"
+                                                value={chatInput}
+                                                onChange={(e) => setChatInput(e.target.value)}
+                                                placeholder="Type your message..."
+                                                className="chat-input bg-transparent text-white text-[16px] font-normal leading-[20px] outline-none resize-none custom-scrollbar min-h-[20px] max-h-[20px] [text-overflow:inherit] [text-wrap-mode:inherit] [white-space-collapse:inherit] block whitespace-pre-wrap"
+                                                onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
+                                                onClick={(e) => e.stopPropagation()}
+                                              />
+                                            </div>
+                                          </div>
                                         </div>
+
+                                        {/* Send Button - Using up arrow */}
+                                        <button
+                                          onClick={(e) => {
+                                            e.stopPropagation();
+                                            handleSendMessage();
+                                          }}
+                                          className="flex items-center justify-center rounded-full border border-white size-[35px] cursor-pointer hover:bg-[#959CB2]"
+                                          data-testid="submit-button"
+                                        >
+                                          <FaArrowUp color="white" />
+                                        </button>
                                       </div>
                                     </div>
+                                  </div>
 
-                                    {/* Send Button - Using up arrow */}
+                                  {/* Git Control Bar - Below chat input */}
+                                  <div className="flex flex-row gap-2.5 items-center mt-4">
                                     <button
                                       onClick={(e) => {
                                         e.stopPropagation();
-                                        handleSendMessage();
+                                        handleGitAction("push");
                                       }}
-                                      className="flex items-center justify-center rounded-full border border-white size-[35px] cursor-pointer hover:bg-[#959CB2]"
-                                      data-testid="submit-button"
+                                      className="flex flex-row gap-1 items-center justify-center px-0.5 py-1 rounded-[100px] w-[77px] min-w-[77px] bg-[#25272D] hover:bg-[#525662] cursor-pointer"
                                     >
-                                      <FaArrowUp color="white" />
+                                      <div className="w-3 h-3 flex items-center justify-center">
+                                        <FaArrowUp className="w-3 h-3 text-white" />
+                                      </div>
+                                      <div className="font-normal text-white text-sm leading-5">
+                                        Push
+                                      </div>
+                                    </button>
+                                    <button
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        handleGitAction("pull");
+                                      }}
+                                      className="flex flex-row gap-1 items-center justify-center px-0.5 py-1 rounded-[100px] w-[76px] min-w-[76px] bg-[#25272D] hover:bg-[#525662] cursor-pointer"
+                                    >
+                                      <div className="w-3 h-3 flex items-center justify-center">
+                                        <FaArrowDown className="w-3 h-3 text-white" />
+                                      </div>
+                                      <div className="font-normal text-white text-sm leading-5">
+                                        Pull
+                                      </div>
+                                    </button>
+                                    <button
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        handleGitAction("pr");
+                                      }}
+                                      className="flex flex-row gap-[11px] items-center justify-center px-2 py-1 rounded-[100px] w-[126px] min-w-[126px] h-7 bg-[#25272D] hover:bg-[#525662] cursor-pointer"
+                                    >
+                                      <div className="w-3 h-3 flex items-center justify-center">
+                                        <FaCodeBranch className="w-3 h-3 text-white" />
+                                      </div>
+                                      <div className="font-normal text-white text-sm leading-5">
+                                        Create PR
+                                      </div>
                                     </button>
                                   </div>
                                 </div>
-                              </div>
-
-                              {/* Git Control Bar - Below chat input */}
-                              <div className="flex flex-row gap-2.5 items-center mt-4">
-                                <button
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    handleGitAction("push");
-                                  }}
-                                  className="flex flex-row gap-1 items-center justify-center px-0.5 py-1 rounded-[100px] w-[77px] min-w-[77px] bg-[#25272D] hover:bg-[#525662] cursor-pointer"
-                                >
-                                  <div className="w-3 h-3 flex items-center justify-center">
-                                    <FaArrowUp className="w-3 h-3 text-white" />
-                                  </div>
-                                  <div className="font-normal text-white text-sm leading-5">
-                                    Push
-                                  </div>
-                                </button>
-                                <button
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    handleGitAction("pull");
-                                  }}
-                                  className="flex flex-row gap-1 items-center justify-center px-0.5 py-1 rounded-[100px] w-[76px] min-w-[76px] bg-[#25272D] hover:bg-[#525662] cursor-pointer"
-                                >
-                                  <div className="w-3 h-3 flex items-center justify-center">
-                                    <FaArrowDown className="w-3 h-3 text-white" />
-                                  </div>
-                                  <div className="font-normal text-white text-sm leading-5">
-                                    Pull
-                                  </div>
-                                </button>
-                                <button
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    handleGitAction("pr");
-                                  }}
-                                  className="flex flex-row gap-[11px] items-center justify-center px-2 py-1 rounded-[100px] w-[126px] min-w-[126px] h-7 bg-[#25272D] hover:bg-[#525662] cursor-pointer"
-                                >
-                                  <div className="w-3 h-3 flex items-center justify-center">
-                                    <FaCodeBranch className="w-3 h-3 text-white" />
-                                  </div>
-                                  <div className="font-normal text-white text-sm leading-5">
-                                    Create PR
-                                  </div>
-                                </button>
-                              </div>
+                              )}
                             </div>
-                          )}
-                        </div>
+                          </div>
+                        ))}
                       </div>
-                    ))}
+                    )}
                   </div>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            )}
           </div>
         ))}
       </div>
