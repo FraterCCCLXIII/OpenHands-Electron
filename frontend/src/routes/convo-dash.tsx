@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Dropdown, DropdownTrigger, DropdownMenu, DropdownItem } from '@heroui/react';
-import { FaCodeBranch, FaRobot, FaArrowUp, FaArrowDown, FaEye, FaComment, FaChevronDown, FaChevronRight, FaPlus, FaMinus, FaPowerOff, FaEllipsisH } from 'react-icons/fa';
+import { FaCodeBranch, FaRobot, FaArrowUp, FaArrowDown, FaEye, FaComment, FaChevronDown, FaChevronRight, FaPlus, FaMinus, FaPowerOff, FaEllipsisV } from 'react-icons/fa';
 
 interface Conversation {
   id: string;
@@ -428,10 +428,12 @@ const ConvoDash: React.FC = () => {
                                   <button className="text-[#A3A3A3] hover:text-white transition-colors">
                                     <FaComment className="w-4 h-4" />
                                   </button>
-                                  <Dropdown>
+                                  <Dropdown classNames={{
+                                    content: "bg-[#454545] rounded-xl border border-[#717888]"
+                                  }}>
                                     <DropdownTrigger>
                                       <button className="text-[#A3A3A3] hover:text-white transition-colors">
-                                        <FaEllipsisH className="w-4 h-4" />
+                                        <FaEllipsisV className="w-4 h-4" />
                                       </button>
                                     </DropdownTrigger>
                                     <DropdownMenu>
