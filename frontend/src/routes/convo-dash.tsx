@@ -381,7 +381,6 @@ const ConvoDash: React.FC = () => {
                         >
                           <FaPlus className="w-3 h-3" />
                           <FaComment className="w-3 h-3" />
-                          New Conversation
                         </button>
                         <div className="flex items-center gap-1 bg-[#32353A] px-2 py-1 rounded-full">
                           <FaComment className="w-3 h-3 text-white" />
