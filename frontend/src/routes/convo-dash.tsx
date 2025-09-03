@@ -21,84 +21,102 @@ interface PullRequest {
   status: 'open' | 'closed' | 'merged';
 }
 
+interface RepoGroup {
+  name: string;
+  type: 'github' | 'gitlab' | 'bitbucket';
+  pullRequests: PullRequest[];
+}
+
 const ConvoDash: React.FC = () => {
   const [selectedConversation, setSelectedConversation] = useState<string | null>(null);
   const [chatInput, setChatInput] = useState('');
 
-  // Mock data - PRs with multiple conversations
-  const prGroups: PullRequest[] = [
+  // Mock data - Grouped by repository
+  const repoGroups: RepoGroup[] = [
     {
-      id: 'pr-1',
-      number: 143,
-      title: 'Fix Session Timeout',
-      repoName: 'openhands/OpenHands-XP',
-      repoType: 'github',
-      status: 'open',
-      conversations: [
+      name: 'openhands/OpenHands-XP',
+      type: 'github',
+      pullRequests: [
         {
-          id: 'conv-1',
-          title: 'Authentication flow improvements',
-          lastMessage: 'I\'ve updated the login component to handle the new API...',
-          lastUpdated: '2 hours ago',
-          status: 'active',
-          gitStatus: 'modified',
-          agentStatus: 'working'
+          id: 'pr-1',
+          number: 143,
+          title: 'Fix Session Timeout',
+          repoName: 'openhands/OpenHands-XP',
+          repoType: 'github',
+          status: 'open',
+          conversations: [
+            {
+              id: 'conv-1',
+              title: 'Authentication flow improvements',
+              lastMessage: 'I\'ve updated the login component to handle the new API...',
+              lastUpdated: '2 hours ago',
+              status: 'active',
+              gitStatus: 'modified',
+              agentStatus: 'working'
+            },
+            {
+              id: 'conv-2',
+              title: 'Session management refactor',
+              lastMessage: 'The session timeout logic has been refactored...',
+              lastUpdated: '1 hour ago',
+              status: 'active',
+              gitStatus: 'clean',
+              agentStatus: 'idle'
+            }
+          ]
         },
         {
-          id: 'conv-2',
-          title: 'Session management refactor',
-          lastMessage: 'The session timeout logic has been refactored...',
-          lastUpdated: '1 hour ago',
-          status: 'active',
-          gitStatus: 'clean',
-          agentStatus: 'idle'
+          id: 'pr-2',
+          number: 142,
+          title: 'Add Dark Mode Support',
+          repoName: 'openhands/OpenHands-XP',
+          repoType: 'github',
+          status: 'open',
+          conversations: [
+            {
+              id: 'conv-3',
+              title: 'Theme implementation',
+              lastMessage: 'Dark mode styles have been implemented across all components...',
+              lastUpdated: '3 hours ago',
+              status: 'completed',
+              gitStatus: 'clean',
+              agentStatus: 'idle'
+            }
+          ]
         }
       ]
     },
     {
-      id: 'pr-2',
-      number: 142,
-      title: 'Add Dark Mode Support',
-      repoName: 'openhands/OpenHands-XP',
-      repoType: 'github',
-      status: 'open',
-      conversations: [
+      name: 'openhands/ui-components',
+      type: 'github',
+      pullRequests: [
         {
-          id: 'conv-3',
-          title: 'Theme implementation',
-          lastMessage: 'Dark mode styles have been implemented across all components...',
-          lastUpdated: '3 hours ago',
-          status: 'completed',
-          gitStatus: 'clean',
-          agentStatus: 'idle'
-        }
-      ]
-    },
-    {
-      id: 'pr-3',
-      number: 141,
-      title: 'Performance Optimization',
-      repoName: 'openhands/ui-components',
-      repoType: 'github',
-      status: 'merged',
-      conversations: [
-        {
-          id: 'conv-4',
-          title: 'Bundle size reduction',
-          lastMessage: 'Successfully reduced bundle size by 15%...',
-          lastUpdated: '1 day ago',
-          status: 'completed',
-          gitStatus: 'clean',
-          agentStatus: 'idle'
-        },
-        {
-          id: 'conv-5',
-          title: 'Memory leak fixes',
-          lastMessage: 'Fixed several memory leaks in the component lifecycle...',
-          lastUpdated: '2 days ago',
-          status: 'completed',
-          gitStatus: 'clean',
-          agentStatus: 'idle'
+          id: 'pr-3',
+          number: 141,
+          title: 'Performance Optimization',
+          repoName: 'openhands/ui-components',
+          repoType: 'github',
+          status: 'merged',
+          conversations: [
+            {
+              id: 'conv-4',
+              title: 'Bundle size reduction',
+              lastMessage: 'Successfully reduced bundle size by 15%...',
+              lastUpdated: '1 day ago',
+              status: 'completed',
+              gitStatus: 'clean',
+              agentStatus: 'idle'
+            },
+            {
+              id: 'conv-5',
+              title: 'Memory leak fixes',
+              lastMessage: 'Fixed several memory leaks in the component lifecycle...',
+              lastUpdated: '2 days ago',
+              status: 'completed',
+              gitStatus: 'clean',
+              agentStatus: 'idle'
+            }
+          ]
         }
       ]
     }
@@ -231,176 +249,190 @@ const ConvoDash: React.FC = () => {
         <p className="text-[#A3A3A3]">Manage conversations organized by Pull Requests</p>
       </div>
 
-      <div className="space-y-6">
-        {prGroups.map((pr) => (
-          <div key={pr.id} className="bg-[#2A2D32] rounded-lg border border-[#3A3D42]">
-            {/* PR Header */}
+      <div className="space-y-8">
+        {repoGroups.map((repoGroup) => (
+          <div key={repoGroup.name} className="bg-[#2A2D32] rounded-lg border border-[#3A3D42]">
+            {/* Repository Header */}
             <div className="p-3 z-10 w-full justify-start shrink-0 overflow-inherit color-inherit subpixel-antialiased rounded-t-large flex items-center gap-3 pb-2">
               <div className="flex items-center gap-2">
-                {getRepoIcon(pr.repoType)}
-                <span className="text-white font-semibold">{pr.repoName}</span>
-              </div>
-              <div className="flex items-center gap-2 ml-4">
-                <span className={`text-sm ${getPrStatusColor(pr.status)}`}>
-                  PR #{pr.number}
-                </span>
-                <span className="text-white font-medium">{pr.title}</span>
+                {getRepoIcon(repoGroup.type)}
+                <span className="text-white font-semibold">{repoGroup.name}</span>
               </div>
               <div className="ml-auto text-[#A3A3A3] text-sm">
-                {pr.conversations.length} conversation{pr.conversations.length !== 1 ? 's' : ''}
+                {repoGroup.pullRequests.length} PR{repoGroup.pullRequests.length !== 1 ? 's' : ''}
               </div>
             </div>
 
-            {/* Conversations */}
-            <div className="p-4 space-y-3">
-              {pr.conversations.map((conversation) => (
-                <div key={conversation.id}>
-                  <div
-                    className="flex flex-col p-3 bg-[#32353A] rounded-lg border border-[#3A3D42] hover:border-[#4A4D52] transition-colors cursor-pointer"
-                    onClick={() => handleConversationClick(conversation.id)}
-                  >
-                    {/* Top section with title, status, and action buttons */}
-                    <div className="flex items-start justify-between mb-2">
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2 mb-1">
-                          <h3 className="text-white font-medium">{conversation.title}</h3>
-                          <span className={`text-xs px-2 py-1 rounded-full ${getStatusColor(conversation.status)} bg-opacity-20`}>
-                            {conversation.status}
-                          </span>
-                        </div>
-
-                        {/* Status Indicators */}
-                        <div className="flex items-center gap-3 mb-2">
-                          <div className="flex items-center gap-1">
-                            <FaCodeBranch className={`w-3 h-3 ${getGitStatusColor(conversation.gitStatus)}`} />
-                            <span className={`text-xs ${getGitStatusColor(conversation.gitStatus)}`}>
-                              {getGitStatusText(conversation.gitStatus)}
-                            </span>
-                          </div>
-                          <div className="flex items-center gap-1">
-                            <FaRobot className={`w-3 h-3 ${getAgentStatusColor(conversation.agentStatus)}`} />
-                            <span className={`text-xs ${getAgentStatusColor(conversation.agentStatus)}`}>
-                              {getAgentStatusText(conversation.agentStatus)}
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Action Buttons - Top right */}
-                      <div className="flex items-center gap-2 ml-4 flex-shrink-0">
-                        <button className="text-[#A3A3A3] hover:text-white transition-colors">
-                          <FaEye className="w-4 h-4" />
-                        </button>
-                        <button className="text-[#A3A3A3] hover:text-white transition-colors">
-                          <FaComment className="w-4 h-4" />
-                        </button>
-                      </div>
+            {/* Pull Requests */}
+            <div className="p-4 space-y-4">
+              {repoGroup.pullRequests.map((pr) => (
+                <div key={pr.id} className="bg-[#32353A] rounded-lg border border-[#3A3D42]">
+                  {/* PR Header */}
+                  <div className="p-3 flex items-center gap-3 pb-2">
+                    <div className="flex items-center gap-2">
+                      <span className={`text-sm ${getPrStatusColor(pr.status)}`}>
+                        PR #{pr.number}
+                      </span>
+                      <span className="text-white font-medium">{pr.title}</span>
                     </div>
-
-                    {/* Message content */}
-                    <div className="mb-2">
-                      <p className="text-[#A3A3A3] text-sm line-clamp-1">
-                        {conversation.lastMessage}
-                      </p>
-                      <p className="text-[#808080] text-xs mt-1">
-                        {conversation.lastUpdated}
-                      </p>
+                    <div className="ml-auto text-[#A3A3A3] text-sm">
+                      {pr.conversations.length} conversation{pr.conversations.length !== 1 ? 's' : ''}
                     </div>
+                  </div>
 
-                    {/* Chat Input Section - Inside the conversation card */}
-                    {selectedConversation === conversation.id && (
-                      <div className="mt-4 pt-4 border-t border-[#3A3D42]">
-                        {/* Chat Input - Single line with up arrow button */}
-                        <div className="w-full">
-                          {/* Chat Input Component */}
-                          <div
-                            className="bg-[#25272D] box-border content-stretch flex flex-col items-start justify-center p-[8px] relative rounded-[15px] w-full"
-                            onClick={(e) => e.stopPropagation()}
-                          >
-                            {/* Main Input Row */}
-                            <div className="box-border content-stretch flex flex-row items-center justify-between p-0 relative shrink-0 w-full gap-2">
-                              <div className="basis-0 box-border content-stretch flex flex-row gap-4 grow items-center justify-start min-h-px min-w-px p-0 relative shrink-0">
-                                {/* Chat Input Area */}
+                  {/* Conversations */}
+                  <div className="p-4 space-y-3">
+                    {pr.conversations.map((conversation) => (
+                      <div key={conversation.id}>
+                        <div
+                          className="flex flex-col p-3 bg-[#32353A] rounded-lg border border-[#3A3D42] hover:border-[#4A4D52] transition-colors cursor-pointer"
+                          onClick={() => handleConversationClick(conversation.id)}
+                        >
+                          {/* Top section with title, status, and action buttons */}
+                          <div className="flex items-start justify-between mb-2">
+                            <div className="flex-1">
+                              <div className="flex items-center gap-2 mb-1">
+                                <h3 className="text-white font-medium">{conversation.title}</h3>
+                                <span className={`text-xs px-2 py-1 rounded-full ${getStatusColor(conversation.status)} bg-opacity-20`}>
+                                  {conversation.status}
+                                </span>
+                              </div>
+
+                              {/* Status Indicators */}
+                              <div className="flex items-center gap-3 mb-2">
+                                <div className="flex items-center gap-1">
+                                  <FaCodeBranch className={`w-3 h-3 ${getGitStatusColor(conversation.gitStatus)}`} />
+                                  <span className={`text-xs ${getGitStatusColor(conversation.gitStatus)}`}>
+                                    {getGitStatusText(conversation.gitStatus)}
+                                  </span>
+                                </div>
+                                <div className="flex items-center gap-1">
+                                  <FaRobot className={`w-3 h-3 ${getAgentStatusColor(conversation.agentStatus)}`} />
+                                  <span className={`text-xs ${getAgentStatusColor(conversation.agentStatus)}`}>
+                                    {getAgentStatusText(conversation.agentStatus)}
+                                  </span>
+                                </div>
+                              </div>
+                            </div>
+
+                            {/* Action Buttons - Top right */}
+                            <div className="flex items-center gap-2 ml-4 flex-shrink-0">
+                              <button className="text-[#A3A3A3] hover:text-white transition-colors">
+                                <FaEye className="w-4 h-4" />
+                              </button>
+                              <button className="text-[#A3A3A3] hover:text-white transition-colors">
+                                <FaComment className="w-4 h-4" />
+                              </button>
+                            </div>
+                          </div>
+
+                          {/* Message content */}
+                          <div className="mb-2">
+                            <p className="text-[#A3A3A3] text-sm line-clamp-1">
+                              {conversation.lastMessage}
+                            </p>
+                            <p className="text-[#808080] text-xs mt-1">
+                              {conversation.lastUpdated}
+                            </p>
+                          </div>
+
+                          {/* Chat Input Section - Inside the conversation card */}
+                          {selectedConversation === conversation.id && (
+                            <div className="mt-4 pt-4 border-t border-[#3A3D42]">
+                              {/* Chat Input - Single line with up arrow button */}
+                              <div className="w-full">
+                                {/* Chat Input Component */}
                                 <div
-                                  className="box-border content-stretch flex flex-row items-center justify-start min-h-6 p-0 relative shrink-0 flex-1"
-                                  data-name="Text & caret"
+                                  className="bg-[#25272D] box-border content-stretch flex flex-col items-start justify-center p-[8px] relative rounded-[15px] w-full"
+                                  onClick={(e) => e.stopPropagation()}
                                 >
-                                  <div className="basis-0 flex flex-col font-normal grow justify-center leading-[0] min-h-px min-w-px overflow-ellipsis overflow-hidden relative shrink-0 text-[#d0d9fa] text-[16px] text-left">
-                                    <input
-                                      type="text"
-                                      value={chatInput}
-                                      onChange={(e) => setChatInput(e.target.value)}
-                                      placeholder="Type your message..."
-                                      className="chat-input bg-transparent text-white text-[16px] font-normal leading-[20px] outline-none resize-none custom-scrollbar min-h-[20px] max-h-[20px] [text-overflow:inherit] [text-wrap-mode:inherit] [white-space-collapse:inherit] block whitespace-pre-wrap"
-                                      onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
-                                      onClick={(e) => e.stopPropagation()}
-                                    />
+                                  {/* Main Input Row */}
+                                  <div className="box-border content-stretch flex flex-row items-center justify-between p-0 relative shrink-0 w-full gap-2">
+                                    <div className="basis-0 box-border content-stretch flex flex-row gap-4 grow items-center justify-start min-h-px min-w-px p-0 relative shrink-0">
+                                      {/* Chat Input Area */}
+                                      <div
+                                        className="box-border content-stretch flex flex-row items-center justify-start min-h-6 p-0 relative shrink-0 flex-1"
+                                        data-name="Text & caret"
+                                      >
+                                        <div className="basis-0 flex flex-col font-normal grow justify-center leading-[0] min-h-px min-w-px overflow-ellipsis overflow-hidden relative shrink-0 text-[#d0d9fa] text-[16px] text-left">
+                                          <input
+                                            type="text"
+                                            value={chatInput}
+                                            onChange={(e) => setChatInput(e.target.value)}
+                                            placeholder="Type your message..."
+                                            className="chat-input bg-transparent text-white text-[16px] font-normal leading-[20px] outline-none resize-none custom-scrollbar min-h-[20px] max-h-[20px] [text-overflow:inherit] [text-wrap-mode:inherit] [white-space-collapse:inherit] block whitespace-pre-wrap"
+                                            onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
+                                            onClick={(e) => e.stopPropagation()}
+                                          />
+                                        </div>
+                                      </div>
+                                    </div>
+
+                                    {/* Send Button - Using up arrow */}
+                                    <button
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        handleSendMessage();
+                                      }}
+                                      className="flex items-center justify-center rounded-full border border-white size-[35px] cursor-pointer hover:bg-[#959CB2]"
+                                      data-testid="submit-button"
+                                    >
+                                      <FaArrowUp color="white" />
+                                    </button>
                                   </div>
                                 </div>
                               </div>
 
-                              {/* Send Button - Using up arrow */}
-                              <button
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  handleSendMessage();
-                                }}
-                                className="flex items-center justify-center rounded-full border border-white size-[35px] cursor-pointer hover:bg-[#959CB2]"
-                                data-testid="submit-button"
-                              >
-                                <FaArrowUp color="white" />
-                              </button>
+                              {/* Git Control Bar - Below chat input */}
+                              <div className="flex flex-row gap-2.5 items-center mt-4">
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleGitAction("push");
+                                  }}
+                                  className="flex flex-row gap-1 items-center justify-center px-0.5 py-1 rounded-[100px] w-[77px] min-w-[77px] bg-[#25272D] hover:bg-[#525662] cursor-pointer"
+                                >
+                                  <div className="w-3 h-3 flex items-center justify-center">
+                                    <FaArrowUp className="w-3 h-3 text-white" />
+                                  </div>
+                                  <div className="font-normal text-white text-sm leading-5">
+                                    Push
+                                  </div>
+                                </button>
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleGitAction("pull");
+                                  }}
+                                  className="flex flex-row gap-1 items-center justify-center px-0.5 py-1 rounded-[100px] w-[76px] min-w-[76px] bg-[#25272D] hover:bg-[#525662] cursor-pointer"
+                                >
+                                  <div className="w-3 h-3 flex items-center justify-center">
+                                    <FaArrowDown className="w-3 h-3 text-white" />
+                                  </div>
+                                  <div className="font-normal text-white text-sm leading-5">
+                                    Pull
+                                  </div>
+                                </button>
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleGitAction("pr");
+                                  }}
+                                  className="flex flex-row gap-[11px] items-center justify-center px-2 py-1 rounded-[100px] w-[126px] min-w-[126px] h-7 bg-[#25272D] hover:bg-[#525662] cursor-pointer"
+                                >
+                                  <div className="w-3 h-3 flex items-center justify-center">
+                                    <FaCodeBranch className="w-3 h-3 text-white" />
+                                  </div>
+                                  <div className="font-normal text-white text-sm leading-5">
+                                    Create PR
+                                  </div>
+                                </button>
+                              </div>
                             </div>
-                          </div>
-                        </div>
-
-                        {/* Git Control Bar - Below chat input */}
-                        <div className="flex flex-row gap-2.5 items-center mt-4">
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleGitAction("push");
-                            }}
-                            className="flex flex-row gap-1 items-center justify-center px-0.5 py-1 rounded-[100px] w-[77px] min-w-[77px] bg-[#25272D] hover:bg-[#525662] cursor-pointer"
-                          >
-                            <div className="w-3 h-3 flex items-center justify-center">
-                              <FaArrowUp className="w-3 h-3 text-white" />
-                            </div>
-                            <div className="font-normal text-white text-sm leading-5">
-                              Push
-                            </div>
-                          </button>
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleGitAction("pull");
-                            }}
-                            className="flex flex-row gap-1 items-center justify-center px-0.5 py-1 rounded-[100px] w-[76px] min-w-[76px] bg-[#25272D] hover:bg-[#525662] cursor-pointer"
-                          >
-                            <div className="w-3 h-3 flex items-center justify-center">
-                              <FaArrowDown className="w-3 h-3 text-white" />
-                            </div>
-                            <div className="font-normal text-white text-sm leading-5">
-                              Pull
-                            </div>
-                          </button>
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleGitAction("pr");
-                            }}
-                            className="flex flex-row gap-[11px] items-center justify-center px-2 py-1 rounded-[100px] w-[126px] min-w-[126px] h-7 bg-[#25272D] hover:bg-[#525662] cursor-pointer"
-                          >
-                            <div className="w-3 h-3 flex items-center justify-center">
-                              <FaCodeBranch className="w-3 h-3 text-white" />
-                            </div>
-                            <div className="font-normal text-white text-sm leading-5">
-                              Create PR
-                            </div>
-                          </button>
+                          )}
                         </div>
                       </div>
-                    )}
+                    ))}
                   </div>
                 </div>
               ))}
