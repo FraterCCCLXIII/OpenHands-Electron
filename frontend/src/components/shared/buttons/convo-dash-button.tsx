@@ -1,6 +1,6 @@
 import React from "react";
 import { useNavigate, useLocation } from "react-router";
-import { Button } from "@nextui-org/react";
+import { Button } from "@heroui/react";
 import { FaChartBar } from "react-icons/fa";
 
 interface ConvoDashButtonProps {

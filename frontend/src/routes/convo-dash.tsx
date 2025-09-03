@@ -1,6 +1,6 @@
 import React from "react";
 import { useTranslation } from "react-i18next";
-import { Card, CardBody, CardHeader } from "@nextui-org/react";
+import { Card, CardBody, CardHeader } from "@heroui/react";
 import { FaGithub, FaGitlab, FaBitbucket } from "react-icons/fa";
 import { MdFolder } from "react-icons/md";
 
