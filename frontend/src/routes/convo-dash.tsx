@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { FaCodeBranch, FaRobot, FaArrowUp, FaArrowDown, FaEye, FaComment, FaChevronDown, FaChevronRight, FaPlus } from 'react-icons/fa';
+import { FaCodeBranch, FaRobot, FaArrowUp, FaArrowDown, FaEye, FaComment, FaChevronDown, FaChevronRight, FaPlus, FaMinus } from 'react-icons/fa';
 
 interface Conversation {
   id: string;
@@ -327,7 +327,10 @@ const ConvoDash: React.FC = () => {
               <div className="space-y-0">
                 {repoGroup.pullRequests.map((pr) => (
                   <div key={pr.id} className="border-b border-[#3A3D42] last:border-b-0">
-                    <div className="p-3 flex items-center gap-3 pb-2">
+                    <div 
+                      className="p-3 flex items-center gap-3 pb-2 cursor-pointer hover:bg-[#32353A] transition-colors"
+                      onClick={() => togglePRExpanded(pr.id)}
+                    >
                       <div className="flex items-center gap-2">
                         <svg width="12" height="16" viewBox="0 0 12 16" fill="none" xmlns="http://www.w3.org/2000/svg">
                           <path d="M9.79249 11.1936C10.2876 11.1936 10.6902 11.5962 10.6902 12.0913C10.6902 12.5864 10.2876 12.989 9.79249 12.989C9.29739 12.989 8.89478 12.5864 8.89478 12.0913C8.89478 11.5962 9.29739 11.1936 9.79249 11.1936ZM9.79249 10.1055C8.69891 10.1055 7.80664 10.9977 7.80664 12.0913C7.80664 13.1849 8.69891 14.0772 9.79249 14.0772C10.8861 14.0772 11.7783 13.1849 11.7783 12.0913C11.7783 10.9977 10.8861 10.1055 9.79249 10.1055Z" fill="white"/>
@@ -358,16 +361,13 @@ const ConvoDash: React.FC = () => {
                           <FaComment className="w-3 h-3 text-white" />
                           <span className="text-white text-xs font-medium">{pr.conversations.length}</span>
                         </div>
-                        <button
-                          onClick={() => togglePRExpanded(pr.id)}
-                          className="text-[#A3A3A3] hover:text-white transition-colors"
-                        >
+                        <div className="text-[#A3A3A3] hover:text-white transition-colors">
                           {expandedPRs.has(pr.id) ? (
-                            <FaChevronDown className="w-4 h-4" />
+                            <FaMinus className="w-4 h-4" />
                           ) : (
-                            <FaChevronRight className="w-4 h-4" />
+                            <FaPlus className="w-4 h-4" />
                           )}
-                        </button>
+                        </div>
                       </div>
                     </div>
 
