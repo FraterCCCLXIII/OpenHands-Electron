@@ -320,10 +320,11 @@ const ConvoDash: React.FC = () => {
                 )}
               </div>
             </div>
+            <div className="border-b border-[#3A3D42] w-full"></div>
 
             {/* Pull Requests - Only show if repo is expanded */}
             {expandedRepos.has(repoGroup.name) && (
-              <div className="p-4 space-y-4">
+              <div className="space-y-0">
                 {repoGroup.pullRequests.map((pr) => (
                   <div key={pr.id} className="border-b border-[#3A3D42] last:border-b-0">
                     <div className="p-3 flex items-center gap-3 pb-2">
