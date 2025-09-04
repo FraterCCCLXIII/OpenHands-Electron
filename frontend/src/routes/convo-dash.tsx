@@ -331,35 +331,35 @@ const ConvoDash: React.FC = () => {
         </div>
 
         {/* Repository List */}
-        <div className="space-y-3">
-          <div className="flex items-center gap-3 p-2 rounded-lg hover:bg-[#32353A] cursor-pointer transition-colors">
+        <div className="space-y-1">
+          <div className="flex items-center gap-2 py-1 px-2 rounded hover:bg-[#32353A] cursor-pointer transition-colors">
             <div className="w-8 h-8 rounded-full flex items-center justify-center">
               <svg stroke="currentColor" fill="currentColor" strokeWidth="0" viewBox="0 0 496 512" className="w-4 h-4 text-white" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg">
-                <path d="M248 8C111 8 0 119 0 256s111 248 248 248 248-111 248-248S385 8 248 8zm0 96c48.6 0 88 39.4 88 88s-39.4 88-88 88-88-39.4-88-88 39.4-88 88-88zm0 344c-58.7 0-111.3-26.6-146.5-68.2 18.8-35.4 55.2-59.8 98.5-59.8 2.4 0 4.8.4 7.1 1.1 13 4.2 26.6 6.9 40.9 6.9 14.3 0 28-2.7 40.9-6.9 2.3-.7 4.7-1.1 7.1-1.1 43.3 0 79.7 24.4 98.5 59.8C359.3 421.4 306.7 448 248 448z"></path>
+                <path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6zm-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3zm44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9zM244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8zM97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1zm-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7zm32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1zm-11.4-14.7c-1.6 1-1.6 3.6 0 5.9 1.6 2.3 4.3 3.3 5.6 2.3 1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2z"></path>
               </svg>
             </div>
             <span className="text-white text-sm">openartist/holons</span>
           </div>
 
-          <div className="flex items-center gap-3 p-2 rounded-lg hover:bg-[#32353A] cursor-pointer transition-colors">
+          <div className="flex items-center gap-2 py-1 px-2 rounded hover:bg-[#32353A] cursor-pointer transition-colors">
             <div className="w-8 h-8 rounded-full flex items-center justify-center">
               <svg stroke="currentColor" fill="currentColor" strokeWidth="0" viewBox="0 0 496 512" className="w-4 h-4 text-white" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg">
-                <path d="M248 8C111 8 0 119 0 256s111 248 248 248 248-111 248-248S385 8 248 8zm0 96c48.6 0 88 39.4 88 88s-39.4 88-88 88-88-39.4-88-88 39.4-88 88-88zm0 344c-58.7 0-111.3-26.6-146.5-68.2 18.8-35.4 55.2-59.8 98.5-59.8 2.4 0 4.8.4 7.1 1.1 13 4.2 26.6 6.9 40.9 6.9 14.3 0 28-2.7 40.9-6.9 2.3-.7 4.7-1.1 7.1-1.1 43.3 0 79.7 24.4 98.5 59.8C359.3 421.4 306.7 448 248 448z"></path>
+                <path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6zm-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3zm44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9zM244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8zM97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1zm-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7zm32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1zm-11.4-14.7c-1.6 1-1.6 3.6 0 5.9 1.6 2.3 4.3 3.3 5.6 2.3 1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2z"></path>
               </svg>
             </div>
             <span className="text-white text-sm">openartist/OpenHands-XP</span>
           </div>
 
-          <div className="flex items-center gap-3 p-2 rounded-lg hover:bg-[#32353A] cursor-pointer transition-colors">
+          <div className="flex items-center gap-2 py-1 px-2 rounded hover:bg-[#32353A] cursor-pointer transition-colors">
             <div className="w-8 h-8 rounded-lg flex items-center justify-center">
-              <svg stroke="currentColor" fill="currentColor" strokeWidth="0" viewBox="0 0 384 512" className="w-4 h-4 text-white" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg">
-                <path d="M361 215c14.3 0 27.3 5.6 36.9 14.7S416 241.3 416 256s-5.6 27.3-14.7 36.9S375.3 304 361 304s-27.3-5.6-36.9-14.7S304 270.7 304 256s5.6-27.3 14.7-36.9S346.7 215 361 215zM23 215c14.3 0 27.3 5.6 36.9 14.7S64 241.3 64 256s-5.6 27.3-14.7 36.9S37.3 304 23 304S-4.3 298.4-13.9 289.3S-32 270.7-32 256s5.6-27.3 14.7-36.9S8.7 215 23 215z"></path>
+              <svg stroke="currentColor" fill="currentColor" strokeWidth="0" viewBox="0 0 512 512" className="w-4 h-4 text-white" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg">
+                <path d="M503.5 204.6L502.8 205.6C495.8 216.6 486.5 225.8 475.3 232.6C464.1 239.4 451.3 243.6 437.9 245.1C424.5 246.6 410.8 245.4 397.8 241.6C384.8 237.8 372.8 231.5 362.4 223.1C352 214.7 343.4 204.3 336.9 192.4C330.4 180.5 326.1 167.3 324.2 153.6C322.3 139.9 322.9 125.9 326.1 112.4C329.3 98.9 335.1 86.1 343.2 74.7C351.3 63.3 361.6 53.6 373.5 46.1C385.4 38.6 398.6 33.5 412.4 31.1C426.2 28.7 440.3 29.1 453.9 32.3C467.5 35.5 480.3 41.4 491.6 49.7C502.9 58 512.4 68.6 519.6 80.8C526.8 93 531.5 106.6 533.3 120.8C535.1 135 534 149.4 530.1 163.1C526.2 176.8 519.6 189.5 510.5 200.6L503.5 204.6ZM477.6 168.6C478.4 162.1 478.1 155.5 476.7 149.1C475.3 142.7 472.8 136.6 469.3 131C465.8 125.4 461.3 120.4 456 116.2C450.7 112 444.7 108.7 438.2 106.4C431.7 104.1 424.8 102.9 417.8 102.8C410.8 102.7 403.9 103.7 397.3 105.8C390.7 107.9 384.5 111.1 378.9 115.3C373.3 119.5 368.4 124.6 364.4 130.4C360.4 136.2 357.4 142.6 355.5 149.4C353.6 156.2 352.9 163.3 353.4 170.4C353.9 177.5 355.6 184.5 358.4 191.1C361.2 197.7 365.1 203.8 369.9 209.2C374.7 214.6 380.3 219.2 386.5 222.8C392.7 226.4 399.4 228.9 406.3 230.2C413.2 231.5 420.2 231.6 427.1 230.5C434 229.4 440.7 227.1 446.9 223.7C453.1 220.3 458.7 215.8 463.4 210.4C468.1 205 471.8 198.8 474.3 192.1C476.8 185.4 478.1 178.3 478.2 171.2L477.6 168.6ZM477.6 168.6C477.6 168.6 477.6 168.6 477.6 168.6Z"></path>
               </svg>
             </div>
             <span className="text-white text-sm">fathom-labs/podium-web</span>
           </div>
 
-          <div className="flex items-center gap-3 p-2 rounded-lg hover:bg-[#32353A] cursor-pointer transition-colors">
+          <div className="flex items-center gap-2 py-1 px-2 rounded hover:bg-[#32353A] cursor-pointer transition-colors">
             <div className="w-8 h-8 rounded-full flex items-center justify-center">
               <svg stroke="currentColor" fill="currentColor" strokeWidth="0" viewBox="0 0 496 512" className="w-4 h-4 text-white" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg">
                 <path d="M248 8C111 8 0 119 0 256s111 248 248 248 248-111 248-248S385 8 248 8zm0 96c48.6 0 88 39.4 88 88s-39.4 88-88 88-88-39.4-88-88 39.4-88 88-88zm0 344c-58.7 0-111.3-26.6-146.5-68.2 18.8-35.4 55.2-59.8 98.5-59.8 2.4 0 4.8.4 7.1 1.1 13 4.2 26.6 6.9 40.9 6.9 14.3 0 28-2.7 40.9-6.9 2.3-.7 4.7-1.1 7.1-1.1 43.3 0 79.7 24.4 98.5 59.8C359.3 421.4 306.7 448 248 448z"></path>
@@ -368,7 +368,7 @@ const ConvoDash: React.FC = () => {
             <span className="text-white text-sm">openartist/workspace</span>
           </div>
 
-          <div className="flex items-center gap-3 p-2 rounded-lg hover:bg-[#32353A] cursor-pointer transition-colors">
+          <div className="flex items-center gap-2 py-1 px-2 rounded hover:bg-[#32353A] cursor-pointer transition-colors">
             <div className="w-8 h-8 rounded-full flex items-center justify-center">
               <svg stroke="currentColor" fill="currentColor" strokeWidth="0" viewBox="0 0 496 512" className="w-4 h-4 text-white" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg">
                 <path d="M248 8C111 8 0 119 0 256s111 248 248 248 248-111 248-248S385 8 248 8zm0 96c48.6 0 88 39.4 88 88s-39.4 88-88 88-88-39.4-88-88 39.4-88 88-88zm0 344c-58.7 0-111.3-26.6-146.5-68.2 18.8-35.4 55.2-59.8 98.5-59.8 2.4 0 4.8.4 7.1 1.1 13 4.2 26.6 6.9 40.9 6.9 14.3 0 28-2.7 40.9-6.9 2.3-.7 4.7-1.1 7.1-1.1 43.3 0 79.7 24.4 98.5 59.8C359.3 421.4 306.7 448 248 448z"></path>
@@ -377,7 +377,7 @@ const ConvoDash: React.FC = () => {
             <span className="text-white text-sm">openartist/holonic</span>
           </div>
 
-          <div className="flex items-center gap-3 p-2 rounded-lg hover:bg-[#32353A] cursor-pointer transition-colors">
+          <div className="flex items-center gap-2 py-1 px-2 rounded hover:bg-[#32353A] cursor-pointer transition-colors">
             <div className="w-8 h-8 rounded-full flex items-center justify-center">
               <svg stroke="currentColor" fill="currentColor" strokeWidth="0" viewBox="0 0 496 512" className="w-4 h-4 text-white" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg">
                 <path d="M248 8C111 8 0 119 0 256s111 248 248 248 248-111 248-248S385 8 248 8zm0 96c48.6 0 88 39.4 88 88s-39.4 88-88 88-88-39.4-88-88 39.4-88 88-88zm0 344c-58.7 0-111.3-26.6-146.5-68.2 18.8-35.4 55.2-59.8 98.5-59.8 2.4 0 4.8.4 7.1 1.1 13 4.2 26.6 6.9 40.9 6.9 14.3 0 28-2.7 40.9-6.9 2.3-.7 4.7-1.1 7.1-1.1 43.3 0 79.7 24.4 98.5 59.8C359.3 421.4 306.7 448 248 448z"></path>
@@ -386,10 +386,10 @@ const ConvoDash: React.FC = () => {
             <span className="text-white text-sm">openartist/mkdocs-cms</span>
           </div>
 
-          <div className="flex items-center gap-3 p-2 rounded-lg hover:bg-[#32353A] cursor-pointer transition-colors">
+          <div className="flex items-center gap-2 py-1 px-2 rounded hover:bg-[#32353A] cursor-pointer transition-colors">
             <div className="w-8 h-8 rounded-full flex items-center justify-center">
-              <svg stroke="currentColor" fill="currentColor" strokeWidth="0" viewBox="0 0 496 512" className="w-4 h-4 text-white" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg">
-                <path d="M248 8C111 8 0 119 0 256s111 248 248 248 248-111 248-248S385 8 248 8zm0 96c48.6 0 88 39.4 88 88s-39.4 88-88 88-88-39.4-88-88 39.4-88 88-88zm0 344c-58.7 0-111.3-26.6-146.5-68.2 18.8-35.4 55.2-59.8 98.5-59.8 2.4 0 4.8.4 7.1 1.1 13 4.2 26.6 6.9 40.9 6.9 14.3 0 28-2.7 40.9-6.9 2.3-.7 4.7-1.1 7.1-1.1 43.3 0 79.7 24.4 98.5 59.8C359.3 421.4 306.7 448 248 448z"></path>
+              <svg stroke="currentColor" fill="currentColor" strokeWidth="0" viewBox="0 0 448 512" className="w-4 h-4 text-white" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg">
+                <path d="M445.2 48.2C401.1 17.3 350.7 0 296.8 0s-104.3 17.3-148.4 48.2C108.3 79.1 64.8 122.4 33.6 166.4c-31.2 44-50.4 95.5-50.4 147.6s19.2 103.6 50.4 147.6c31.2 44 74.7 87.3 114.8 118.2C192.5 410.7 243.9 428 296.8 428s104.3-17.3 148.4-48.2c40.1-30.9 83.6-74.2 114.8-118.2 31.2-44 50.4-95.5 50.4-147.6s-19.2-103.6-50.4-147.6c-31.2-44-74.7-87.3-114.8-118.2zM296.8 400c-57.9 0-104.8-47-104.8-104.8s47-104.8 104.8-104.8 104.8 47 104.8 104.8S354.7 400 296.8 400z"></path>
               </svg>
             </div>
             <span className="text-white text-sm">matrix9180/holons-api</span>
