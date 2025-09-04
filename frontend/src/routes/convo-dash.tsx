@@ -308,9 +308,9 @@ const ConvoDash: React.FC = () => {
   };
 
   return (
-    <div className="flex h-screen bg-[#24272E]">
+    <div className="flex h-screen">
       {/* Left Column - Top Repositories */}
-      <div className="w-80 border-r border-[#3A3D42] bg-[#2A2D32] p-6">
+      <div className="w-80 border-r border-[#3A3D42] p-6">
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-white font-semibold text-lg">Top repositories</h2>
           <button className="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white px-3 py-2 rounded-lg text-sm font-medium transition-colors">
@@ -333,7 +333,7 @@ const ConvoDash: React.FC = () => {
         {/* Repository List */}
         <div className="space-y-3">
           <div className="flex items-center gap-3 p-2 rounded-lg hover:bg-[#32353A] cursor-pointer transition-colors">
-            <div className="w-8 h-8 bg-[#454545] rounded-full flex items-center justify-center">
+            <div className="w-8 h-8 rounded-full flex items-center justify-center">
               <svg stroke="currentColor" fill="currentColor" strokeWidth="0" viewBox="0 0 496 512" className="w-4 h-4 text-white" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg">
                 <path d="M248 8C111 8 0 119 0 256s111 248 248 248 248-111 248-248S385 8 248 8zm0 96c48.6 0 88 39.4 88 88s-39.4 88-88 88-88-39.4-88-88 39.4-88 88-88zm0 344c-58.7 0-111.3-26.6-146.5-68.2 18.8-35.4 55.2-59.8 98.5-59.8 2.4 0 4.8.4 7.1 1.1 13 4.2 26.6 6.9 40.9 6.9 14.3 0 28-2.7 40.9-6.9 2.3-.7 4.7-1.1 7.1-1.1 43.3 0 79.7 24.4 98.5 59.8C359.3 421.4 306.7 448 248 448z"></path>
               </svg>
@@ -342,7 +342,7 @@ const ConvoDash: React.FC = () => {
           </div>
 
           <div className="flex items-center gap-3 p-2 rounded-lg hover:bg-[#32353A] cursor-pointer transition-colors">
-            <div className="w-8 h-8 bg-[#454545] rounded-full flex items-center justify-center">
+            <div className="w-8 h-8 rounded-full flex items-center justify-center">
               <svg stroke="currentColor" fill="currentColor" strokeWidth="0" viewBox="0 0 496 512" className="w-4 h-4 text-white" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg">
                 <path d="M248 8C111 8 0 119 0 256s111 248 248 248 248-111 248-248S385 8 248 8zm0 96c48.6 0 88 39.4 88 88s-39.4 88-88 88-88-39.4-88-88 39.4-88 88-88zm0 344c-58.7 0-111.3-26.6-146.5-68.2 18.8-35.4 55.2-59.8 98.5-59.8 2.4 0 4.8.4 7.1 1.1 13 4.2 26.6 6.9 40.9 6.9 14.3 0 28-2.7 40.9-6.9 2.3-.7 4.7-1.1 7.1-1.1 43.3 0 79.7 24.4 98.5 59.8C359.3 421.4 306.7 448 248 448z"></path>
               </svg>
@@ -351,7 +351,7 @@ const ConvoDash: React.FC = () => {
           </div>
 
           <div className="flex items-center gap-3 p-2 rounded-lg hover:bg-[#32353A] cursor-pointer transition-colors">
-            <div className="w-8 h-8 bg-[#454545] rounded-lg flex items-center justify-center">
+            <div className="w-8 h-8 rounded-lg flex items-center justify-center">
               <svg stroke="currentColor" fill="currentColor" strokeWidth="0" viewBox="0 0 384 512" className="w-4 h-4 text-white" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg">
                 <path d="M361 215c14.3 0 27.3 5.6 36.9 14.7S416 241.3 416 256s-5.6 27.3-14.7 36.9S375.3 304 361 304s-27.3-5.6-36.9-14.7S304 270.7 304 256s5.6-27.3 14.7-36.9S346.7 215 361 215zM23 215c14.3 0 27.3 5.6 36.9 14.7S64 241.3 64 256s-5.6 27.3-14.7 36.9S37.3 304 23 304S-4.3 298.4-13.9 289.3S-32 270.7-32 256s5.6-27.3 14.7-36.9S8.7 215 23 215z"></path>
               </svg>
@@ -360,7 +360,7 @@ const ConvoDash: React.FC = () => {
           </div>
 
           <div className="flex items-center gap-3 p-2 rounded-lg hover:bg-[#32353A] cursor-pointer transition-colors">
-            <div className="w-8 h-8 bg-[#454545] rounded-full flex items-center justify-center">
+            <div className="w-8 h-8 rounded-full flex items-center justify-center">
               <svg stroke="currentColor" fill="currentColor" strokeWidth="0" viewBox="0 0 496 512" className="w-4 h-4 text-white" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg">
                 <path d="M248 8C111 8 0 119 0 256s111 248 248 248 248-111 248-248S385 8 248 8zm0 96c48.6 0 88 39.4 88 88s-39.4 88-88 88-88-39.4-88-88 39.4-88 88-88zm0 344c-58.7 0-111.3-26.6-146.5-68.2 18.8-35.4 55.2-59.8 98.5-59.8 2.4 0 4.8.4 7.1 1.1 13 4.2 26.6 6.9 40.9 6.9 14.3 0 28-2.7 40.9-6.9 2.3-.7 4.7-1.1 7.1-1.1 43.3 0 79.7 24.4 98.5 59.8C359.3 421.4 306.7 448 248 448z"></path>
               </svg>
@@ -369,7 +369,7 @@ const ConvoDash: React.FC = () => {
           </div>
 
           <div className="flex items-center gap-3 p-2 rounded-lg hover:bg-[#32353A] cursor-pointer transition-colors">
-            <div className="w-8 h-8 bg-[#454545] rounded-full flex items-center justify-center">
+            <div className="w-8 h-8 rounded-full flex items-center justify-center">
               <svg stroke="currentColor" fill="currentColor" strokeWidth="0" viewBox="0 0 496 512" className="w-4 h-4 text-white" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg">
                 <path d="M248 8C111 8 0 119 0 256s111 248 248 248 248-111 248-248S385 8 248 8zm0 96c48.6 0 88 39.4 88 88s-39.4 88-88 88-88-39.4-88-88 39.4-88 88-88zm0 344c-58.7 0-111.3-26.6-146.5-68.2 18.8-35.4 55.2-59.8 98.5-59.8 2.4 0 4.8.4 7.1 1.1 13 4.2 26.6 6.9 40.9 6.9 14.3 0 28-2.7 40.9-6.9 2.3-.7 4.7-1.1 7.1-1.1 43.3 0 79.7 24.4 98.5 59.8C359.3 421.4 306.7 448 248 448z"></path>
               </svg>
@@ -378,7 +378,7 @@ const ConvoDash: React.FC = () => {
           </div>
 
           <div className="flex items-center gap-3 p-2 rounded-lg hover:bg-[#32353A] cursor-pointer transition-colors">
-            <div className="w-8 h-8 bg-[#454545] rounded-full flex items-center justify-center">
+            <div className="w-8 h-8 rounded-full flex items-center justify-center">
               <svg stroke="currentColor" fill="currentColor" strokeWidth="0" viewBox="0 0 496 512" className="w-4 h-4 text-white" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg">
                 <path d="M248 8C111 8 0 119 0 256s111 248 248 248 248-111 248-248S385 8 248 8zm0 96c48.6 0 88 39.4 88 88s-39.4 88-88 88-88-39.4-88-88 39.4-88 88-88zm0 344c-58.7 0-111.3-26.6-146.5-68.2 18.8-35.4 55.2-59.8 98.5-59.8 2.4 0 4.8.4 7.1 1.1 13 4.2 26.6 6.9 40.9 6.9 14.3 0 28-2.7 40.9-6.9 2.3-.7 4.7-1.1 7.1-1.1 43.3 0 79.7 24.4 98.5 59.8C359.3 421.4 306.7 448 248 448z"></path>
               </svg>
@@ -387,7 +387,7 @@ const ConvoDash: React.FC = () => {
           </div>
 
           <div className="flex items-center gap-3 p-2 rounded-lg hover:bg-[#32353A] cursor-pointer transition-colors">
-            <div className="w-8 h-8 bg-[#454545] rounded-full flex items-center justify-center">
+            <div className="w-8 h-8 rounded-full flex items-center justify-center">
               <svg stroke="currentColor" fill="currentColor" strokeWidth="0" viewBox="0 0 496 512" className="w-4 h-4 text-white" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg">
                 <path d="M248 8C111 8 0 119 0 256s111 248 248 248 248-111 248-248S385 8 248 8zm0 96c48.6 0 88 39.4 88 88s-39.4 88-88 88-88-39.4-88-88 39.4-88 88-88zm0 344c-58.7 0-111.3-26.6-146.5-68.2 18.8-35.4 55.2-59.8 98.5-59.8 2.4 0 4.8.4 7.1 1.1 13 4.2 26.6 6.9 40.9 6.9 14.3 0 28-2.7 40.9-6.9 2.3-.7 4.7-1.1 7.1-1.1 43.3 0 79.7 24.4 98.5 59.8C359.3 421.4 306.7 448 248 448z"></path>
               </svg>
