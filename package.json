@@ -13,16 +13,17 @@
     "electron:build": "make build && npm run electron:pack",
     "electron:dev": "concurrently -k \"make start-backend\" \"cd frontend && npm run dev -- --port 3004 --host 127.0.0.1\" \"wait-on http://127.0.0.1:3004 && cross-env ELECTRON_DEV_URL=http://127.0.0.1:3004 npm run electron:run\""
   },
+  "dependencies": {
+    "wait-on": "^7.0.1"
+  },
   "devDependencies": {
     "@types/electron": "^1.6.12",
-    "@types/wait-on": "^7.0.0",
     "@types/node": "^22.6.4",
     "concurrently": "^8.2.0",
     "cross-env": "^10.1.0",
     "electron": "^26.1.0",
     "electron-builder": "^24.8.0",
     "typescript": "^5.8.0",
-    "wait-on": "^7.0.1",
     "icon-gen": "^5.0.0",
     "sharp": "^0.33.5"
   },
