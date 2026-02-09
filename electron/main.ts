@@ -9,6 +9,7 @@ const backendPort = 3000;
 const isDev = Boolean(ELECTRON_URL);
 const shouldStartBundledBackend = app.isPackaged;
 let backendProcess: ChildProcess | null = null;
+const PACKAGED_APP_URL = `http://127.0.0.1:${backendPort}`;
 
 const getProductionIndex = () => {
   if (app.isPackaged) {
@@ -42,6 +43,14 @@ const getPythonExecutable = () => {
   return path.join(binDir, pythonName);
 };
 
+const getFrontendBuildDir = () => {
+  if (app.isPackaged) {
+    return path.join(getBackendDir(), "frontend", "build");
+  }
+
+  return path.join(__dirname, "..", "..", "frontend", "build");
+};
+
 const startBundledBackend = () => {
   if (!shouldStartBundledBackend) {
     return;
@@ -56,6 +65,7 @@ const startBundledBackend = () => {
     throw new Error("Bundled backend is missing the Python executable.");
   }
 
+  const frontendBuildDir = getFrontendBuildDir();
   const child = spawn(
     pythonExecutable,
     [
@@ -69,7 +79,11 @@ const startBundledBackend = () => {
     ],
     {
       cwd: getBackendDir(),
-      env: { ...process.env, PYTHONUNBUFFERED: "1" },
+      env: {
+        ...process.env,
+        PYTHONUNBUFFERED: "1",
+        OPENHANDS_FRONTEND_BUILD: frontendBuildDir,
+      },
       stdio: ["ignore", "pipe", "pipe"],
     },
   );
@@ -128,6 +142,8 @@ const createMainWindow = () => {
     if (!app.isPackaged) {
       mainWindow.webContents.openDevTools({ mode: "detach" });
     }
+  } else if (app.isPackaged) {
+    void mainWindow.loadURL(PACKAGED_APP_URL);
   } else {
     void mainWindow.loadFile(getProductionIndex());
   }

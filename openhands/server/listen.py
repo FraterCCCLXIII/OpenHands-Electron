@@ -13,8 +13,9 @@ from openhands.server.middleware import (
 from openhands.server.static import SPAStaticFiles
 
 if os.getenv('SERVE_FRONTEND', 'true').lower() == 'true':
+    frontend_directory = os.getenv('OPENHANDS_FRONTEND_BUILD', './frontend/build')
     base_app.mount(
-        '/', SPAStaticFiles(directory='./frontend/build', html=True), name='dist'
+        '/', SPAStaticFiles(directory=frontend_directory, html=True), name='dist'
     )
 
 base_app.add_middleware(LocalhostCORSMiddleware)

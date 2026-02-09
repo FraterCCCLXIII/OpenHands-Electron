@@ -31,6 +31,13 @@ const copyPaths = () => {
     const dest = path.join(backendDestDir, relative);
     fs.cpSync(src, dest, { recursive: true });
   }
+
+  const frontendBuildSrc = path.join(backendSrcDir, "frontend", "build");
+  const frontendBuildDest = path.join(backendDestDir, "frontend", "build");
+  if (fs.existsSync(frontendBuildSrc)) {
+    fs.rmSync(frontendBuildDest, { recursive: true, force: true });
+    fs.cpSync(frontendBuildSrc, frontendBuildDest, { recursive: true });
+  }
 };
 
 const installDependencies = () => {
