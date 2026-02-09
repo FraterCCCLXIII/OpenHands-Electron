@@ -13,20 +13,13 @@ const getProductionIndex = () => {
   return path.join(__dirname, "..", "..", "frontend", "build", "index.html");
 };
 
-const getIconPath = () => {
-  const base = path.join(__dirname, "..", "icons");
-  return process.platform === "win32"
-    ? path.join(base, "icon.ico")
-    : path.join(base, "icon.png");
-};
-
 const createMainWindow = () => {
   const mainWindow = new BrowserWindow({
     width: 1260,
     height: 768,
     show: false,
     autoHideMenuBar: true,
-    icon: getIconPath(),
+    icon: path.join(__dirname, "assets", "openhands_icon.png"),
     webPreferences: {
       contextIsolation: true,
       preload: path.join(__dirname, "preload.js"),

@@ -4,10 +4,11 @@
   "version": "0.1.0",
   "main": "electron/dist/main.js",
   "scripts": {
-    "generate-icons": "node scripts/generate-electron-icons.mjs",
     "compile:electron": "tsc -p electron/tsconfig.electron.json",
-    "electron:run": "npm run compile:electron && electron ./electron/dist/main.js",
-    "electron:pack": "npm run compile:electron && electron-builder",
+    "electron:copy-assets": "node -e \"const fs = require('fs'); const path = require('path'); const root = path.resolve(__dirname); const src = path.join(root, 'electron', 'assets'); const dest = path.join(root, 'electron', 'dist', 'assets'); fs.rmSync(dest, { recursive: true, force: true }); fs.cpSync(src, dest, { recursive: true });\"",
+    "electron:prep": "npm run compile:electron && npm run electron:copy-assets",
+    "electron:run": "npm run electron:prep && electron ./electron/dist/main.js",
+    "electron:pack": "npm run electron:prep && electron-builder",
     "electron:build": "make build && npm run electron:pack",
     "electron:dev": "concurrently -k \"make start-backend\" \"cd frontend && npm run dev -- --port 3004 --host 127.0.0.1\" \"wait-on http://127.0.0.1:3004 && cross-env ELECTRON_DEV_URL=http://127.0.0.1:3004 npm run electron:run\""
   },
@@ -26,17 +27,10 @@
   "build": {
     "appId": "dev.openhands.electron",
     "productName": "OpenHands",
-    "icon": "electron/icons/icon.png",
+    "icon": "electron/assets/openhands_icon.png",
     "mac": {
-      "icon": "electron/icons/icon.icns",
       "target": "dmg",
       "category": "public.app-category.productivity"
-    },
-    "win": {
-      "icon": "electron/icons/icon.ico"
-    },
-    "linux": {
-      "icon": "electron/icons/icon.png"
     },
     "directories": {
       "output": "dist_electron",
@@ -44,7 +38,7 @@
     },
     "files": [
       "electron/dist/**/*",
-      "electron/icons/**/*",
+      "electron/assets/**/*",
       "frontend/build/**/*",
       "package.json",
       "package-lock.json"

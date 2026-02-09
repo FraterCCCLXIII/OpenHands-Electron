@@ -12,7 +12,7 @@
     "skipLibCheck": true,
     "types": ["node"],
     "typeRoots": ["../node_modules/@types"],
-    "sourceMap": true
+    "sourceMap": false
   },
   "include": ["./main.ts", "./preload.ts"]
 }
