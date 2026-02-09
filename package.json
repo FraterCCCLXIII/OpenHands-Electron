@@ -1,0 +1,41 @@
+{
+  "private": true,
+  "name": "openhands-electron",
+  "version": "0.1.0",
+  "main": "electron/dist/main.js",
+  "scripts": {
+    "compile:electron": "tsc -p electron/tsconfig.electron.json",
+    "electron:run": "npm run compile:electron && electron ./electron/dist/main.js",
+    "electron:pack": "npm run compile:electron && electron-builder",
+    "electron:build": "make build && npm run electron:pack",
+    "electron:dev": "concurrently -k \"make start-backend\" \"cd frontend && npm run dev -- --port 3004 --host 127.0.0.1\" \"wait-on http://127.0.0.1:3004 && cross-env ELECTRON_DEV_URL=http://127.0.0.1:3004 npm run electron:run\""
+  },
+  "devDependencies": {
+    "@types/electron": "^1.6.12",
+    "@types/node": "^22.6.4",
+    "concurrently": "^8.2.0",
+    "cross-env": "^10.1.0",
+    "electron": "^26.1.0",
+    "electron-builder": "^24.8.0",
+    "typescript": "^5.8.0",
+    "wait-on": "^7.0.1"
+  },
+  "build": {
+    "appId": "dev.openhands.electron",
+    "productName": "OpenHands",
+    "directories": {
+      "output": "dist_electron",
+      "app": "."
+    },
+    "files": [
+      "electron/dist/**/*",
+      "frontend/build/**/*",
+      "package.json",
+      "package-lock.json"
+    ],
+    "mac": {
+      "target": "dmg",
+      "category": "public.app-category.productivity"
+    }
+  }
+}

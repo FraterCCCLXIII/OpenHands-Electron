@@ -220,6 +220,7 @@ test_results*
 # production
 frontend/build
 frontend/dist
+dist_electron
 
 # misc
 .DS_Store

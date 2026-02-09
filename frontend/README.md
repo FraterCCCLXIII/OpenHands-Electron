@@ -77,6 +77,18 @@ Start frontend with Mock Service Worker (MSW), see testing for more info.
 npm run dev:mock or npm run dev:mock:saas
 ```
 
+### Electron shell
+
+If you want to run the app inside a desktop window, install the root-level dependencies and use the Electron shell to host the existing frontend/backend stack:
+
+```sh
+# From the repo root (not `frontend/`)
+npm install
+npm run electron:dev
+```
+
+The packaged Electron app can be built via `npm run electron:build`, which reuses the `frontend/build` assets when packaging for macOS.
+
 ### Environment Variables
 
 The frontend application uses the following environment variables:

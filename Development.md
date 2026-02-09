@@ -103,6 +103,28 @@ make run
   make start-frontend
   ```
 
+#### Option C: Run the Electron shell
+
+You can run OpenHands from the Electron desktop shell, which starts the backend, dev frontend server, and the Electron window pointed at it. First install the desktop tooling:
+
+```bash
+npm install
+```
+
+Then run:
+
+```bash
+npm run electron:dev
+```
+
+When you are ready for a packaged experience (macOS builds are supported), first rebuild the frontend/backend stack, then package the app via `electron-builder`:
+
+```bash
+npm run electron:build
+```
+
+The packaged application appears under `dist_electron/`.
+
 ### 5. Running OpenHands with OpenHands
 
 You can use OpenHands to develop and improve OpenHands itself! This is a powerful way to leverage AI assistance for contributing to the project.
