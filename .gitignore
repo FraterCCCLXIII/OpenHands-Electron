@@ -221,6 +221,7 @@ test_results*
 frontend/build
 frontend/dist
 dist_electron
+electron/backend
 
 # misc
 .DS_Store

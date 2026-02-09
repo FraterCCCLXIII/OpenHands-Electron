@@ -4,9 +4,10 @@
   "version": "0.1.0",
   "main": "electron/dist/main.js",
   "scripts": {
+    "bundle-backend": "node electron/scripts/bundle-backend.mjs",
     "compile:electron": "tsc -p electron/tsconfig.electron.json",
     "electron:copy-assets": "node -e \"const fs = require('fs'); const path = require('path'); const root = path.resolve(__dirname); const src = path.join(root, 'electron', 'assets'); const dest = path.join(root, 'electron', 'dist', 'assets'); fs.rmSync(dest, { recursive: true, force: true }); fs.cpSync(src, dest, { recursive: true });\"",
-    "electron:prep": "npm run compile:electron && npm run electron:copy-assets",
+    "electron:prep": "npm run bundle-backend && npm run compile:electron && npm run electron:copy-assets",
     "electron:run": "npm run electron:prep && electron ./electron/dist/main.js",
     "electron:pack": "npm run electron:prep && electron-builder",
     "electron:build": "make build && npm run electron:pack",
@@ -14,6 +15,7 @@
   },
   "devDependencies": {
     "@types/electron": "^1.6.12",
+    "@types/wait-on": "^7.0.0",
     "@types/node": "^22.6.4",
     "concurrently": "^8.2.0",
     "cross-env": "^10.1.0",
@@ -36,12 +38,13 @@
       "output": "dist_electron",
       "app": "."
     },
-    "files": [
-      "electron/dist/**/*",
-      "electron/assets/**/*",
-      "frontend/build/**/*",
-      "package.json",
-      "package-lock.json"
-    ]
+      "files": [
+        "electron/dist/**/*",
+        "electron/assets/**/*",
+        "electron/backend/**/*",
+        "frontend/build/**/*",
+        "package.json",
+        "package-lock.json"
+      ]
   }
 }

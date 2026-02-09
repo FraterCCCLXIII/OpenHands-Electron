@@ -125,6 +125,23 @@ npm run electron:build
 
 The packaged application appears under `dist_electron/`.
 
+#### Option D: Build the self-contained desktop installer
+
+The Electron installer now bundles the backend so that the desktop build ships as a single executable. Behind the scenes:
+
+- The `npm run bundle-backend` script copies the Python package sources (`pyproject.toml`, `poetry.lock`, `openhands`, `scripts`, etc.) into `electron/backend`.
+- Poetry installs the production dependencies into `electron/backend/.venv`, which the Electron main process launches via `uvicorn`.
+- The packaged app waits for the backend to become healthy (it polls `http://127.0.0.1:3000/api/options/config` before rendering the UI).
+
+To reproduce the packaged installer locally, run:
+
+```bash
+make build
+npm run electron:build
+```
+
+During packaging, `electron-builder` now includes the bundled backend directory (`electron/backend`) alongside `electron/dist` and `frontend/build`. The resulting installer lives in `dist_electron/`. If you add or remove backend dependencies, rerun `npm run electron:prep` (which executes `bundle-backend`) before packaging again.
+
 ### 5. Running OpenHands with OpenHands
 
 You can use OpenHands to develop and improve OpenHands itself! This is a powerful way to leverage AI assistance for contributing to the project.

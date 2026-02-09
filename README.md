@@ -51,6 +51,8 @@ The experience will be familiar to anyone who has used Devin or Jules.
 
 [Check out the docs](https://docs.openhands.dev/openhands/usage/run-openhands/local-setup) or view the source in this repo.
 
+If you’d prefer a desktop install that bundles both the web UI and backend API, run `make build` followed by `npm run electron:build`. The Electron installer will copy the bundled Python backend into `electron/backend` and launch it automatically before showing the UI; see [Development.md](Development.md#option-d-build-the-self-contained-desktop-installer) for the full workflow.
+
 ### OpenHands Cloud
 This is a deployment of OpenHands GUI, running on hosted infrastructure.
 

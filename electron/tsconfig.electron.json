@@ -14,5 +14,5 @@
     "typeRoots": ["../node_modules/@types"],
     "sourceMap": false
   },
-  "include": ["./main.ts", "./preload.ts"]
+  "include": ["./main.ts", "./preload.ts", "./types/**/*.d.ts"]
 }
