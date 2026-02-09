@@ -1,0 +1,5 @@
+Electron icon setup:
+- Source: openhands_icon.png (root) → electron/icons/icon.png
+- Generated: icon.icns (macOS), icon.ico (Windows) via npm run generate-icons
+- Script: scripts/generate-electron-icons.mjs (sharp + icon-gen)
+- Config: package.json build.icon, electron/main.ts window icon
