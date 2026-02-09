@@ -20,6 +20,10 @@ const getProductionIndex = () => {
 
 const getBackendDir = () => {
   if (app.isPackaged) {
+    const unpacked = path.join(process.resourcesPath, "app.asar.unpacked", "electron", "backend");
+    if (fs.existsSync(unpacked)) {
+      return unpacked;
+    }
     return path.join(process.resourcesPath, "electron", "backend");
   }
   return path.join(__dirname, "..", "..", "electron", "backend");

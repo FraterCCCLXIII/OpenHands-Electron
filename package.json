@@ -39,6 +39,9 @@
       "output": "dist_electron",
       "app": "."
     },
+    "asarUnpack": [
+      "electron/backend/**/*"
+    ],
       "files": [
         "electron/dist/**/*",
         "electron/assets/**/*",
