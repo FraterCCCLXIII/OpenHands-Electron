@@ -12,6 +12,11 @@ let backendProcess: ChildProcess | null = null;
 
 const getProductionIndex = () => {
   if (app.isPackaged) {
+    const asarIndex = path.join(process.resourcesPath, "app.asar", "frontend", "build", "index.html");
+    if (fs.existsSync(asarIndex)) {
+      return asarIndex;
+    }
+
     return path.join(process.resourcesPath, "frontend", "build", "index.html");
   }
 
