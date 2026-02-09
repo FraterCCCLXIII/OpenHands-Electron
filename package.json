@@ -4,6 +4,7 @@
   "version": "0.1.0",
   "main": "electron/dist/main.js",
   "scripts": {
+    "generate-icons": "node scripts/generate-electron-icons.mjs",
     "compile:electron": "tsc -p electron/tsconfig.electron.json",
     "electron:run": "npm run compile:electron && electron ./electron/dist/main.js",
     "electron:pack": "npm run compile:electron && electron-builder",
@@ -18,24 +19,35 @@
     "electron": "^26.1.0",
     "electron-builder": "^24.8.0",
     "typescript": "^5.8.0",
-    "wait-on": "^7.0.1"
+    "wait-on": "^7.0.1",
+    "icon-gen": "^5.0.0",
+    "sharp": "^0.33.5"
   },
   "build": {
     "appId": "dev.openhands.electron",
     "productName": "OpenHands",
+    "icon": "electron/icons/icon.png",
+    "mac": {
+      "icon": "electron/icons/icon.icns",
+      "target": "dmg",
+      "category": "public.app-category.productivity"
+    },
+    "win": {
+      "icon": "electron/icons/icon.ico"
+    },
+    "linux": {
+      "icon": "electron/icons/icon.png"
+    },
     "directories": {
       "output": "dist_electron",
       "app": "."
     },
     "files": [
       "electron/dist/**/*",
+      "electron/icons/**/*",
       "frontend/build/**/*",
       "package.json",
       "package-lock.json"
-    ],
-    "mac": {
-      "target": "dmg",
-      "category": "public.app-category.productivity"
-    }
+    ]
   }
 }
