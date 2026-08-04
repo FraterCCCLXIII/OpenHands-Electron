@@ -16,7 +16,6 @@ import { useFilteredEvents } from "#/hooks/use-filtered-events";
 import { useScrollToBottom } from "#/hooks/use-scroll-to-bottom";
 import { useLoadOlderEvents } from "#/hooks/use-load-older-events";
 import { TypingIndicator } from "./typing-indicator";
-import { ChatSuggestions } from "./chat-suggestions";
 import { ScrollProvider } from "#/context/scroll-context";
 import { useInitialQueryStore } from "#/stores/initial-query-store";
 import { useSendMessage } from "#/hooks/use-send-message";
@@ -282,6 +281,20 @@ export function ChatInterface() {
   const isHistoryLoading = !showConversationMessages;
   const isChatLoading = isHistoryLoading && !isTask;
 
+  // The empty-state prompt suggestion row sits above the input. Once the user
+  // has run /model, the conversation is no longer logically empty — hide
+  // suggestions so the profile list is interactive.
+  const showPromptSuggestions =
+    !hasSubstantiveAgentActions &&
+    !hasPendingUserMessages &&
+    !userEventsExist &&
+    !hasModelEntries &&
+    !isChatLoading &&
+    !isProvisioningTask &&
+    totalEvents === 0 &&
+    !isArchivedConversation &&
+    !llmBlocked;
+
   const handleSendMessage = async (
     content: string,
     originalImages: File[],
@@ -477,25 +490,6 @@ export function ChatInterface() {
         className="relative flex h-full flex-col justify-between px-4"
         data-testid="chat-interface"
       >
-        {!hasSubstantiveAgentActions &&
-          !hasPendingUserMessages &&
-          !userEventsExist &&
-          !hasModelEntries &&
-          !isChatLoading &&
-          !isProvisioningTask &&
-          totalEvents === 0 &&
-          !isArchivedConversation &&
-          // With no usable LLM the suggestions can't be acted on (the input is
-          // disabled). They're also a `pointer-events-auto` overlay that would
-          // sit over the LlmNotConfiguredBanner below and swallow clicks on its
-          // setup button — so hide them and let the banner be the lone CTA.
-          !llmBlocked && (
-            <ChatSuggestions
-              onSuggestionsClick={(message) => setMessageToSend(message)}
-            />
-          )}
-        {/* Note: We only hide chat suggestions when there's a user message */}
-
         <div
           ref={scrollRef}
           data-testid="chat-scroll-container"
@@ -636,6 +630,7 @@ export function ChatInterface() {
                 onSubmit={handleSendMessage}
                 disabled={isNewConversationPending || llmBlocked}
                 hasStartedConversation={hasStartedConversation}
+                showPromptSuggestions={showPromptSuggestions}
               />
             </div>
           )}

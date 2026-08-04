@@ -1,3 +1,4 @@
+import { ChatPromptSuggestionRow } from "./chat-prompt-suggestion-row";
 import { CustomChatInput } from "./custom-chat-input";
 import { useBtwInterceptor } from "#/hooks/chat/use-btw-interceptor";
 import { useGoalInterceptor } from "#/hooks/chat/use-goal-interceptor";
@@ -17,12 +18,14 @@ interface InteractiveChatBoxProps {
   onSubmit: (message: string, images: File[], files: File[]) => void;
   disabled?: boolean;
   hasStartedConversation?: boolean;
+  showPromptSuggestions?: boolean;
 }
 
 export function InteractiveChatBox({
   onSubmit,
   disabled = false,
   hasStartedConversation,
+  showPromptSuggestions = false,
 }: InteractiveChatBoxProps) {
   const {
     images,
@@ -43,6 +46,9 @@ export function InteractiveChatBox({
     );
 
   const { handleUpload } = useChatAttachmentUpload();
+  const setMessageToSend = useConversationStore(
+    (state) => state.setMessageToSend,
+  );
 
   const handleAfterGoal = useBtwInterceptor(conversationId, (message) => {
     const { imagesToEmbed, imagesAsFiles } = partitionImagesForUpload(
@@ -66,6 +72,14 @@ export function InteractiveChatBox({
 
   return (
     <div data-testid="interactive-chat-box">
+      {showPromptSuggestions ? (
+        <div className="mb-2">
+          <ChatPromptSuggestionRow
+            disabled={isDisabled}
+            onSuggestionClick={setMessageToSend}
+          />
+        </div>
+      ) : null}
       <CustomChatInput
         disabled={isDisabled}
         isNewConversationPending={disabled}
