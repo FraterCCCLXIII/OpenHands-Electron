@@ -31,6 +31,12 @@ vi.mock("#/api/automation-service/automation-service.api", () => ({
   },
 }));
 
+vi.mock("#/api/settings-service/settings-service.api", () => ({
+  default: {
+    getSettings: vi.fn().mockResolvedValue({}),
+  },
+}));
+
 const localBackend: Backend = {
   id: "local-1",
   name: "Local 1",
@@ -237,5 +243,30 @@ describe("AutomationDetail — backend-change guard", () => {
     // Assert — the off-state gate prevents the dispatch API from firing.
     expect(runNow).toBeDisabled();
     expect(AutomationService.dispatchAutomation).not.toHaveBeenCalled();
+  });
+});
+
+describe("AutomationDetail — missing integrations", () => {
+  it("shows a banner when the saved automation needs an unconnected integration", async () => {
+    vi.mocked(AutomationService.getAutomation).mockResolvedValue({
+      ...automation,
+      prompt: "Post a standup digest to Slack",
+    });
+
+    renderDetail();
+
+    expect(
+      await screen.findByTestId("automation-missing-integrations"),
+    ).toBeInTheDocument();
+    expect(screen.getByText("Slack")).toBeInTheDocument();
+  });
+
+  it("hides the banner when the automation does not require integrations", async () => {
+    renderDetail();
+
+    expect(await screen.findByText("Test Automation")).toBeInTheDocument();
+    expect(
+      screen.queryByTestId("automation-missing-integrations"),
+    ).not.toBeInTheDocument();
   });
 });

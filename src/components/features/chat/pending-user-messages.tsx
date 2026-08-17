@@ -9,6 +9,7 @@ import { useOptionalConversationId } from "#/hooks/use-conversation-id";
 import { matchesPendingConversationId } from "#/utils/pending-task-message-link";
 import { ImageCarousel } from "#/components/features/images/image-carousel";
 import { ChatMessage } from "./chat-message";
+import { presentInterviewChatMessage } from "#/utils/automation-create-interview";
 
 /**
  * Renders the queue of locally-tracked user messages that have been submitted
@@ -105,33 +106,37 @@ export function PendingUserMessages() {
 
   return (
     <>
-      {visibleMessages.map((message) => (
-        <ChatMessage
-          key={message.id}
-          type="user"
-          message={message.text}
-          pendingStatus={message.status}
-          onRetry={
-            message.status === "error"
-              ? () => handleRetry(message.id)
-              : undefined
-          }
-          onDismiss={
-            message.status === "error"
-              ? () => handleDismiss(message.id)
-              : undefined
-          }
-          onStop={
-            message.status === "sending"
-              ? () => handleStop(message.id, message.text)
-              : undefined
-          }
-        >
-          {message.imageUrls.length > 0 && (
-            <ImageCarousel size="small" images={message.imageUrls} />
-          )}
-        </ChatMessage>
-      ))}
+      {visibleMessages.map((message) => {
+        const presented = presentInterviewChatMessage(message.text, "user");
+        if (presented === null) return null;
+        return (
+          <ChatMessage
+            key={message.id}
+            type="user"
+            message={presented}
+            pendingStatus={message.status}
+            onRetry={
+              message.status === "error"
+                ? () => handleRetry(message.id)
+                : undefined
+            }
+            onDismiss={
+              message.status === "error"
+                ? () => handleDismiss(message.id)
+                : undefined
+            }
+            onStop={
+              message.status === "sending"
+                ? () => handleStop(message.id, message.text)
+                : undefined
+            }
+          >
+            {message.imageUrls.length > 0 && (
+              <ImageCarousel size="small" images={message.imageUrls} />
+            )}
+          </ChatMessage>
+        );
+      })}
     </>
   );
 }
