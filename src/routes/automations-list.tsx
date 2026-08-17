@@ -38,10 +38,12 @@ import { ErrorState } from "#/components/features/automations/error-state";
 import { BackendNotConfigured } from "#/components/features/automations/backend-not-configured";
 import { DeleteConfirmationModal } from "#/components/features/automations/delete-confirmation-modal";
 import { EditAutomationModal } from "#/components/features/automations/detail/edit-automation-modal";
-import { AddAutomationModal } from "#/components/features/automations/add-automation-modal";
+import { AutomationCreateChatPane } from "#/components/features/automations/automation-create-chat-pane";
+import { AutomationCreateSplitLayout } from "#/components/features/automations/automation-create-split-layout";
 import { ImportAutomationModal } from "#/components/features/automations/import-automation-modal";
 import { RecommendedAutomationsLauncher } from "#/components/features/automations/recommended-automations-launcher";
 import { BrandButton } from "#/components/features/settings/brand-button";
+import { useCreateConversation } from "#/hooks/mutation/use-create-conversation";
 import { useTracking } from "#/hooks/use-tracking";
 import type { Automation, AutomationSpec } from "#/types/automation";
 import {
@@ -104,7 +106,9 @@ export default function AutomationsList() {
     name: string;
   } | null>(null);
   const [editTarget, setEditTarget] = useState<Automation | null>(null);
-  const [isAddAutomationOpen, setIsAddAutomationOpen] = useState(false);
+  const [createConversationId, setCreateConversationId] = useState<
+    string | null
+  >(null);
   const [importSpec, setImportSpec] = useState<AutomationSpec | null>(null);
   const importInputRef = useRef<HTMLInputElement>(null);
 
@@ -131,8 +135,12 @@ export default function AutomationsList() {
   const runSummaries = useAutomationRunSummaries(data?.automations ?? [], {
     enabled: isBackendHealthy && dashboard !== null,
   });
-  const { trackPrebuiltAutomationEnabled, trackAutomationExported } =
-    useTracking();
+  const {
+    trackPrebuiltAutomationEnabled,
+    trackAutomationExported,
+    trackAutomationCreatedButton,
+  } = useTracking();
+  const createConversation = useCreateConversation();
   const toggleMutation = useToggleAutomation();
   const deleteMutation = useDeleteAutomation();
   const dispatchMutation = useDispatchAutomation();
@@ -276,6 +284,34 @@ export default function AutomationsList() {
     writeStoredAutomationViewMode(view);
   }, []);
 
+  const openCreateConversationDrawer = useCallback(() => {
+    if (createConversationId || createConversation.isPending) return;
+
+    trackAutomationCreatedButton({ backendKind: active.backend.kind });
+    createConversation.mutate(
+      {
+        query: t(I18nKey.AUTOMATIONS$CREATE_AUTOMATION_PROMPT),
+        entryPoint: "automations_add",
+      },
+      {
+        onSuccess: (conversation) => {
+          setCreateConversationId(conversation.conversation_id);
+        },
+        onError: (error) => {
+          displayErrorToast(
+            getApiErrorMessage(error, t(I18nKey.ERROR$GENERIC)),
+          );
+        },
+      },
+    );
+  }, [
+    active.backend.kind,
+    createConversation,
+    createConversationId,
+    t,
+    trackAutomationCreatedButton,
+  ]);
+
   // Resets what filters to nothing: search and the dropdowns, never the sort.
   const handleClearFilters = () => {
     setSearchQuery("");
@@ -306,8 +342,8 @@ export default function AutomationsList() {
 
   // Dashboard mode wraps the page in the manifest's sub-page shell; without a
   // manifest the wrapper — like everything else — is exactly today's.
-  const renderShell = (content: ReactNode) =>
-    dashboard ? (
+  const renderShell = (content: ReactNode) => {
+    const page = dashboard ? (
       <ManifestSubpageLayout
         heading={dashboard.nav.heading}
         navTestIdBase="automations-navbar"
@@ -320,6 +356,22 @@ export default function AutomationsList() {
         <div className="p-6 max-w-4xl mx-auto">{content}</div>
       </div>
     );
+
+    return (
+      <AutomationCreateSplitLayout
+        drawer={
+          createConversationId ? (
+            <AutomationCreateChatPane
+              conversationId={createConversationId}
+              onClose={() => setCreateConversationId(null)}
+            />
+          ) : null
+        }
+      >
+        {page}
+      </AutomationCreateSplitLayout>
+    );
+  };
 
   const hasMore = data ? data.total > data.automations.length : false;
   const hasNoAutomations =
@@ -395,7 +447,8 @@ export default function AutomationsList() {
             variant="secondary"
             testId="automations-add-automation"
             className="whitespace-nowrap"
-            onClick={() => setIsAddAutomationOpen(true)}
+            isDisabled={createConversation.isPending}
+            onClick={openCreateConversationDrawer}
           >
             {t(I18nKey.AUTOMATIONS$ADD_AUTOMATION)}
           </BrandButton>
@@ -448,7 +501,9 @@ export default function AutomationsList() {
 
         {isError && !isLoading && <ErrorState onRetry={refetch} />}
 
-        {hasNoAutomations && <EmptyState />}
+        {hasNoAutomations && (
+          <EmptyState onCreateAutomation={openCreateConversationDrawer} />
+        )}
 
         {!isLoading &&
           !isError &&
@@ -529,11 +584,6 @@ export default function AutomationsList() {
           onClose={() => setEditTarget(null)}
         />
       )}
-
-      <AddAutomationModal
-        isOpen={isAddAutomationOpen}
-        onClose={() => setIsAddAutomationOpen(false)}
-      />
 
       <ImportAutomationModal
         isOpen={importSpec !== null}

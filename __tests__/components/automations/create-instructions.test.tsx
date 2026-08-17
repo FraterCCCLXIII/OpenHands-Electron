@@ -64,7 +64,7 @@ vi.mock("react-i18next", () => ({
   },
 }));
 
-function renderCreateInstructions() {
+function renderCreateInstructions(onCreateAutomation?: () => void) {
   const value: NavigationContextValue = {
     currentPath: "/automations",
     conversationId: null,
@@ -74,7 +74,7 @@ function renderCreateInstructions() {
 
   const result = render(
     <NavigationProvider value={value}>
-      <CreateInstructions />
+      <CreateInstructions onCreateAutomation={onCreateAutomation} />
     </NavigationProvider>,
   );
 
@@ -107,7 +107,21 @@ describe("CreateInstructions", () => {
     );
   });
 
-  it("navigates to conversations with a prefilled prompt when Create Automation is clicked", async () => {
+  it("calls onCreateAutomation instead of navigating home when the handler is provided", async () => {
+    const user = userEvent.setup();
+    const onCreateAutomation = vi.fn();
+    const setMessageToSend = vi.fn();
+    useConversationStore.setState({ setMessageToSend });
+    const { navigate } = renderCreateInstructions(onCreateAutomation);
+
+    await user.click(screen.getByTestId("automations-create-automation"));
+
+    expect(onCreateAutomation).toHaveBeenCalledTimes(1);
+    expect(navigate).not.toHaveBeenCalled();
+    expect(setMessageToSend).not.toHaveBeenCalled();
+  });
+
+  it("navigates to conversations with a prefilled prompt when no drawer handler is provided", async () => {
     const user = userEvent.setup();
     const setMessageToSend = vi.fn();
     useConversationStore.setState({ setMessageToSend });

@@ -15,6 +15,10 @@ import {
   setRegisteredBackends,
 } from "#/api/backend-registry/active-store";
 import { ActiveBackendProvider } from "#/contexts/active-backend-context";
+import {
+  NavigationProvider,
+  type NavigationContextValue,
+} from "#/context/navigation-context";
 import AutomationsList from "#/routes/automations-list";
 import type { Backend } from "#/api/backend-registry/types";
 import {
@@ -37,6 +41,34 @@ vi.mock("#/api/automation-service/automation-service.api", () => ({
 vi.mock("#/utils/custom-toast-handlers", () => ({
   displaySuccessToast: vi.fn(),
   displayErrorToast: vi.fn(),
+}));
+
+const mockCreateConversationMutate = vi.fn();
+const mockNavigate = vi.fn();
+
+vi.mock("#/hooks/mutation/use-create-conversation", () => ({
+  useCreateConversation: () => ({
+    mutate: mockCreateConversationMutate,
+    isPending: false,
+  }),
+}));
+
+vi.mock("#/components/features/conversation/conversation-main/chat-interface-wrapper", () => ({
+  ChatInterfaceWrapper: () => <div data-testid="stub-chat-interface" />,
+}));
+
+vi.mock("#/contexts/websocket-provider-wrapper", () => ({
+  WebSocketProviderWrapper: ({ children }: { children: React.ReactNode }) =>
+    children,
+}));
+
+vi.mock("#/wrapper/event-handler", () => ({
+  EventHandler: ({ children }: { children: React.ReactNode }) => children,
+}));
+
+vi.mock("#/hooks/use-breakpoint", () => ({
+  useBreakpoint: () => false,
+  SIDEBAR_RAIL_COLLAPSE_MAX_WIDTH: 767,
 }));
 
 const localBackend: Backend = {
@@ -78,12 +110,20 @@ function renderList(queryClient?: QueryClient) {
     new QueryClient({
       defaultOptions: { queries: { retry: false }, mutations: { retry: false } },
     });
+  const navigation: NavigationContextValue = {
+    currentPath: "/automations",
+    conversationId: null,
+    isNavigating: false,
+    navigate: mockNavigate,
+  };
   return render(
     <QueryClientProvider client={client}>
       <ActiveBackendProvider>
-        <MemoryRouter initialEntries={["/automations"]}>
-          <AutomationsList />
-        </MemoryRouter>
+        <NavigationProvider value={navigation}>
+          <MemoryRouter initialEntries={["/automations"]}>
+            <AutomationsList />
+          </MemoryRouter>
+        </NavigationProvider>
       </ActiveBackendProvider>
     </QueryClientProvider>,
   );
@@ -98,6 +138,11 @@ beforeEach(() => {
   vi.mocked(AutomationService.getAutomations).mockResolvedValue(listResponse);
   vi.mocked(AutomationService.updateAutomation).mockReset();
   vi.mocked(AutomationService.dispatchAutomation).mockReset();
+  mockCreateConversationMutate.mockReset();
+  mockCreateConversationMutate.mockImplementation((_vars, options) => {
+    options?.onSuccess?.({ conversation_id: "conv-create-1" });
+  });
+  mockNavigate.mockReset();
   setRegisteredBackends([localBackend, cloudBackend]);
   setActiveSelection({ backendId: localBackend.id });
 });
@@ -390,5 +435,87 @@ describe("AutomationsList — list freshness on remount", () => {
     // Assert — the remount refetched and surfaced the newly created
     // automation, which is the user-observable behavior the bug blocked.
     await screen.findByText(newAutomation.name);
+  });
+});
+
+describe("AutomationsList — create conversation drawer", () => {
+  it("opens a pushing conversation pane when Add Automation is clicked", async () => {
+    const user = userEvent.setup();
+    renderList();
+    await screen.findByText(automation.name);
+
+    await user.click(screen.getByTestId("automations-add-automation"));
+
+    expect(mockCreateConversationMutate).toHaveBeenCalledWith(
+      {
+        query: I18nKey.AUTOMATIONS$CREATE_AUTOMATION_PROMPT,
+        entryPoint: "automations_add",
+      },
+      expect.objectContaining({ onSuccess: expect.any(Function) }),
+    );
+    expect(
+      await screen.findByTestId("automation-create-chat-pane"),
+    ).toBeInTheDocument();
+    expect(screen.getByTestId("automation-create-split")).toBeInTheDocument();
+    expect(screen.getByText(automation.name)).toBeInTheDocument();
+    expect(screen.getByTestId("stub-chat-interface")).toBeInTheDocument();
+  });
+
+  it("closes the pane without leaving the automations page", async () => {
+    const user = userEvent.setup();
+    renderList();
+    await screen.findByText(automation.name);
+    await user.click(screen.getByTestId("automations-add-automation"));
+    await screen.findByTestId("automation-create-chat-pane");
+
+    await user.click(screen.getByTestId("automation-create-chat-close"));
+
+    expect(
+      screen.queryByTestId("automation-create-chat-pane"),
+    ).not.toBeInTheDocument();
+    expect(screen.getByText(automation.name)).toBeInTheDocument();
+    expect(mockNavigate).not.toHaveBeenCalled();
+  });
+
+  it("expands the pane conversation to the full conversation page", async () => {
+    const user = userEvent.setup();
+    renderList();
+    await screen.findByText(automation.name);
+    await user.click(screen.getByTestId("automations-add-automation"));
+    await screen.findByTestId("automation-create-chat-pane");
+
+    await user.click(screen.getByTestId("automation-create-chat-expand"));
+
+    expect(mockNavigate).toHaveBeenCalledWith("/conversations/conv-create-1");
+  });
+
+  it("opens the same drawer from the empty-state Create Automation button", async () => {
+    vi.mocked(AutomationService.getAutomations).mockResolvedValue({
+      automations: [],
+      total: 0,
+    });
+    const user = userEvent.setup();
+    renderList();
+    await screen.findByTestId("automations-empty");
+
+    await user.click(screen.getByTestId("automations-create-automation"));
+
+    expect(mockCreateConversationMutate).toHaveBeenCalledTimes(1);
+    expect(
+      await screen.findByTestId("automation-create-chat-pane"),
+    ).toBeInTheDocument();
+    expect(screen.getByTestId("automations-empty")).toBeInTheDocument();
+  });
+
+  it("reuses the open conversation instead of creating another", async () => {
+    const user = userEvent.setup();
+    renderList();
+    await screen.findByText(automation.name);
+
+    await user.click(screen.getByTestId("automations-add-automation"));
+    await screen.findByTestId("automation-create-chat-pane");
+    await user.click(screen.getByTestId("automations-add-automation"));
+
+    expect(mockCreateConversationMutate).toHaveBeenCalledTimes(1);
   });
 });
