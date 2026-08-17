@@ -44,6 +44,7 @@ import { ImportAutomationModal } from "#/components/features/automations/import-
 import { RecommendedAutomationsLauncher } from "#/components/features/automations/recommended-automations-launcher";
 import { BrandButton } from "#/components/features/settings/brand-button";
 import { useCreateConversation } from "#/hooks/mutation/use-create-conversation";
+import { useAutomationCreateDraftStore } from "#/stores/automation-create-draft-store";
 import { useTracking } from "#/hooks/use-tracking";
 import type { Automation, AutomationSpec } from "#/types/automation";
 import {
@@ -141,6 +142,9 @@ export default function AutomationsList() {
     trackAutomationCreatedButton,
   } = useTracking();
   const createConversation = useCreateConversation();
+  const ensureDraft = useAutomationCreateDraftStore(
+    (state) => state.ensureDraft,
+  );
   const toggleMutation = useToggleAutomation();
   const deleteMutation = useDeleteAutomation();
   const dispatchMutation = useDispatchAutomation();
@@ -290,11 +294,12 @@ export default function AutomationsList() {
     trackAutomationCreatedButton({ backendKind: active.backend.kind });
     createConversation.mutate(
       {
-        query: t(I18nKey.AUTOMATIONS$CREATE_AUTOMATION_PROMPT),
+        query: t(I18nKey.AUTOMATIONS$CREATE_INTERVIEW_PROMPT),
         entryPoint: "automations_add",
       },
       {
         onSuccess: (conversation) => {
+          ensureDraft(conversation.conversation_id);
           setCreateConversationId(conversation.conversation_id);
         },
         onError: (error) => {
@@ -308,6 +313,7 @@ export default function AutomationsList() {
     active.backend.kind,
     createConversation,
     createConversationId,
+    ensureDraft,
     t,
     trackAutomationCreatedButton,
   ]);

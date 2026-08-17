@@ -20,6 +20,7 @@ import { useNavigation } from "#/context/navigation-context";
 import { automationListPath } from "#/manifests/automation-interface";
 import { BackLink } from "#/components/features/automations/detail/back-link";
 import { DetailHeader } from "#/components/features/automations/detail/detail-header";
+import { MissingIntegrationsSection } from "#/components/features/automations/detail/missing-integrations-section";
 import { PromptSection } from "#/components/features/automations/detail/prompt-section";
 import { ConfigurationSection } from "#/components/features/automations/detail/configuration-section";
 import { PluginsSection } from "#/components/features/automations/detail/plugins-section";
@@ -199,6 +200,7 @@ export default function AutomationDetail() {
             onRunNow={handleRunNow}
             isRunningNow={dispatchMutation.isPending}
           />
+          <MissingIntegrationsSection automation={automation} />
           {automation.prompt && <PromptSection prompt={automation.prompt} />}
           <ConfigurationSection automation={automation} />
           {automation.plugins && automation.plugins.length > 0 && (

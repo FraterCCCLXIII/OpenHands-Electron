@@ -63,6 +63,22 @@ export function useImportAutomation() {
   });
 }
 
+export function useCreateInterviewAutomation() {
+  const queryClient = useQueryClient();
+  const { trackAutomationSetupCreated } = useTracking();
+  return useMutation({
+    mutationFn: (spec: AutomationSpec) =>
+      AutomationService.createAutomation({ ...spec, enabled: false }),
+    onSuccess: (automation) => {
+      queryClient.invalidateQueries({ queryKey: AUTOMATIONS_QUERY_KEY });
+      trackAutomationSetupCreated({
+        automationId: automation.id,
+        setupMode: "interview",
+      });
+    },
+  });
+}
+
 export function useUpdateAutomation() {
   const queryClient = useQueryClient();
   const active = useActiveBackend();

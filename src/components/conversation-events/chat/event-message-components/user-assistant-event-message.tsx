@@ -6,6 +6,7 @@ import { ChatMessage } from "../../../features/chat/chat-message";
 import { ImageCarousel } from "../../../features/images/image-carousel";
 import { ConversationConfirmationButtons } from "#/components/shared/buttons/conversation-confirmation-buttons";
 import { parseMessageFromEvent } from "../event-content-helpers/parse-message-from-event";
+import { presentInterviewChatMessage } from "#/utils/automation-create-interview";
 import { CriticResultDisplay } from "./critic-result-display";
 import { CollapsibleThinking } from "./collapsible-thinking";
 import { splitInlineThink } from "../event-thought-helpers";
@@ -44,10 +45,20 @@ export function UserAssistantEventMessage({
   const parsed = parseMessageFromEvent(event);
   // Route an inline <think> block (e.g. from a streamed reply) to the thinking
   // section so reloaded conversations match the live rendering.
-  const { reasoning, message } =
+  const split =
     event.source === "agent"
       ? splitInlineThink(parsed)
       : { reasoning: "", message: parsed };
+  const presented = presentInterviewChatMessage(
+    split.message,
+    event.source === "user" ? "user" : "agent",
+  );
+  const reasoning = split.reasoning;
+  const message = presented ?? "";
+
+  if (presented === null && !reasoning) {
+    return null;
+  }
 
   const imageUrls: string[] = [];
   if (Array.isArray(event.llm_message.content)) {

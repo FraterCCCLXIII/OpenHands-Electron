@@ -256,8 +256,67 @@ describe("UserAssistantEventMessage — branch action", () => {
     ).not.toBeInTheDocument();
   });
 
+  it("shows interview widget answers as plain text", () => {
+    renderMessage({
+      ...makeEvent("user", "evt-interview"),
+      llm_message: {
+        role: "user",
+        content: [
+          {
+            type: "text",
+            text: "[automation-interview] intent=write a sonnet every morning",
+          },
+        ],
+      },
+    } as MessageEvent);
+
+    expect(
+      screen.getByText("write a sonnet every morning"),
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByText(/\[automation-interview\]/),
+    ).not.toBeInTheDocument();
+  });
+
+  it("hides the interview seed prompt", () => {
+    renderMessage({
+      ...makeEvent("user", "evt-seed"),
+      llm_message: {
+        role: "user",
+        content: [
+          {
+            type: "text",
+            text: "Create an automation. Ask one question at a time and wait for my answers.",
+          },
+        ],
+      },
+    } as MessageEvent);
+
+    expect(screen.queryByTestId("user-message")).not.toBeInTheDocument();
+  });
+
+  it("hides agent picker fences from the visible reply", () => {
+    renderMessage({
+      ...makeEvent("agent", "evt-fences"),
+      llm_message: {
+        role: "assistant",
+        content: [
+          {
+            type: "text",
+            text: 'I\'ll ask next.\n\n```automation\n{"field":"intent"}\n```\n',
+          },
+        ],
+      },
+    } as MessageEvent);
+
+    expect(screen.getByText("I'll ask next.")).toBeInTheDocument();
+    expect(screen.queryByText(/"field"/)).not.toBeInTheDocument();
+  });
+
   it("hides the branch action outside of a conversation", () => {
-    useOptionalConversationIdMock.mockReturnValue({ conversationId: undefined });
+    useOptionalConversationIdMock.mockReturnValue({
+      conversationId: undefined,
+    });
 
     renderMessage(makeEvent("agent", "evt-agent"));
 

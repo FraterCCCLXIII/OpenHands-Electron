@@ -51,6 +51,8 @@ import { useOptionalConversationId } from "#/hooks/use-conversation-id";
 import { useActiveConversation } from "#/hooks/query/use-active-conversation";
 import { I18nKey } from "#/i18n/declaration";
 import { hasConversationStarted } from "./components/resolve-picker-kind";
+import { AutomationInterviewPanel } from "#/components/features/automations/automation-interview-panel";
+import { useAutomationCreateInterview } from "#/hooks/use-automation-create-interview";
 
 function getEntryPoint(
   hasRepository: boolean | null,
@@ -164,6 +166,7 @@ export function ChatInterface({
 
   const { selectedRepository, replayJson } = useInitialQueryStore();
   const { conversationId } = useOptionalConversationId();
+  const automationInterview = useAutomationCreateInterview(conversationId);
 
   // The live goal banner renders in the scroll stream but advances via store
   // updates (in-progress goal events are filtered out of `renderableEvents`),
@@ -314,6 +317,8 @@ export function ChatInterface({
       newConversationCommand();
       return;
     }
+
+    automationInterview.applyComposerText(content);
 
     // Create mutable copies of the arrays
     const images = [...originalImages];
@@ -644,6 +649,9 @@ export function ChatInterface({
                 </div>
               </div>
 
+              {conversationId && automationInterview.draft ? (
+                <AutomationInterviewPanel conversationId={conversationId} />
+              ) : null}
               <InteractiveChatBox
                 onSubmit={handleSendMessage}
                 disabled={isNewConversationPending || llmBlocked}

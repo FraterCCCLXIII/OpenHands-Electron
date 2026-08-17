@@ -37,6 +37,7 @@ import { HookExecutionEventMessage } from "./event-message-components/hook-execu
 import { createSkillReadyEvent } from "./event-content-helpers/create-skill-ready-event";
 import { shouldShowPlanPreview } from "./hooks/use-plan-preview-events";
 import { getReasoningContent, splitInlineThink } from "./event-thought-helpers";
+import { presentInterviewChatMessage } from "#/utils/automation-create-interview";
 
 interface EventMessageProps {
   event: OpenHandsEvent & { isFromPlanningAgent?: boolean };
@@ -200,13 +201,14 @@ export function EventMessage({
     const reasoningContent = [event.reasoning_content ?? "", inlineThink]
       .filter(Boolean)
       .join("\n\n");
+    const presented = presentInterviewChatMessage(message, "agent");
     return (
       <>
         {reasoningContent && <CollapsibleThinking content={reasoningContent} />}
-        {message && (
+        {presented && (
           <ChatMessage
             type="agent"
-            message={message}
+            message={presented}
             isFromPlanningAgent={isFromPlanningAgent}
           />
         )}

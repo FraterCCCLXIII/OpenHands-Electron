@@ -20,6 +20,7 @@ import {
   type NavigationContextValue,
 } from "#/context/navigation-context";
 import AutomationsList from "#/routes/automations-list";
+import { useAutomationCreateDraftStore } from "#/stores/automation-create-draft-store";
 import type { Backend } from "#/api/backend-registry/types";
 import {
   AutomationRunStatus,
@@ -143,6 +144,7 @@ beforeEach(() => {
     options?.onSuccess?.({ conversation_id: "conv-create-1" });
   });
   mockNavigate.mockReset();
+  useAutomationCreateDraftStore.setState({ drafts: {} });
   setRegisteredBackends([localBackend, cloudBackend]);
   setActiveSelection({ backendId: localBackend.id });
 });
@@ -448,7 +450,7 @@ describe("AutomationsList — create conversation drawer", () => {
 
     expect(mockCreateConversationMutate).toHaveBeenCalledWith(
       {
-        query: I18nKey.AUTOMATIONS$CREATE_AUTOMATION_PROMPT,
+        query: I18nKey.AUTOMATIONS$CREATE_INTERVIEW_PROMPT,
         entryPoint: "automations_add",
       },
       expect.objectContaining({ onSuccess: expect.any(Function) }),
@@ -459,6 +461,9 @@ describe("AutomationsList — create conversation drawer", () => {
     expect(screen.getByTestId("automation-create-split")).toBeInTheDocument();
     expect(screen.getByText(automation.name)).toBeInTheDocument();
     expect(screen.getByTestId("stub-chat-interface")).toBeInTheDocument();
+    expect(
+      useAutomationCreateDraftStore.getState().drafts["conv-create-1"],
+    ).toBeDefined();
   });
 
   it("closes the pane without leaving the automations page", async () => {
