@@ -4,7 +4,11 @@ import { extensionModuleEmptyStateClassName } from "#/utils/extension-module-car
 import { CreateInstructions } from "./create-instructions";
 import { RecommendedAutomationsLauncher } from "./recommended-automations-launcher";
 
-export function EmptyState() {
+interface EmptyStateProps {
+  onCreateAutomation?: () => void;
+}
+
+export function EmptyState({ onCreateAutomation }: EmptyStateProps) {
   const { t } = useTranslation("openhands");
 
   return (
@@ -15,7 +19,7 @@ export function EmptyState() {
       <p className="text-sm text-white">{t(I18nKey.AUTOMATIONS$EMPTY)}</p>
 
       <div className="mt-4 flex justify-center">
-        <CreateInstructions />
+        <CreateInstructions onCreateAutomation={onCreateAutomation} />
       </div>
 
       <div className="mt-8 w-full text-left">

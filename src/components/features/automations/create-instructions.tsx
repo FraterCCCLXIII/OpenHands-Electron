@@ -41,14 +41,18 @@ const CREATE_INSTRUCTIONS_INLINE_COMPONENTS = {
 interface CreateInstructionsProps {
   /** If true, the instructions are collapsible and start collapsed */
   collapsible?: boolean;
+  /** Opens the dashboard create-conversation drawer instead of leaving the page. */
+  onCreateAutomation?: () => void;
 }
 
 interface CreateInstructionsContentProps {
   onLaunch?: () => void;
+  onCreateAutomation?: () => void;
 }
 
 export function CreateInstructionsContent({
   onLaunch,
+  onCreateAutomation,
 }: CreateInstructionsContentProps = {}) {
   const { t } = useTranslation("openhands");
   const launchInChat = useLaunchSkillInChat();
@@ -56,6 +60,10 @@ export function CreateInstructionsContent({
   const { trackAutomationCreatedButton } = useTracking();
 
   const handleCreateAutomation = () => {
+    if (onCreateAutomation) {
+      onCreateAutomation();
+      return;
+    }
     trackAutomationCreatedButton({ backendKind: active.backend.kind });
     launchInChat(t(I18nKey.AUTOMATIONS$CREATE_AUTOMATION_PROMPT), onLaunch);
   };
@@ -98,6 +106,7 @@ export function CreateInstructionsContent({
 
 export function CreateInstructions({
   collapsible = false,
+  onCreateAutomation,
 }: CreateInstructionsProps) {
   const { t } = useTranslation("openhands");
   const [isExpanded, setIsExpanded] = useState(!collapsible);
@@ -123,7 +132,9 @@ export function CreateInstructions({
         </button>
         {isExpanded ? (
           <div className="px-4 pb-4">
-            <CreateInstructionsContent />
+            <CreateInstructionsContent
+              onCreateAutomation={onCreateAutomation}
+            />
           </div>
         ) : null}
       </div>
@@ -132,7 +143,7 @@ export function CreateInstructions({
 
   return (
     <div className="w-full max-w-2xl">
-      <CreateInstructionsContent />
+      <CreateInstructionsContent onCreateAutomation={onCreateAutomation} />
     </div>
   );
 }

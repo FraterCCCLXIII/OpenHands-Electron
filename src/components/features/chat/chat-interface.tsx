@@ -61,7 +61,13 @@ function getEntryPoint(
   return "direct";
 }
 
-export function ChatInterface() {
+interface ChatInterfaceProps {
+  showGitControlBar?: boolean;
+}
+
+export function ChatInterface({
+  showGitControlBar = true,
+}: ChatInterfaceProps) {
   const { trackInitialQuerySubmitted, trackUserMessageSent } = useTracking();
   const { setMessageToSend, conversationMode, planContent } =
     useConversationStore();
@@ -651,6 +657,7 @@ export function ChatInterface() {
                 onSubmit={handleSendMessage}
                 disabled={isNewConversationPending || llmBlocked}
                 hasStartedConversation={hasStartedConversation}
+                showGitControlBar={showGitControlBar}
               />
             </div>
           )}

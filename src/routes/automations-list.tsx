@@ -1,5 +1,12 @@
-import { useState, useMemo, useCallback, type ReactNode } from "react";
-import { RefreshCw } from "lucide-react";
+import {
+  useState,
+  useMemo,
+  useCallback,
+  useRef,
+  type ChangeEvent,
+  type ReactNode,
+} from "react";
+import { FileUp, RefreshCw } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { I18nKey } from "#/i18n/declaration";
 import {
@@ -32,11 +39,12 @@ import { ErrorState } from "#/components/features/automations/error-state";
 import { BackendNotConfigured } from "#/components/features/automations/backend-not-configured";
 import { DeleteConfirmationModal } from "#/components/features/automations/delete-confirmation-modal";
 import { EditAutomationModal } from "#/components/features/automations/detail/edit-automation-modal";
-import { AddAutomationMenu } from "#/components/features/automations/add-automation-menu";
-import { AddAutomationModal } from "#/components/features/automations/add-automation-modal";
+import { AutomationCreateChatPane } from "#/components/features/automations/automation-create-chat-pane";
+import { AutomationCreateSplitLayout } from "#/components/features/automations/automation-create-split-layout";
 import { ImportAutomationModal } from "#/components/features/automations/import-automation-modal";
 import { RecommendedAutomationsLauncher } from "#/components/features/automations/recommended-automations-launcher";
 import { BrandButton } from "#/components/features/settings/brand-button";
+import { useCreateConversation } from "#/hooks/mutation/use-create-conversation";
 import { useTracking } from "#/hooks/use-tracking";
 import type { Automation, AutomationSpec } from "#/types/automation";
 import {
@@ -112,9 +120,11 @@ export default function AutomationsList() {
     name: string;
   } | null>(null);
   const [editTarget, setEditTarget] = useState<Automation | null>(null);
-  const [isAddAutomationOpen, setIsAddAutomationOpen] = useState(false);
+  const [createConversationId, setCreateConversationId] = useState<
+    string | null
+  >(null);
   const [importSpec, setImportSpec] = useState<AutomationSpec | null>(null);
-  const [isImportOpen, setIsImportOpen] = useState(false);
+  const importInputRef = useRef<HTMLInputElement>(null);
 
   const active = useActiveBackend();
   const { navigate } = useNavigation();
@@ -140,8 +150,12 @@ export default function AutomationsList() {
   const runSummaries = useAutomationRunSummaries(data?.automations ?? [], {
     enabled: isBackendHealthy && dashboard !== null,
   });
-  const { trackPrebuiltAutomationEnabled, trackAutomationExported } =
-    useTracking();
+  const {
+    trackPrebuiltAutomationEnabled,
+    trackAutomationExported,
+    trackAutomationCreatedButton,
+  } = useTracking();
+  const createConversation = useCreateConversation();
   const toggleMutation = useToggleAutomation();
   const deleteMutation = useDeleteAutomation();
   const dispatchMutation = useDispatchAutomation();
@@ -228,7 +242,12 @@ export default function AutomationsList() {
     trackAutomationExported({ backendKind: active.backend.kind });
   };
 
-  const handleImportFile = async (file: File) => {
+  const handleImportFile = async (event: ChangeEvent<HTMLInputElement>) => {
+    const input = event.currentTarget;
+    const file = input.files?.[0];
+    input.value = "";
+    if (!file) return;
+
     try {
       let parsed: unknown;
       try {
@@ -252,7 +271,6 @@ export default function AutomationsList() {
       { ...importSpec, enabled: false },
       {
         onSuccess: (created) => {
-          setIsImportOpen(false);
           setImportSpec(null);
           displaySuccessToastWithLink(
             t(I18nKey.AUTOMATIONS$IMPORT_SUCCESS, { name: created.name }),
@@ -280,6 +298,34 @@ export default function AutomationsList() {
     setViewMode(view);
     writeStoredAutomationViewMode(view);
   }, []);
+
+  const openCreateConversationDrawer = useCallback(() => {
+    if (createConversationId || createConversation.isPending) return;
+
+    trackAutomationCreatedButton({ backendKind: active.backend.kind });
+    createConversation.mutate(
+      {
+        query: t(I18nKey.AUTOMATIONS$CREATE_AUTOMATION_PROMPT),
+        entryPoint: "automations_add",
+      },
+      {
+        onSuccess: (conversation) => {
+          setCreateConversationId(conversation.conversation_id);
+        },
+        onError: (error) => {
+          displayErrorToast(
+            getApiErrorMessage(error, t(I18nKey.ERROR$GENERIC)),
+          );
+        },
+      },
+    );
+  }, [
+    active.backend.kind,
+    createConversation,
+    createConversationId,
+    t,
+    trackAutomationCreatedButton,
+  ]);
 
   // Resets what filters to nothing: search and the dropdowns, never the sort.
   const handleClearFilters = () => {
@@ -311,8 +357,8 @@ export default function AutomationsList() {
 
   // Dashboard mode wraps the page in the manifest's sub-page shell; without a
   // manifest the wrapper — like everything else — is exactly today's.
-  const renderShell = (content: ReactNode) =>
-    dashboard ? (
+  const renderShell = (content: ReactNode) => {
+    const page = dashboard ? (
       <ManifestSubpageLayout
         heading={dashboard.nav.heading}
         navTestIdBase="automations-navbar"
@@ -325,6 +371,22 @@ export default function AutomationsList() {
         <div className="p-6 max-w-4xl mx-auto">{content}</div>
       </div>
     );
+
+    return (
+      <AutomationCreateSplitLayout
+        drawer={
+          createConversationId ? (
+            <AutomationCreateChatPane
+              conversationId={createConversationId}
+              onClose={() => setCreateConversationId(null)}
+            />
+          ) : null
+        }
+      >
+        {page}
+      </AutomationCreateSplitLayout>
+    );
+  };
 
   const hasMore = data ? data.total > data.automations.length : false;
   const hasNoAutomations =
@@ -385,10 +447,34 @@ export default function AutomationsList() {
               {t(I18nKey.AUTOMATIONS$GIT_SYNC$NAV_BUTTON)}
             </BrandButton>
           )}
-          <AddAutomationMenu
-            onAdd={() => setIsAddAutomationOpen(true)}
-            onImport={() => setIsImportOpen(true)}
+          <BrandButton
+            type="button"
+            variant="secondary"
+            testId="automations-import-automation"
+            className="whitespace-nowrap"
+            onClick={() => importInputRef.current?.click()}
+            startContent={<FileUp className="size-4" aria-hidden />}
+          >
+            {t(I18nKey.AUTOMATIONS$IMPORT)}
+          </BrandButton>
+          <input
+            ref={importInputRef}
+            type="file"
+            accept="application/json,.json"
+            className="hidden"
+            data-testid="automations-import-file"
+            onChange={handleImportFile}
           />
+          <BrandButton
+            type="button"
+            variant="secondary"
+            testId="automations-add-automation"
+            className="whitespace-nowrap"
+            isDisabled={createConversation.isPending}
+            onClick={openCreateConversationDrawer}
+          >
+            {t(I18nKey.AUTOMATIONS$ADD_AUTOMATION)}
+          </BrandButton>
         </div>
       </div>
 
@@ -438,7 +524,9 @@ export default function AutomationsList() {
 
         {isError && !isLoading && <ErrorState onRetry={refetch} />}
 
-        {hasNoAutomations && <EmptyState />}
+        {hasNoAutomations && (
+          <EmptyState onCreateAutomation={openCreateConversationDrawer} />
+        )}
 
         {!isLoading &&
           !isError &&
@@ -520,21 +608,12 @@ export default function AutomationsList() {
         />
       )}
 
-      <AddAutomationModal
-        isOpen={isAddAutomationOpen}
-        onClose={() => setIsAddAutomationOpen(false)}
-      />
-
       <ImportAutomationModal
-        isOpen={isImportOpen}
+        isOpen={importSpec !== null}
         spec={importSpec}
         isImporting={importMutation.isPending}
-        onClose={() => {
-          setIsImportOpen(false);
-          setImportSpec(null);
-        }}
+        onClose={() => setImportSpec(null)}
         onImport={handleImportConfirm}
-        onFile={handleImportFile}
       />
     </>,
   );
