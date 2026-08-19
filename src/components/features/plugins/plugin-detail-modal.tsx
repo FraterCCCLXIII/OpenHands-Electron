@@ -66,7 +66,19 @@ export function PluginDetailModal({
           <div className="flex items-start gap-3 pr-6">
             <PluginIconBadge pluginName={plugin.name} />
             <div className="min-w-0 flex-1">
-              <h2 className={modalTitleLgClassName}>{plugin.name}</h2>
+              <div className="flex min-w-0 flex-wrap items-center gap-2">
+                <h2 className={modalTitleLgClassName}>{plugin.name}</h2>
+                {plugin.version ? (
+                  <span
+                    data-testid={`plugin-modal-version-${plugin.name}`}
+                    className={cn(extensionModuleCardPillClassName, "border-0")}
+                  >
+                    {t(I18nKey.SETTINGS$SKILLS_VERSION, {
+                      version: plugin.version,
+                    })}
+                  </span>
+                ) : null}
+              </div>
               {plugin.source ? (
                 <p className="mt-1 break-all text-xs text-tertiary-alt">
                   {plugin.source}
@@ -113,13 +125,6 @@ export function PluginDetailModal({
             {plugin.isLocal ? (
               <span className={extensionModuleCardPillClassName}>
                 {t(I18nKey.SETTINGS$PLUGINS_FILTER_LOCAL)}
-              </span>
-            ) : null}
-            {plugin.version ? (
-              <span className={extensionModuleCardPillClassName}>
-                {t(I18nKey.SETTINGS$SKILLS_VERSION, {
-                  version: plugin.version,
-                })}
               </span>
             ) : null}
             {plugin.ref ? (

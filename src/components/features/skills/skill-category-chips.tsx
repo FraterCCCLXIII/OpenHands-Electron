@@ -29,7 +29,7 @@ export function SkillCategoryChips({
         data-testid="skill-category-chips"
         role="group"
         aria-label={t(group.labelKey)}
-        className="flex w-max min-w-full flex-nowrap gap-1.5"
+        className="flex w-max min-w-full flex-nowrap gap-2"
       >
         {group.rows.map((row) => {
           const Icon = SKILL_CATEGORY_ICONS[row.value as SkillCategoryId];
@@ -45,7 +45,7 @@ export function SkillCategoryChips({
               onClick={() => onToggle(row.value)}
               title={label}
               className={cn(
-                "inline-flex shrink-0 items-center gap-1.5 rounded-full border-0 px-2.5 py-1 text-xs transition-colors",
+                "inline-flex shrink-0 items-center gap-2 rounded-full border-0 px-3 py-1.5 text-sm transition-colors",
                 row.disabled
                   ? "cursor-default text-tertiary-alt/40"
                   : "cursor-pointer",
@@ -55,11 +55,11 @@ export function SkillCategoryChips({
                       "bg-[rgba(255,255,255,0.04)] text-tertiary-light hover:bg-[var(--oh-surface-raised)] hover:text-white",
               )}
             >
-              {Icon ? <Icon className="size-3 shrink-0" aria-hidden /> : null}
+              {Icon ? <Icon className="size-4 shrink-0" aria-hidden /> : null}
               <span className="whitespace-nowrap">{label}</span>
               <span
                 className={cn(
-                  "shrink-0 text-[10px]",
+                  "shrink-0 text-xs",
                   row.checked ? "text-black/60" : "text-tertiary-alt",
                 )}
               >

@@ -12,6 +12,8 @@ import { I18nKey } from "#/i18n/declaration";
 import type { SkillInfo } from "#/types/settings";
 import { cn } from "#/utils/utils";
 import { modalTitleLgClassName } from "#/utils/modal-classes";
+import { extensionModuleCardPillClassName } from "#/utils/extension-module-card-classes";
+import { VerticalScrollEdges } from "#/components/shared/vertical-scroll-edges";
 import CopyIcon from "#/icons/copy.svg?react";
 import CheckmarkIcon from "#/icons/checkmark.svg?react";
 import MessageSquareShareIcon from "#/icons/message-square-share.svg?react";
@@ -76,7 +78,7 @@ export function SkillDetailModal({
       buildSkillPills(skill, t, {
         variant: "detail",
         testIdPrefix: "skill-modal-pill",
-      }),
+      }).filter((pill) => !pill.id.startsWith("version-")),
     [skill, t],
   );
   const showCopySource = isCopyableSkillSource(skill.source);
@@ -105,98 +107,120 @@ export function SkillDetailModal({
         data-testid="skill-detail-modal"
         data-skill-name={skill.name}
         className={cn(
-          "relative flex max-h-[85vh] flex-col gap-4 overflow-y-auto rounded-xl border border-[var(--oh-border)] bg-base-secondary p-6 custom-scrollbar",
+          "relative flex max-h-[85vh] min-h-0 flex-col overflow-hidden rounded-xl border border-[var(--oh-border)] bg-base-secondary",
           modalWidthClassName("lg"),
           MODAL_MAX_WIDTH_VIEWPORT,
         )}
       >
         <ModalCloseButton onClose={onClose} testId="skill-detail-modal-close" />
-        <div className="flex items-start gap-3 pr-6">
-          <SkillIconBadge skillName={skill.name} />
-          <div className="min-w-0 flex-1">
-            <h2
-              data-testid={`skill-modal-name-${skill.name}`}
-              className={modalTitleLgClassName}
-            >
-              {skill.name}
-            </h2>
-            {skill.source ? (
-              <div className="mt-0.5 flex min-w-0 items-center gap-1">
-                <p
-                  data-testid={`skill-modal-source-${skill.name}`}
-                  className="min-w-0 flex-1 truncate text-xs text-tertiary-alt"
-                  title={skill.source}
+
+        <header className="flex-shrink-0 px-6 pb-4 pt-6">
+          <div className="flex items-start gap-3 pr-6">
+            <SkillIconBadge skillName={skill.name} />
+            <div className="min-w-0 flex-1">
+              <div className="flex min-w-0 flex-wrap items-center gap-2">
+                <h2
+                  data-testid={`skill-modal-name-${skill.name}`}
+                  className={modalTitleLgClassName}
                 >
-                  {skill.source}
-                </p>
-                {showCopySource ? (
-                  <button
-                    type="button"
-                    data-testid={`skill-modal-copy-source-${skill.name}`}
-                    aria-label={t(
-                      sourceCopied
-                        ? I18nKey.BUTTON$COPIED
-                        : I18nKey.SETTINGS$SKILLS_COPY_PATH,
-                    )}
-                    disabled={sourceCopied}
-                    onClick={handleCopySource}
-                    className="shrink-0 cursor-pointer border-0 bg-transparent p-0.5 text-tertiary-alt hover:text-white disabled:cursor-default [&_path]:fill-current"
+                  {skill.name}
+                </h2>
+                {skill.version ? (
+                  <span
+                    data-testid={`skill-modal-pill-${skill.name}-version`}
+                    className={cn(extensionModuleCardPillClassName, "border-0")}
                   >
-                    {sourceCopied ? (
-                      <CheckmarkIcon width={12} height={12} />
-                    ) : (
-                      <CopyIcon width={12} height={12} />
-                    )}
-                  </button>
+                    {t(I18nKey.SETTINGS$SKILLS_VERSION, {
+                      version: skill.version,
+                    })}
+                  </span>
                 ) : null}
               </div>
-            ) : null}
+              {skill.source ? (
+                <div className="mt-0.5 flex min-w-0 items-center gap-1">
+                  <p
+                    data-testid={`skill-modal-source-${skill.name}`}
+                    className="min-w-0 flex-1 truncate text-xs text-tertiary-alt"
+                    title={skill.source}
+                  >
+                    {skill.source}
+                  </p>
+                  {showCopySource ? (
+                    <button
+                      type="button"
+                      data-testid={`skill-modal-copy-source-${skill.name}`}
+                      aria-label={t(
+                        sourceCopied
+                          ? I18nKey.BUTTON$COPIED
+                          : I18nKey.SETTINGS$SKILLS_COPY_PATH,
+                      )}
+                      disabled={sourceCopied}
+                      onClick={handleCopySource}
+                      className="shrink-0 cursor-pointer border-0 bg-transparent p-0.5 text-tertiary-alt hover:text-white disabled:cursor-default [&_path]:fill-current"
+                    >
+                      {sourceCopied ? (
+                        <CheckmarkIcon width={12} height={12} />
+                      ) : (
+                        <CopyIcon width={12} height={12} />
+                      )}
+                    </button>
+                  ) : null}
+                </div>
+              ) : null}
+            </div>
           </div>
-        </div>
+        </header>
 
-        <div
-          data-testid={`skill-modal-enable-row-${skill.name}`}
-          className="flex w-full items-center rounded-lg border border-[var(--oh-border)] bg-[rgba(255,255,255,0.04)] px-3 py-2.5"
+        <VerticalScrollEdges
+          className="min-h-0 flex-1"
+          scrollClassName="flex flex-col gap-4 px-6 pb-6 custom-scrollbar"
+          scrollTestId="skill-detail-modal-body"
+          edgeTestIdPrefix="skill-detail-modal-scroll"
         >
-          <SettingsSwitch
-            testId={`skill-modal-toggle-${skill.name}`}
-            isToggled={enabled}
-            onToggle={onToggle}
-            togglePosition="right"
+          <div
+            data-testid={`skill-modal-enable-row-${skill.name}`}
+            className="flex w-full items-center rounded-lg border border-[var(--oh-border)] bg-[rgba(255,255,255,0.04)] px-3 py-2.5"
           >
-            {t(
-              enabled
-                ? I18nKey.SETTINGS$SKILLS_ENABLED
-                : I18nKey.SETTINGS$SKILLS_DISABLED,
-            )}
-          </SettingsSwitch>
-        </div>
+            <SettingsSwitch
+              testId={`skill-modal-toggle-${skill.name}`}
+              isToggled={enabled}
+              onToggle={onToggle}
+              togglePosition="right"
+            >
+              {t(
+                enabled
+                  ? I18nKey.SETTINGS$SKILLS_ENABLED
+                  : I18nKey.SETTINGS$SKILLS_DISABLED,
+              )}
+            </SettingsSwitch>
+          </div>
 
-        {description ? (
-          <p
-            data-testid={`skill-modal-description-${skill.name}`}
-            className="text-sm leading-relaxed text-tertiary-light"
-          >
-            {description}
-          </p>
-        ) : null}
+          {description ? (
+            <p
+              data-testid={`skill-modal-description-${skill.name}`}
+              className="text-sm leading-relaxed text-tertiary-light"
+            >
+              {description}
+            </p>
+          ) : null}
 
-        {pills.length > 0 ? (
-          <SkillCardPillRow
-            pills={pills}
-            testId={`skill-modal-pills-${skill.name}`}
-          />
-        ) : null}
+          {pills.length > 0 ? (
+            <SkillCardPillRow
+              pills={pills}
+              testId={`skill-modal-pills-${skill.name}`}
+            />
+          ) : null}
 
-        {skill.content ? (
-          <ReadonlyTextArea
-            testId={`skill-modal-field-content-${skill.name}`}
-            label={t(I18nKey.SETTINGS$SKILLS_CONTENT)}
-            value={skill.content}
-          />
-        ) : null}
+          {skill.content ? (
+            <ReadonlyTextArea
+              testId={`skill-modal-field-content-${skill.name}`}
+              label={t(I18nKey.SETTINGS$SKILLS_CONTENT)}
+              value={skill.content}
+            />
+          ) : null}
+        </VerticalScrollEdges>
 
-        <div className="mt-2 flex justify-end gap-2">
+        <footer className="flex flex-shrink-0 flex-wrap justify-end gap-2 px-6 pb-6 pt-4">
           <BrandButton
             type="button"
             variant="secondary"
@@ -217,7 +241,7 @@ export function SkillDetailModal({
           >
             {t(I18nKey.SETTINGS$SKILLS_USE_SKILL_BUTTON)}
           </BrandButton>
-        </div>
+        </footer>
       </div>
     </ModalBackdrop>
   );
