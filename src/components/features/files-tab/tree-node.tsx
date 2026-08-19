@@ -1,7 +1,9 @@
 import { useState } from "react";
+import { Folder, FolderOpen } from "lucide-react";
 
 import FileIcon from "#/icons/file.svg?react";
-import FolderIcon from "#/icons/folder.svg?react";
+import ChevronDownSmallIcon from "#/icons/chevron-down-small.svg?react";
+import ChevronRightSmallIcon from "#/icons/chevron-right-small.svg?react";
 import { FileTreeNode } from "#/utils/file-tree";
 import { cn } from "#/utils/utils";
 
@@ -36,16 +38,30 @@ export function TreeNode({
           // per-row indentation computed from tree depth at runtime
           style={{ paddingLeft: `${indentPx}px` }}
         >
-          <span
-            aria-hidden
-            className={cn(
-              "inline-block w-3 text-[10px] text-[var(--oh-muted)] transition-transform",
-              isOpen ? "rotate-90" : "rotate-0",
-            )}
-          >
-            ▶
-          </span>
-          <FolderIcon className="w-3.5 h-3.5 shrink-0" />
+          {isOpen ? (
+            <ChevronDownSmallIcon
+              aria-hidden
+              className="h-4 w-4 shrink-0 text-[var(--oh-muted)]"
+            />
+          ) : (
+            <ChevronRightSmallIcon
+              aria-hidden
+              className="h-4 w-4 shrink-0 text-[var(--oh-muted)]"
+            />
+          )}
+          {isOpen ? (
+            <FolderOpen
+              aria-hidden
+              strokeWidth={2}
+              className="h-3.5 w-3.5 shrink-0"
+            />
+          ) : (
+            <Folder
+              aria-hidden
+              strokeWidth={2}
+              className="h-3.5 w-3.5 shrink-0"
+            />
+          )}
           <span className="truncate">{node.name}</span>
         </button>
         {isOpen && node.children.length > 0 && (

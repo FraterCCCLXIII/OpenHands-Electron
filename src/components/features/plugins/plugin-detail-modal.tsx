@@ -4,10 +4,14 @@ import { ModalCloseButton } from "#/components/shared/modals/modal-close-button"
 import { BrandButton } from "#/components/features/settings/brand-button";
 import { SettingsSwitch } from "#/components/features/settings/settings-switch";
 import { SkillIconBadge } from "#/components/features/skills/skill-icon-badge";
+import { PluginIconBadge } from "#/components/features/plugins/plugin-icon-badge";
 import { I18nKey } from "#/i18n/declaration";
-import { cn } from "#/utils/utils";
 import { modalTitleLgClassName } from "#/utils/modal-classes";
 import { extensionModuleCardPillClassName } from "#/utils/extension-module-card-classes";
+import { VerticalScrollEdges } from "#/components/shared/vertical-scroll-edges";
+import MessageSquareShareIcon from "#/icons/message-square-share.svg?react";
+import RefreshIcon from "#/icons/u-refresh.svg?react";
+import TrashIcon from "#/icons/trash.svg?react";
 import type { PluginViewModel } from "./build-plugins-view-model";
 import { PluginFilesSection } from "./plugin-files-section";
 
@@ -42,7 +46,7 @@ export function PluginDetailModal({
       <div
         data-testid="plugin-detail-modal"
         data-plugin-name={plugin.name}
-        className="relative flex w-[640px] max-w-[90vw] max-h-[85vh] flex-col rounded-xl border border-[var(--oh-border)] bg-base-secondary"
+        className="relative flex w-[640px] max-w-[90vw] max-h-[85vh] min-h-0 flex-col overflow-hidden rounded-xl border border-[var(--oh-border)] bg-base-secondary"
       >
         <ModalCloseButton
           onClose={onClose}
@@ -50,15 +54,25 @@ export function PluginDetailModal({
         />
 
         <header className="flex-shrink-0 px-6 pb-4 pt-6">
-          <h2 className={cn("pr-6", modalTitleLgClassName)}>{plugin.name}</h2>
-          {plugin.source ? (
-            <p className="mt-1 break-all text-xs text-tertiary-alt">
-              {plugin.source}
-            </p>
-          ) : null}
+          <div className="flex items-start gap-3 pr-6">
+            <PluginIconBadge pluginName={plugin.name} />
+            <div className="min-w-0 flex-1">
+              <h2 className={modalTitleLgClassName}>{plugin.name}</h2>
+              {plugin.source ? (
+                <p className="mt-1 break-all text-xs text-tertiary-alt">
+                  {plugin.source}
+                </p>
+              ) : null}
+            </div>
+          </div>
         </header>
 
-        <div className="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto px-6 custom-scrollbar">
+        <VerticalScrollEdges
+          className="min-h-0 flex-1"
+          scrollClassName="flex flex-col gap-4 px-6 pb-6 custom-scrollbar"
+          scrollTestId="plugin-detail-modal-body"
+          edgeTestIdPrefix="plugin-detail-modal-scroll"
+        >
           {plugin.description ? (
             <p className="text-sm leading-relaxed text-tertiary-light">
               {plugin.description}
@@ -91,19 +105,24 @@ export function PluginDetailModal({
           </div>
 
           {plugin.installed ? (
-            <SettingsSwitch
-              testId={`plugin-modal-toggle-${plugin.name}`}
-              isToggled={plugin.enabled}
-              onToggle={onToggle}
-              isDisabled={actionsDisabled}
-              togglePosition="right"
+            <div
+              data-testid={`plugin-modal-enable-row-${plugin.name}`}
+              className="flex w-full items-center rounded-lg border border-[var(--oh-border)] bg-[rgba(255,255,255,0.04)] px-3 py-2.5"
             >
-              {t(
-                plugin.enabled
-                  ? I18nKey.SETTINGS$SKILLS_ENABLED
-                  : I18nKey.SETTINGS$SKILLS_DISABLED,
-              )}
-            </SettingsSwitch>
+              <SettingsSwitch
+                testId={`plugin-modal-toggle-${plugin.name}`}
+                isToggled={plugin.enabled}
+                onToggle={onToggle}
+                isDisabled={actionsDisabled}
+                togglePosition="right"
+              >
+                {t(
+                  plugin.enabled
+                    ? I18nKey.SETTINGS$SKILLS_ENABLED
+                    : I18nKey.SETTINGS$SKILLS_DISABLED,
+                )}
+              </SettingsSwitch>
+            </div>
           ) : null}
 
           {plugin.skills?.length ? (
@@ -138,55 +157,9 @@ export function PluginDetailModal({
           {plugin.path && plugin.files?.length ? (
             <PluginFilesSection basePath={plugin.path} files={plugin.files} />
           ) : null}
-        </div>
+        </VerticalScrollEdges>
 
-        <footer className="flex flex-shrink-0 flex-wrap justify-end gap-2 px-6 pb-6 pt-4">
-          {plugin.installed ? (
-            <>
-              <BrandButton
-                type="button"
-                variant="secondary"
-                testId={`plugin-detail-refresh-${plugin.name}`}
-                isDisabled={actionsDisabled}
-                onClick={onRefresh}
-              >
-                {t(I18nKey.SETTINGS$PLUGINS_REFRESH)}
-              </BrandButton>
-              <BrandButton
-                type="button"
-                variant="secondary"
-                testId={`plugin-detail-uninstall-${plugin.name}`}
-                isDisabled={actionsDisabled}
-                onClick={onUninstall}
-              >
-                {t(I18nKey.SETTINGS$PLUGINS_UNINSTALL)}
-              </BrandButton>
-            </>
-          ) : plugin.isLocal ? null : (
-            <BrandButton
-              type="button"
-              variant="secondary"
-              testId={`plugin-detail-install-${plugin.name}`}
-              isDisabled={actionsDisabled}
-              onClick={onInstall}
-            >
-              {t(
-                isBusy
-                  ? I18nKey.SETTINGS$PLUGINS_INSTALLING
-                  : I18nKey.SETTINGS$PLUGINS_INSTALL,
-              )}
-            </BrandButton>
-          )}
-          {plugin.source && onStartConversation ? (
-            <BrandButton
-              type="button"
-              variant="secondary"
-              testId={`plugin-detail-start-conversation-${plugin.name}`}
-              onClick={onStartConversation}
-            >
-              {t(I18nKey.COMMON$START_CONVERSATION)}
-            </BrandButton>
-          ) : null}
+        <footer className="flex flex-shrink-0 flex-wrap items-center justify-between gap-2 px-6 pb-6 pt-4">
           <BrandButton
             type="button"
             variant="secondary"
@@ -195,6 +168,60 @@ export function PluginDetailModal({
           >
             {t(I18nKey.BUTTON$CLOSE)}
           </BrandButton>
+
+          <div className="flex flex-wrap justify-end gap-2">
+            {plugin.installed ? (
+              <>
+                <BrandButton
+                  type="button"
+                  variant="secondary"
+                  testId={`plugin-detail-refresh-${plugin.name}`}
+                  isDisabled={actionsDisabled}
+                  onClick={onRefresh}
+                  startContent={<RefreshIcon className="size-4" aria-hidden />}
+                >
+                  {t(I18nKey.SETTINGS$PLUGINS_REFRESH)}
+                </BrandButton>
+                <BrandButton
+                  type="button"
+                  variant="secondary"
+                  testId={`plugin-detail-uninstall-${plugin.name}`}
+                  isDisabled={actionsDisabled}
+                  onClick={onUninstall}
+                  startContent={<TrashIcon className="size-4" aria-hidden />}
+                >
+                  {t(I18nKey.SETTINGS$PLUGINS_UNINSTALL)}
+                </BrandButton>
+              </>
+            ) : plugin.isLocal ? null : (
+              <BrandButton
+                type="button"
+                variant="secondary"
+                testId={`plugin-detail-install-${plugin.name}`}
+                isDisabled={actionsDisabled}
+                onClick={onInstall}
+              >
+                {t(
+                  isBusy
+                    ? I18nKey.SETTINGS$PLUGINS_INSTALLING
+                    : I18nKey.SETTINGS$PLUGINS_INSTALL,
+                )}
+              </BrandButton>
+            )}
+            {plugin.source && onStartConversation ? (
+              <BrandButton
+                type="button"
+                variant="primary"
+                testId={`plugin-detail-start-conversation-${plugin.name}`}
+                onClick={onStartConversation}
+                startContent={
+                  <MessageSquareShareIcon className="size-4" aria-hidden />
+                }
+              >
+                {t(I18nKey.COMMON$START_CONVERSATION)}
+              </BrandButton>
+            ) : null}
+          </div>
         </footer>
       </div>
     </ModalBackdrop>
