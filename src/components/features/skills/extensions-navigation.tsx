@@ -3,6 +3,7 @@ import { ExternalLink } from "lucide-react";
 import { NavigationLink } from "#/components/shared/navigation-link";
 import { cn } from "#/utils/utils";
 import SkillsIcon from "#/icons/skills.svg?react";
+import PluginCubeIcon from "#/icons/u-puzzle-piece.svg?react";
 import ServerProcessIcon from "#/icons/server-process.svg?react";
 import { BackendSyncedSettingsBadge } from "#/components/features/settings/backend-synced-settings-badge";
 import {
@@ -42,24 +43,7 @@ export const EXTENSIONS_NAV_ITEMS: ExtensionNavItem[] = [
   {
     to: "/plugins",
     label: "Plugins",
-    icon: (
-      <svg
-        xmlns="http://www.w3.org/2000/svg"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        width={16}
-        height={16}
-        aria-hidden="true"
-      >
-        <path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z" />
-        <path d="m3.3 7 8.7 5 8.7-5" />
-        <path d="M12 22V12" />
-      </svg>
-    ),
+    icon: <PluginCubeIcon width={16} height={16} aria-hidden="true" />,
     end: true,
   },
 ];

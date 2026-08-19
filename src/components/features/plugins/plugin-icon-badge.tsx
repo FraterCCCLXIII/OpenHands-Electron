@@ -1,4 +1,4 @@
-import PuzzleIcon from "#/icons/u-puzzle-piece.svg?react";
+import PluginCubeIcon from "#/icons/u-puzzle-piece.svg?react";
 import { cn } from "#/utils/utils";
 
 interface PluginIconBadgeProps {
@@ -23,7 +23,7 @@ export function PluginIconBadge({
         className,
       )}
     >
-      <PuzzleIcon />
+      <PluginCubeIcon />
     </span>
   );
 }

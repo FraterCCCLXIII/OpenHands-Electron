@@ -1,7 +1,11 @@
+import { Info } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { cn } from "#/utils/utils";
 import { StyledTooltip } from "#/components/shared/buttons/styled-tooltip";
 import { I18nKey } from "#/i18n/declaration";
+
+const SAVE_AS_SECRET_TOOLTIP_CLASS =
+  "!bg-base-secondary !text-tertiary-light border border-[var(--oh-border)] rounded-lg px-3 py-2 text-xs font-normal leading-relaxed shadow-lg max-w-[280px]";
 
 interface SaveAsSecretToggleProps {
   fieldKey: string;
@@ -20,7 +24,7 @@ export function SaveAsSecretToggle({
     <label
       data-testid={`mcp-install-save-secret-${fieldKey}`}
       className={cn(
-        "flex items-center gap-2 px-3 py-2 mt-0.5 rounded-lg border cursor-pointer transition-colors",
+        "flex items-center gap-2 px-3 py-2 mt-3 rounded-lg border cursor-pointer transition-colors",
         checked
           ? "border-green-500/35 bg-green-500/10"
           : "border-[var(--oh-border)] bg-transparent hover:bg-white/[0.03]",
@@ -68,16 +72,17 @@ export function SaveAsSecretToggle({
       <StyledTooltip
         content={t(I18nKey.MCP$SAVE_AS_SECRET_TOOLTIP)}
         placement="top"
+        tooltipClassName={SAVE_AS_SECRET_TOOLTIP_CLASS}
       >
         {/* button so the tooltip is keyboard-reachable; type=button prevents
             accidental form submission when the user presses Enter. */}
         <button
           type="button"
           aria-label={t(I18nKey.MCP$SAVE_AS_SECRET_TOOLTIP)}
-          className="flex items-center justify-center size-[15px] shrink-0 rounded-full border border-[var(--oh-muted)] text-tertiary-alt text-[9px] font-bold cursor-help"
+          className="flex shrink-0 items-center justify-center text-white cursor-help"
           onClick={(e) => e.preventDefault()}
         >
-          ?
+          <Info className="size-3.5" aria-hidden />
         </button>
       </StyledTooltip>
     </label>

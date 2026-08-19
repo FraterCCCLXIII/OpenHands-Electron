@@ -1,5 +1,5 @@
 import { useTranslation } from "react-i18next";
-import PuzzleIcon from "#/icons/u-puzzle-piece.svg?react";
+import PluginCubeIcon from "#/icons/u-puzzle-piece.svg?react";
 import { I18nKey } from "#/i18n/declaration";
 import { cn } from "#/utils/utils";
 import {
@@ -40,7 +40,12 @@ export function PluginPickerTrigger({
       )}
     >
       <span className="flex h-4 w-4 shrink-0 items-center justify-center">
-        <PuzzleIcon width={16} height={16} className="shrink-0" aria-hidden />
+        <PluginCubeIcon
+          width={16}
+          height={16}
+          className="shrink-0"
+          aria-hidden
+        />
       </span>
       <span className="text-sm font-normal leading-5">
         {t(I18nKey.PLUGINS$PICKER_TRIGGER)}
