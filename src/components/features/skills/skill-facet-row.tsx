@@ -1,14 +1,15 @@
-import { Check, type LucideIcon } from "lucide-react";
+import { Check } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { I18nKey } from "#/i18n/declaration";
 import { cn } from "#/utils/utils";
+import type { SkillCategoryIcon } from "#/utils/skill-category";
 
 interface SkillFacetRowProps {
   labelKey: I18nKey;
   count: number;
   checked: boolean;
   disabled: boolean;
-  icon?: LucideIcon;
+  icon?: SkillCategoryIcon;
   testId: string;
   onToggle: () => void;
 }

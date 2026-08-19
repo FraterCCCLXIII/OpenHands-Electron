@@ -6,10 +6,10 @@ import {
   PenLine,
   Plug,
   ShieldCheck,
-  Workflow,
   Wrench,
   type LucideIcon,
 } from "lucide-react";
+import AutomationsIcon from "#/icons/automations.svg?react";
 import {
   SKILL_CATEGORY_IDS,
   type SkillCategoryId,
@@ -42,17 +42,20 @@ export const SKILL_CATEGORY_LABEL_KEYS: Record<SkillCategoryId, I18nKey> = {
   other: I18nKey.SETTINGS$SKILLS_CATEGORY_OTHER,
 };
 
-export const SKILL_CATEGORY_ICONS: Record<SkillCategoryId, LucideIcon> = {
-  automations: Workflow,
-  environment: Wrench,
-  "code-hosting": GitPullRequest,
-  "agent-authoring": Bot,
-  "code-quality": ShieldCheck,
-  integrations: Plug,
-  writing: PenLine,
-  design: Palette,
-  other: Package,
-};
+export type SkillCategoryIcon = LucideIcon | typeof AutomationsIcon;
+
+export const SKILL_CATEGORY_ICONS: Record<SkillCategoryId, SkillCategoryIcon> =
+  {
+    automations: AutomationsIcon,
+    environment: Wrench,
+    "code-hosting": GitPullRequest,
+    "agent-authoring": Bot,
+    "code-quality": ShieldCheck,
+    integrations: Plug,
+    writing: PenLine,
+    design: Palette,
+    other: Package,
+  };
 
 /** The catalog uses `other` for a skill with no marketplace entry, so it means "uncategorized" there exactly as it does for a local skill. */
 export const UNCATEGORIZED_SKILL_CATEGORY: SkillCategoryId = "other";

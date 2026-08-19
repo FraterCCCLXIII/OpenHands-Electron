@@ -1,8 +1,10 @@
 import type { SkillCategoryId } from "@openhands/extensions/skills";
-import type { LucideIcon } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { cn } from "#/utils/utils";
-import { SKILL_CATEGORY_ICONS } from "#/utils/skill-category";
+import {
+  SKILL_CATEGORY_ICONS,
+  type SkillCategoryIcon,
+} from "#/utils/skill-category";
 import { SkillFacetRow } from "./skill-facet-row";
 import type { SkillFacetGroup, SkillFacetGroupId } from "./skill-filter";
 
@@ -16,7 +18,7 @@ interface SkillFacetRailProps {
 function iconFor(
   groupId: SkillFacetGroupId,
   value: string,
-): LucideIcon | undefined {
+): SkillCategoryIcon | undefined {
   if (groupId !== "category") return undefined;
   return SKILL_CATEGORY_ICONS[value as SkillCategoryId];
 }
