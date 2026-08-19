@@ -61,9 +61,7 @@ describe("CirclePlusCheckToggle", () => {
     expect(onToggle).toHaveBeenCalledWith(false);
   });
 
-  it("shows a remove icon on hover when selected", async () => {
-    const user = userEvent.setup();
-
+  it("renders a hover-only remove icon when selected", () => {
     render(
       <CirclePlusCheckToggle
         testId="skill-toggle"
@@ -73,15 +71,12 @@ describe("CirclePlusCheckToggle", () => {
     );
 
     const toggle = screen.getByTestId("skill-toggle");
-    expect(toggle).toHaveAttribute("data-showing-remove", "false");
     expect(toggle.className).toContain("border-white");
-    expect(toggle.className).not.toContain("bg-white");
-
-    await user.hover(toggle);
-    expect(toggle).toHaveAttribute("data-showing-remove", "true");
-
-    await user.unhover(toggle);
-    expect(toggle).toHaveAttribute("data-showing-remove", "false");
+    expect(toggle.className).toContain("group/toggle");
+    expect(screen.getByTestId("skill-toggle-remove-icon")).toHaveClass(
+      "hidden",
+      "group-hover/toggle:block",
+    );
   });
 
   it("does not show remove styling for keyboard focus alone", () => {
@@ -96,7 +91,9 @@ describe("CirclePlusCheckToggle", () => {
     const toggle = screen.getByTestId("skill-toggle");
     toggle.focus();
 
-    expect(toggle).toHaveAttribute("data-showing-remove", "false");
+    expect(screen.getByTestId("skill-toggle-remove-icon")).toHaveClass(
+      "hidden",
+    );
   });
 
   it("stops click propagation for nested card handlers", async () => {

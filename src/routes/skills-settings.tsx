@@ -1,4 +1,5 @@
 import React from "react";
+import { CircleX } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { useSearchParams } from "react-router";
 import { BrandButton } from "#/components/features/settings/brand-button";
@@ -6,8 +7,7 @@ import { ExtensionsNavigation } from "#/components/features/skills/extensions-na
 import { AddSkillModal } from "#/components/features/skills/add-skill-modal";
 import { SkillCard } from "#/components/features/skills/skill-card";
 import { SkillDetailModal } from "#/components/features/skills/skill-detail-modal";
-import { SkillFacetRail } from "#/components/features/skills/skill-facet-rail";
-import { SkillFiltersModal } from "#/components/features/skills/skill-filters-modal";
+import { SkillCategoryChips } from "#/components/features/skills/skill-category-chips";
 import {
   applySkillFilters,
   buildSkillFacetGroups,
@@ -59,7 +59,6 @@ function SkillsSettingsScreen() {
     null,
   );
   const [showAddSkillModal, setShowAddSkillModal] = React.useState(false);
-  const [isFiltersModalOpen, setIsFiltersModalOpen] = React.useState(false);
 
   const isLoading = settingsLoading || skillsLoading || !settings;
   const allSkills = skills ?? [];
@@ -72,6 +71,11 @@ function SkillsSettingsScreen() {
   const groups = React.useMemo(
     () => buildSkillFacetGroups(allSkills, disabledSet, filter),
     [allSkills, disabledSet, filter],
+  );
+
+  const categoryGroup = React.useMemo(
+    () => groups.find((group) => group.id === "category"),
+    [groups],
   );
 
   const visibleSkills = React.useMemo(
@@ -171,7 +175,7 @@ function SkillsSettingsScreen() {
       <main className={cn(settingsLikeMainScrollClassName, "h-full")}>
         <div
           data-testid="skills-page"
-          className="mx-auto flex w-full min-w-0 max-w-[1100px] flex-col gap-6"
+          className="mx-auto flex w-full min-w-0 max-w-[800px] flex-col gap-6"
         >
           <div className="flex min-w-0 items-start justify-between gap-4">
             <div className="min-w-0 space-y-1">
@@ -220,81 +224,72 @@ function SkillsSettingsScreen() {
 
           {!isLoading && allSkills.length > 0 ? (
             <>
-              <SkillsToolbar
-                search={filter.query}
-                onSearchChange={(query) =>
-                  handleFilterChange({ ...filter, query })
-                }
-                activeFilterCount={activeFilterCount}
-                onOpenFilters={() => setIsFiltersModalOpen(true)}
-              />
-
-              <div className="flex min-w-0 gap-6">
-                <SkillFacetRail
-                  groups={groups}
-                  onToggle={handleToggleFacet}
-                  className="hidden w-[240px] shrink-0 self-start md:flex"
+              <div className="flex flex-col gap-3">
+                <SkillsToolbar
+                  search={filter.query}
+                  onSearchChange={(query) =>
+                    handleFilterChange({ ...filter, query })
+                  }
                 />
 
-                <section className="flex min-w-0 flex-1 flex-col gap-3">
-                  <div className="flex items-center justify-between gap-3 text-xs text-tertiary-light">
-                    <span data-testid="skills-result-summary">
-                      {t(I18nKey.SETTINGS$SKILLS_RESULT_COUNT, {
-                        count: visibleSkills.length,
-                      })}
-                    </span>
-                    {activeFilterCount > 0 ? (
-                      <button
-                        type="button"
-                        data-testid="skills-clear-filters"
-                        onClick={handleClearFacets}
-                        className="cursor-pointer underline hover:text-white"
-                      >
-                        {t(I18nKey.SETTINGS$SKILLS_CLEAR_FILTERS)}
-                      </button>
-                    ) : null}
-                  </div>
-
-                  {visibleSkills.length === 0 ? (
-                    <div
-                      data-testid="skills-no-match"
-                      className={extensionModuleEmptyStateClassName}
-                    >
-                      <p className="text-sm text-tertiary-light">
-                        {t(I18nKey.SETTINGS$SKILLS_NO_MATCH)}
-                      </p>
-                    </div>
-                  ) : (
-                    <div
-                      className={cn(extensionModuleCardGridContainerClassName)}
-                    >
-                      <div className={extensionModuleCardGridClassName}>
-                        {visibleSkills.map((skill) => (
-                          <SkillCard
-                            key={skill.name}
-                            skill={skill}
-                            enabled={!disabledSet.has(skill.name)}
-                            onOpen={() => setSelectedSkill(skill)}
-                            onToggle={(enabled) =>
-                              handleToggle(skill.name, enabled)
-                            }
-                          />
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                </section>
+                <SkillCategoryChips
+                  group={categoryGroup}
+                  onToggle={(value) => handleToggleFacet("category", value)}
+                />
               </div>
 
-              {isFiltersModalOpen ? (
-                <SkillFiltersModal
-                  groups={groups}
-                  activeCount={activeFilterCount}
-                  onToggle={handleToggleFacet}
-                  onClearAll={handleClearFacets}
-                  onClose={() => setIsFiltersModalOpen(false)}
-                />
-              ) : null}
+              <section className="flex min-w-0 flex-col gap-3">
+                <div className="flex items-center justify-between gap-3 text-xs text-tertiary-light">
+                  <span data-testid="skills-result-summary">
+                    {t(
+                      visibleSkills.length === 1
+                        ? I18nKey.SETTINGS$SKILLS_RESULT_COUNT_one
+                        : I18nKey.SETTINGS$SKILLS_RESULT_COUNT_other,
+                      { count: visibleSkills.length },
+                    )}
+                  </span>
+                  {activeFilterCount > 0 ? (
+                    <button
+                      type="button"
+                      data-testid="skills-clear-filters"
+                      onClick={handleClearFacets}
+                      className="inline-flex cursor-pointer items-center gap-1.5 text-tertiary-light hover:text-white"
+                    >
+                      <CircleX className="size-3.5 shrink-0" aria-hidden />
+                      {t(I18nKey.SETTINGS$SKILLS_CLEAR_FILTERS)}
+                    </button>
+                  ) : null}
+                </div>
+
+                {visibleSkills.length === 0 ? (
+                  <div
+                    data-testid="skills-no-match"
+                    className={extensionModuleEmptyStateClassName}
+                  >
+                    <p className="text-sm text-tertiary-light">
+                      {t(I18nKey.SETTINGS$SKILLS_NO_MATCH)}
+                    </p>
+                  </div>
+                ) : (
+                  <div
+                    className={cn(extensionModuleCardGridContainerClassName)}
+                  >
+                    <div className={extensionModuleCardGridClassName}>
+                      {visibleSkills.map((skill) => (
+                        <SkillCard
+                          key={skill.name}
+                          skill={skill}
+                          enabled={!disabledSet.has(skill.name)}
+                          onOpen={() => setSelectedSkill(skill)}
+                          onToggle={(enabled) =>
+                            handleToggle(skill.name, enabled)
+                          }
+                        />
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </section>
             </>
           ) : null}
         </div>

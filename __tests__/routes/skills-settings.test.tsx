@@ -223,8 +223,7 @@ Full skill body.`,
     expect(screen.getByTestId("skill-card-vercel")).toBeInTheDocument();
   });
 
-  it("narrows the visible skills when a facet row is selected", async () => {
-    const user = userEvent.setup();
+  it("narrows the visible skills when a type filter is in the URL", async () => {
     vi.spyOn(SkillsService, "getSkills").mockResolvedValue([
       buildSkill({ name: "deno", type: "knowledge" }),
       buildSkill({
@@ -235,14 +234,27 @@ Full skill body.`,
       }),
     ]);
 
+    renderSkillsSettingsScreen("/skills?type=repo");
+
+    await screen.findByTestId("skill-card-global-rules");
+    expect(screen.queryByTestId("skill-card-deno")).not.toBeInTheDocument();
+  });
+
+  it("narrows the visible skills when a category chip is selected", async () => {
+    const user = userEvent.setup();
+    vi.spyOn(SkillsService, "getSkills").mockResolvedValue([
+      buildSkill({ name: "deno", category: "environment" }),
+      buildSkill({ name: "prd", category: "writing", triggers: [] }),
+    ]);
+
     const router = renderSkillsSettingsScreen();
     await screen.findByTestId("skill-card-deno");
 
-    await user.click(screen.getByTestId("skill-facet-type-repo"));
+    await user.click(screen.getByTestId("skill-facet-category-writing"));
 
     expect(screen.queryByTestId("skill-card-deno")).not.toBeInTheDocument();
-    expect(screen.getByTestId("skill-card-global-rules")).toBeInTheDocument();
-    expect(router.state.location.search).toBe("?type=repo");
+    expect(screen.getByTestId("skill-card-prd")).toBeInTheDocument();
+    expect(router.state.location.search).toBe("?category=writing");
   });
 
   it("seeds the filter state from the URL on load", async () => {
@@ -275,7 +287,7 @@ Full skill body.`,
     const search = screen.getByTestId("skills-search-input");
 
     // Push a second entry, then drop the query from it, so going back lands on a URL whose `q` differs from the input.
-    await user.click(screen.getByTestId("skill-facet-type-repo"));
+    await act(() => router.navigate("/skills?type=repo"));
     fireEvent.change(search, { target: { value: "" } });
     await waitFor(() =>
       expect(router.state.location.search).toBe("?type=repo"),
@@ -285,29 +297,6 @@ Full skill body.`,
 
     await waitFor(() => expect(search).toHaveValue("helper"));
     expect(router.state.location.search).toBe("?q=helper");
-  });
-
-  it("filters through the mobile filters modal", async () => {
-    const user = userEvent.setup();
-    vi.spyOn(SkillsService, "getSkills").mockResolvedValue([
-      buildSkill({ name: "deno", type: "knowledge" }),
-      buildSkill({
-        name: "global-rules",
-        type: "repo",
-        triggers: [],
-        source: "/skills/global-rules.md",
-      }),
-    ]);
-
-    renderSkillsSettingsScreen();
-    await screen.findByTestId("skill-card-deno");
-
-    await user.click(screen.getByTestId("skills-filters-button"));
-    const modal = await screen.findByTestId("skill-filters-modal");
-    await user.click(within(modal).getByTestId("skill-facet-type-repo"));
-
-    expect(screen.queryByTestId("skill-card-deno")).not.toBeInTheDocument();
-    expect(screen.getByTestId("skill-card-global-rules")).toBeInTheDocument();
   });
 
   it("opens a detail modal with full metadata when a skill card is clicked", async () => {

@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { render, screen, fireEvent, waitFor } from "@testing-library/react";
+import { render, screen, fireEvent, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import SkillsPluginsScreen from "#/routes/skills-plugins";
@@ -239,6 +239,35 @@ describe("SkillsPluginsScreen", () => {
       screen.queryByTestId("plugin-card-alpha-plugin"),
     ).not.toBeInTheDocument();
     expect(screen.getByTestId("plugin-card-beta-plugin")).toBeInTheDocument();
+  });
+
+  it("filters the list by the status dropdown", async () => {
+    vi.spyOn(PluginsService, "getPluginsMarketplace").mockResolvedValue([
+      buildCatalogPlugin({ name: "catalog-plugin" }),
+    ]);
+    vi.spyOn(PluginsService, "getLocalPlugins").mockResolvedValue([
+      { name: "ambient-plugin", version: "1.0.0", description: "Ambient" },
+    ]);
+    vi.spyOn(
+      PluginsManagementService,
+      "listInstalledPlugins",
+    ).mockResolvedValue([buildInstalledPlugin({ name: "installed-plugin" })]);
+
+    renderPluginsScreen();
+    await screen.findByTestId("plugin-card-catalog-plugin");
+
+    const filter = screen.getByTestId("plugins-status-filter");
+    fireEvent.click(within(filter).getByTestId("dropdown-trigger"));
+    fireEvent.click(screen.getByTestId("plugins-status-filter-local"));
+
+    await waitFor(() => {
+      expect(
+        screen.queryByTestId("plugin-card-catalog-plugin"),
+      ).not.toBeInTheDocument();
+    });
+    expect(
+      screen.getByTestId("plugin-card-ambient-plugin"),
+    ).toBeInTheDocument();
   });
 
   it("shows the empty state when there are no plugins", async () => {

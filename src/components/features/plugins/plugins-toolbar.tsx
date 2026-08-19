@@ -3,6 +3,7 @@ import { useTranslation } from "react-i18next";
 import { I18nKey } from "#/i18n/declaration";
 import { cn } from "#/utils/utils";
 import type { PluginStatusFilter } from "./build-plugins-view-model";
+import { PluginsStatusFilterDropdown } from "./plugins-status-filter-dropdown";
 
 interface PluginsToolbarProps {
   search: string;
@@ -10,16 +11,6 @@ interface PluginsToolbarProps {
   statusFilter: PluginStatusFilter;
   onStatusFilterChange: (filter: PluginStatusFilter) => void;
 }
-
-const STATUS_FILTERS: ReadonlyArray<{
-  value: PluginStatusFilter;
-  labelKey: I18nKey;
-}> = [
-  { value: "all", labelKey: I18nKey.SETTINGS$PLUGINS_FILTER_ALL },
-  { value: "installed", labelKey: I18nKey.SETTINGS$PLUGINS_FILTER_INSTALLED },
-  { value: "available", labelKey: I18nKey.SETTINGS$PLUGINS_FILTER_AVAILABLE },
-  { value: "local", labelKey: I18nKey.SETTINGS$PLUGINS_FILTER_LOCAL },
-];
 
 export function PluginsToolbar({
   search,
@@ -68,28 +59,10 @@ export function PluginsToolbar({
         ) : null}
       </div>
 
-      <div
-        data-testid="plugins-status-filter"
-        className="flex shrink-0 items-center gap-1 rounded-lg border border-[var(--oh-border)] bg-base-secondary p-1"
-      >
-        {STATUS_FILTERS.map((filter) => (
-          <button
-            key={filter.value}
-            type="button"
-            data-testid={`plugins-filter-${filter.value}`}
-            aria-pressed={statusFilter === filter.value}
-            onClick={() => onStatusFilterChange(filter.value)}
-            className={cn(
-              "cursor-pointer rounded-md px-3 py-1 text-xs transition-colors",
-              statusFilter === filter.value
-                ? "bg-surface-raised text-white"
-                : "text-tertiary-alt hover:text-white",
-            )}
-          >
-            {t(filter.labelKey)}
-          </button>
-        ))}
-      </div>
+      <PluginsStatusFilterDropdown
+        value={statusFilter}
+        onChange={onStatusFilterChange}
+      />
     </div>
   );
 }

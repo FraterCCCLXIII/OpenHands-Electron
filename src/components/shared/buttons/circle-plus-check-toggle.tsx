@@ -60,7 +60,6 @@ export function CirclePlusCheckToggle({
   removeTooltipKey = I18nKey.COMMON$REMOVE,
 }: CirclePlusCheckToggleProps) {
   const { t } = useTranslation("openhands");
-  const [isPointerOver, setIsPointerOver] = React.useState(false);
 
   const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
     event.stopPropagation();
@@ -71,10 +70,10 @@ export function CirclePlusCheckToggle({
     event.currentTarget.blur();
   };
 
-  const showRemoveIcon = isSelected && isPointerOver;
   const selectedTooltipKey = disableTooltipKey ?? removeTooltipKey;
   const tooltipLabel = t(isSelected ? selectedTooltipKey : enableTooltipKey);
   const ariaLabel = t(isSelected ? disableLabelKey : enableLabelKey);
+  const removeIconTestId = testId ? `${testId}-remove-icon` : undefined;
 
   return (
     <StyledTooltip content={tooltipLabel} placement="top">
@@ -83,18 +82,13 @@ export function CirclePlusCheckToggle({
         role="switch"
         aria-checked={isSelected}
         data-testid={testId}
-        data-showing-remove={showRemoveIcon ? "true" : "false"}
         disabled={isDisabled}
         aria-label={ariaLabel}
         onClick={handleClick}
-        onPointerEnter={() => setIsPointerOver(true)}
-        onPointerLeave={() => setIsPointerOver(false)}
         className={cn(
-          "inline-flex size-7 shrink-0 cursor-pointer items-center justify-center rounded-full p-0 transition-colors",
+          "group/toggle inline-flex size-7 shrink-0 cursor-pointer items-center justify-center rounded-full p-0 transition-colors",
           isSelected &&
-            (showRemoveIcon
-              ? "border-0 bg-[rgba(248,113,113,0.14)] text-[#ef4444] hover:bg-[rgba(248,113,113,0.24)]"
-              : "border border-white bg-transparent text-white [&_path]:fill-current"),
+            "border border-white bg-transparent text-white [&_path]:fill-current hover:border-0 hover:bg-[rgba(248,113,113,0.14)] hover:text-[#ef4444]",
           !isSelected &&
             "border-0 bg-surface-raised text-white hover:bg-[var(--oh-interactive-hover)]",
           isDisabled && "cursor-not-allowed opacity-50",
@@ -102,16 +96,21 @@ export function CirclePlusCheckToggle({
         )}
       >
         {isSelected ? (
-          showRemoveIcon ? (
+          <>
+            <CheckmarkIcon
+              aria-hidden
+              width={14}
+              height={14}
+              className="group-hover/toggle:hidden"
+            />
             <RemoveIcon
               aria-hidden
               width={14}
               height={14}
-              className="stroke-[2.5]"
+              data-testid={removeIconTestId}
+              className="hidden stroke-[2.5] group-hover/toggle:block"
             />
-          ) : (
-            <CheckmarkIcon aria-hidden width={14} height={14} />
-          )
+          </>
         ) : (
           <PlusIcon aria-hidden className="size-3" />
         )}
