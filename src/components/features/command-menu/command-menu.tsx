@@ -11,7 +11,6 @@ import {
   COMMAND_MENU_GROUP_LABELS,
   COMMAND_MENU_GROUP_ORDER,
   type CommandMenuItemDefinition,
-  commandMenuItemCopy,
   createCommandMenuItems,
 } from "./command-menu-items";
 
@@ -47,9 +46,9 @@ function matchesQuery({
   }
 
   const searchableText = [
-    commandMenuItemCopy(item.title, item.titleKey, translate),
-    commandMenuItemCopy(item.description, item.descriptionKey, translate),
-    commandMenuItemCopy(item.keywords, item.keywordsKey, translate),
+    item.title ?? translate(item.titleKey),
+    item.description ?? translate(item.descriptionKey),
+    item.keywords ?? translate(item.keywordsKey),
   ]
     .join(" ")
     .toLocaleLowerCase();
@@ -312,18 +311,10 @@ export function CommandMenu() {
                           </span>
                           <span className="min-w-0 flex-1">
                             <span className="block truncate text-sm font-medium text-current">
-                              {commandMenuItemCopy(
-                                item.title,
-                                item.titleKey,
-                                t,
-                              )}
+                              {item.title ?? t(item.titleKey)}
                             </span>
                             <span className="mt-0.5 block truncate text-xs text-[var(--oh-text-dim)]">
-                              {commandMenuItemCopy(
-                                item.description,
-                                item.descriptionKey,
-                                t,
-                              )}
+                              {item.description ?? t(item.descriptionKey)}
                             </span>
                           </span>
                           <span className="hidden shrink-0 rounded-md border border-[var(--oh-border)] px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.14em] text-[var(--oh-text-dim)] sm:inline-flex">

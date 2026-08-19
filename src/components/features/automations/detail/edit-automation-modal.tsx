@@ -127,7 +127,8 @@ export function EditAutomationModal({
   const updateMutation = useUpdateAutomation();
   // Which attributes the dialog offers, and their copy, come from the
   // interface manifest; absent one, the host defaults reproduce today's form.
-  const editTitle = getInterfaceCopy().editTitle;
+  const editTitle =
+    getInterfaceCopy().editTitle ?? t(I18nKey.AUTOMATIONS$EDIT_TITLE);
   const nameSpec = getAttributeSpec("name");
   const promptSpec = getAttributeSpec("prompt");
   const modelSpec = getAttributeSpec("model");
@@ -307,7 +308,7 @@ export function EditAutomationModal({
               testId="edit-automation-name"
               name="name"
               type="text"
-              label={nameSpec.label}
+              label={nameSpec.label ?? t(I18nKey.AUTOMATIONS$NAME)}
               value={form.name}
               onChange={(value) => setForm((f) => ({ ...f, name: value }))}
               error={nameError ?? undefined}
@@ -317,7 +318,9 @@ export function EditAutomationModal({
 
           {promptSpec.present && (
             <label className="flex flex-col gap-2.5 w-full min-w-0">
-              <span className="text-sm">{promptSpec.label}</span>
+              <span className="text-sm">
+                {promptSpec.label ?? t(I18nKey.AUTOMATIONS$PROMPT)}
+              </span>
               <textarea
                 data-testid="edit-automation-prompt"
                 name="prompt"
@@ -331,9 +334,9 @@ export function EditAutomationModal({
                   "placeholder:italic",
                 )}
               />
-              {promptSpec.help !== null && (
-                <span className="text-xs text-muted">{promptSpec.help}</span>
-              )}
+              <span className="text-xs text-muted">
+                {promptSpec.help ?? t(I18nKey.AUTOMATIONS$EDIT_PROMPT_HINT)}
+              </span>
             </label>
           )}
 
@@ -341,7 +344,7 @@ export function EditAutomationModal({
             <SettingsDropdownInput
               testId="edit-automation-model"
               name="model"
-              label={modelSpec.label}
+              label={modelSpec.label ?? t(I18nKey.AUTOMATIONS$DETAIL$MODEL)}
               items={modelItems}
               selectedKey={form.model || ACTIVE_PROFILE_KEY}
               isLoading={isLoadingProfiles}
@@ -361,7 +364,7 @@ export function EditAutomationModal({
                 testId="edit-automation-timeout"
                 name="timeout"
                 type="number"
-                label={timeoutSpec.label}
+                label={timeoutSpec.label ?? t(I18nKey.AUTOMATIONS$TIMEOUT)}
                 value={form.timeout}
                 onChange={(value) => setForm((f) => ({ ...f, timeout: value }))}
                 error={timeoutError ?? undefined}
@@ -371,14 +374,12 @@ export function EditAutomationModal({
                 step={1}
                 placeholder={String(AUTOMATION_TIMEOUT_DEFAULT_SECONDS)}
               />
-              {timeoutSpec.help !== null && (
-                <span
-                  data-testid="edit-automation-timeout-hint"
-                  className="text-xs text-muted"
-                >
-                  {timeoutSpec.help}
-                </span>
-              )}
+              <span
+                data-testid="edit-automation-timeout-hint"
+                className="text-xs text-muted"
+              >
+                {timeoutSpec.help ?? t(I18nKey.AUTOMATIONS$TIMEOUT_HINT)}
+              </span>
             </div>
           )}
 
@@ -428,7 +429,7 @@ export function EditAutomationModal({
               <SettingsDropdownInput
                 testId="edit-automation-frequency"
                 name="frequency"
-                label={scheduleSpec.label}
+                label={scheduleSpec.label ?? t(I18nKey.AUTOMATIONS$FREQUENCY)}
                 items={frequencyItems}
                 selectedKey={form.frequency}
                 isDisabled={form.isCustomSchedule}

@@ -1,10 +1,8 @@
 import { describe, expect, it, vi } from "vitest";
 
 /**
- * Without an admitted interface manifest there is no automation surface to
- * render — the pages exist only to render what a manifest describes. Each
- * route says so the way the host says it everywhere else: a 404 the layout's
- * error boundary renders.
+ * Without an admitted interface manifest the list page still renders via host
+ * defaults. Detail, setup, and templates routes remain manifest-gated and 404.
  */
 vi.mock("#/manifests/manifest-sources", async (importOriginal) => {
   const actual =
@@ -22,7 +20,7 @@ function statusOfLoader(load: () => unknown): number | null {
 }
 
 describe("the automation routes without an admitted interface manifest", () => {
-  it("404s every automation route", async () => {
+  it("404s manifest-gated routes but not the list page", async () => {
     // Arrange
     const [list, detail, setup, templates] = await Promise.all([
       import("#/routes/automations-list"),
@@ -33,7 +31,7 @@ describe("the automation routes without an admitted interface manifest", () => {
 
     // Act & Assert
     expect({
-      list: statusOfLoader(() => list.clientLoader()),
+      listHasClientLoader: "clientLoader" in list,
       detail: statusOfLoader(() => detail.clientLoader()),
       setup: statusOfLoader(() =>
         setup.clientLoader({
@@ -41,6 +39,11 @@ describe("the automation routes without an admitted interface manifest", () => {
         } as Parameters<typeof setup.clientLoader>[0]),
       ),
       templates: statusOfLoader(() => templates.clientLoader()),
-    }).toEqual({ list: 404, detail: 404, setup: 404, templates: 404 });
+    }).toEqual({
+      listHasClientLoader: false,
+      detail: 404,
+      setup: 404,
+      templates: 404,
+    });
   });
 });

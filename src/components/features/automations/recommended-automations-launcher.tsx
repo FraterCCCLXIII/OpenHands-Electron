@@ -4,7 +4,6 @@ import { useNavigation } from "#/context/navigation-context";
 import { useCreateConversation } from "#/hooks/mutation/use-create-conversation";
 import { useSettings } from "#/hooks/query/use-settings";
 import { useIsCreatingConversation } from "#/hooks/use-is-creating-conversation";
-import { useResponderUrlSecret } from "#/hooks/use-responder-url-secret";
 import { useConversationStore } from "#/stores/conversation-store";
 import {
   setConversationState,
@@ -31,6 +30,8 @@ import {
   getRequiredIntegrationIds,
 } from "#/utils/automation-catalog";
 import { isResponderAutomation } from "#/utils/responder-deployment";
+import { useAutomations } from "#/hooks/query/use-automations";
+import { RecommendedAutomationsRail } from "./recommended-automations-rail";
 import { RecommendedAutomationsSection } from "./recommended-automations-section";
 import { ResponderDeploymentModal } from "./responder-deployment-modal";
 
@@ -39,6 +40,12 @@ interface RecommendedAutomationsLauncherProps {
   onLaunched?: () => void;
   /** When true, only the automation card grid scrolls inside its section. */
   scrollableGrid?: boolean;
+  /**
+   * Compact discovery rail for New Chat and the automations dashboard.
+   * The templates page keeps the full catalog section.
+   */
+  variant?: "catalog" | "rail";
+  className?: string;
 }
 
 /**
@@ -62,13 +69,14 @@ export function RecommendedAutomationsLauncher({
   query,
   onLaunched,
   scrollableGrid = false,
+  variant = "catalog",
+  className,
 }: RecommendedAutomationsLauncherProps) {
   const activeBackend = useActiveBackend();
   const { navigate } = useNavigation();
   const { data: settings } = useSettings();
   const { trackPrebuiltAutomationEnabled } = useTracking();
   const createConversation = useCreateConversation();
-  const ensureResponderUrlSecret = useResponderUrlSecret();
   const isCreatingConversation = useIsCreatingConversation();
   const setMessageToSend = useConversationStore(
     (state) => state.setMessageToSend,
@@ -80,9 +88,11 @@ export function RecommendedAutomationsLauncher({
   const [installQueue, setInstallQueue] = useState<MarketplaceEntry[]>([]);
   const completedInstallRef = useRef(false);
   const launchInFlightRef = useRef(false);
-  const localSetupInFlightRef = useRef(false);
-  const [isPreparingLocalResponder, setIsPreparingLocalResponder] =
-    useState(false);
+  const isRail = variant === "rail";
+  const { data: automationsData, isLoading: isAutomationsLoading } =
+    useAutomations({
+      enabled: isRail && activeBackend.backend.kind === "local",
+    });
 
   const installedMcpConfig = useMemo(
     () =>
@@ -194,22 +204,11 @@ export function RecommendedAutomationsLauncher({
     proceedWithLocalLaunch(automation);
   };
 
-  const handleDeploymentContinueLocal = async () => {
+  const handleDeploymentContinueLocal = () => {
     const automation = deploymentChoiceAutomation;
-    if (!automation || localSetupInFlightRef.current) return;
-
-    localSetupInFlightRef.current = true;
-    setIsPreparingLocalResponder(true);
-
-    try {
-      const isSecretReady = await ensureResponderUrlSecret();
-      if (!isSecretReady) return;
-
-      setDeploymentChoiceAutomation(null);
+    setDeploymentChoiceAutomation(null);
+    if (automation) {
       proceedWithLocalLaunch(automation);
-    } finally {
-      localSetupInFlightRef.current = false;
-      setIsPreparingLocalResponder(false);
     }
   };
 
@@ -255,15 +254,25 @@ export function RecommendedAutomationsLauncher({
   // automations are managed elsewhere.
   if (activeBackend.backend.kind === "cloud") return null;
 
+  if (isRail && isAutomationsLoading) return null;
+
   return (
     <>
-      <RecommendedAutomationsSection
-        backendKind={activeBackend.backend.kind}
-        installedServers={installedMcpConfig}
-        query={query}
-        onSelect={handleSelectAutomation}
-        scrollableGrid={scrollableGrid}
-      />
+      {isRail ? (
+        <RecommendedAutomationsRail
+          className={className}
+          installedAutomations={automationsData?.automations ?? []}
+          onSelect={handleSelectAutomation}
+        />
+      ) : (
+        <RecommendedAutomationsSection
+          backendKind={activeBackend.backend.kind}
+          installedServers={installedMcpConfig}
+          query={query}
+          onSelect={handleSelectAutomation}
+          scrollableGrid={scrollableGrid}
+        />
+      )}
 
       {installEntry && (
         <InstallServerModal
@@ -277,7 +286,7 @@ export function RecommendedAutomationsLauncher({
 
       <ResponderDeploymentModal
         isOpen={deploymentChoiceAutomation !== null}
-        isPending={isPreparingLocalResponder}
+        isPending={createConversation.isPending || isCreatingConversation}
         onClose={handleDeploymentClose}
         onContinueLocal={handleDeploymentContinueLocal}
         onOpenUrl={handleDeploymentOpenUrl}

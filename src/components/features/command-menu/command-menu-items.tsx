@@ -17,7 +17,6 @@ import { I18nKey } from "#/i18n/declaration";
 import {
   automationListPath,
   getInterfaceCopy,
-  hasAutomationInterface,
 } from "#/manifests/automation-interface";
 
 const ICON_SIZE = 18;
@@ -54,30 +53,16 @@ export type CommandMenuItemId =
 export interface CommandMenuItemDefinition {
   id: CommandMenuItemId;
   group: CommandMenuGroupId;
-  /** Absent on an item whose copy a manifest owns, which sets the literal. */
-  titleKey?: I18nKey;
-  descriptionKey?: I18nKey;
-  keywordsKey?: I18nKey;
-  /** Literal copy, for an item a manifest owns. */
+  titleKey: I18nKey;
+  descriptionKey: I18nKey;
+  keywordsKey: I18nKey;
+  /** Literal copy overriding the i18n key, when a manifest owns it. */
   title?: string;
   description?: string;
   keywords?: string;
   icon: React.ReactElement;
   to?: string;
   perform?: () => void;
-}
-
-/**
- * An item's copy: its literal when a manifest owns the item, its translation
- * otherwise.
- */
-export function commandMenuItemCopy(
-  literal: string | undefined,
-  key: I18nKey | undefined,
-  translate: (key: I18nKey) => string,
-): string {
-  if (literal !== undefined) return literal;
-  return key === undefined ? "" : translate(key);
 }
 
 export const COMMAND_MENU_GROUP_LABELS: Record<CommandMenuGroupId, I18nKey> = {
@@ -115,21 +100,18 @@ export const createCommandMenuItems = ({
     icon: <Sparkles size={ICON_SIZE} />,
     to: COMMAND_MENU_ROUTE.customize,
   },
-  // The automation interface owns this entry's copy, so an absent manifest
-  // leaves the command menu without it rather than with host copy.
-  ...(hasAutomationInterface()
-    ? [
-        {
-          id: "automations" as const,
-          group: "navigation" as const,
-          title: getInterfaceCopy().commandMenuTitle,
-          description: getInterfaceCopy().commandMenuDescription,
-          keywords: getInterfaceCopy().commandMenuKeywords,
-          icon: <Zap size={ICON_SIZE} />,
-          to: COMMAND_MENU_ROUTE.automations,
-        },
-      ]
-    : []),
+  {
+    id: "automations",
+    group: "navigation",
+    titleKey: I18nKey.COMMAND_MENU$AUTOMATIONS_TITLE,
+    descriptionKey: I18nKey.COMMAND_MENU$AUTOMATIONS_DESCRIPTION,
+    keywordsKey: I18nKey.COMMAND_MENU$AUTOMATIONS_KEYWORDS,
+    title: getInterfaceCopy().commandMenuTitle ?? undefined,
+    description: getInterfaceCopy().commandMenuDescription ?? undefined,
+    keywords: getInterfaceCopy().commandMenuKeywords ?? undefined,
+    icon: <Zap size={ICON_SIZE} />,
+    to: COMMAND_MENU_ROUTE.automations,
+  },
   {
     id: "mcp",
     group: "navigation",
