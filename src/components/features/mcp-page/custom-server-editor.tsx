@@ -4,6 +4,10 @@ import { useTranslation } from "react-i18next";
 import { I18nKey } from "#/i18n/declaration";
 import { ModalBackdrop } from "#/components/shared/modals/modal-backdrop";
 import { ModalCloseButton } from "#/components/shared/modals/modal-close-button";
+import {
+  MODAL_MAX_WIDTH_VIEWPORT,
+  modalWidthClassName,
+} from "#/components/shared/modals/modal-body";
 import { ConfirmationModal } from "#/components/shared/modals/confirmation-modal";
 import {
   MCPServerForm,
@@ -227,7 +231,11 @@ export function CustomServerEditor({
       >
         <div
           data-testid="mcp-custom-editor"
-          className="relative bg-base-secondary p-6 rounded-xl border border-[var(--oh-border)] w-[520px] max-w-[90vw] max-h-[90vh] overflow-y-auto custom-scrollbar"
+          className={cn(
+            "relative max-h-[90vh] overflow-y-auto rounded-xl border border-[var(--oh-border)] bg-base-secondary p-6 custom-scrollbar",
+            modalWidthClassName("lg"),
+            MODAL_MAX_WIDTH_VIEWPORT,
+          )}
         >
           <ModalCloseButton
             onClose={onClose}

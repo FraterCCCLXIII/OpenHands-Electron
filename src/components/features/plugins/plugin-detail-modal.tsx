@@ -1,6 +1,10 @@
 import { useTranslation } from "react-i18next";
 import { ModalBackdrop } from "#/components/shared/modals/modal-backdrop";
 import { ModalCloseButton } from "#/components/shared/modals/modal-close-button";
+import {
+  MODAL_MAX_WIDTH_VIEWPORT,
+  modalWidthClassName,
+} from "#/components/shared/modals/modal-body";
 import { BrandButton } from "#/components/features/settings/brand-button";
 import { SettingsSwitch } from "#/components/features/settings/settings-switch";
 import { SkillIconBadge } from "#/components/features/skills/skill-icon-badge";
@@ -9,6 +13,7 @@ import { I18nKey } from "#/i18n/declaration";
 import { modalTitleLgClassName } from "#/utils/modal-classes";
 import { extensionModuleCardPillClassName } from "#/utils/extension-module-card-classes";
 import { VerticalScrollEdges } from "#/components/shared/vertical-scroll-edges";
+import { cn } from "#/utils/utils";
 import MessageSquareShareIcon from "#/icons/message-square-share.svg?react";
 import RefreshIcon from "#/icons/u-refresh.svg?react";
 import TrashIcon from "#/icons/trash.svg?react";
@@ -46,7 +51,11 @@ export function PluginDetailModal({
       <div
         data-testid="plugin-detail-modal"
         data-plugin-name={plugin.name}
-        className="relative flex w-[640px] max-w-[90vw] max-h-[85vh] min-h-0 flex-col overflow-hidden rounded-xl border border-[var(--oh-border)] bg-base-secondary"
+        className={cn(
+          "relative flex max-h-[85vh] min-h-0 flex-col overflow-hidden rounded-xl border border-[var(--oh-border)] bg-base-secondary",
+          modalWidthClassName("lg"),
+          MODAL_MAX_WIDTH_VIEWPORT,
+        )}
       >
         <ModalCloseButton
           onClose={onClose}
@@ -73,6 +82,27 @@ export function PluginDetailModal({
           scrollTestId="plugin-detail-modal-body"
           edgeTestIdPrefix="plugin-detail-modal-scroll"
         >
+          {plugin.installed ? (
+            <div
+              data-testid={`plugin-modal-enable-row-${plugin.name}`}
+              className="flex w-full items-center rounded-lg border border-[var(--oh-border)] bg-[rgba(255,255,255,0.04)] px-3 py-2.5"
+            >
+              <SettingsSwitch
+                testId={`plugin-modal-toggle-${plugin.name}`}
+                isToggled={plugin.enabled}
+                onToggle={onToggle}
+                isDisabled={actionsDisabled}
+                togglePosition="right"
+              >
+                {t(
+                  plugin.enabled
+                    ? I18nKey.SETTINGS$SKILLS_ENABLED
+                    : I18nKey.SETTINGS$SKILLS_DISABLED,
+                )}
+              </SettingsSwitch>
+            </div>
+          ) : null}
+
           {plugin.description ? (
             <p className="text-sm leading-relaxed text-tertiary-light">
               {plugin.description}
@@ -103,27 +133,6 @@ export function PluginDetailModal({
               </span>
             ) : null}
           </div>
-
-          {plugin.installed ? (
-            <div
-              data-testid={`plugin-modal-enable-row-${plugin.name}`}
-              className="flex w-full items-center rounded-lg border border-[var(--oh-border)] bg-[rgba(255,255,255,0.04)] px-3 py-2.5"
-            >
-              <SettingsSwitch
-                testId={`plugin-modal-toggle-${plugin.name}`}
-                isToggled={plugin.enabled}
-                onToggle={onToggle}
-                isDisabled={actionsDisabled}
-                togglePosition="right"
-              >
-                {t(
-                  plugin.enabled
-                    ? I18nKey.SETTINGS$SKILLS_ENABLED
-                    : I18nKey.SETTINGS$SKILLS_DISABLED,
-                )}
-              </SettingsSwitch>
-            </div>
-          ) : null}
 
           {plugin.skills?.length ? (
             <section className="flex min-w-0 flex-col gap-2">

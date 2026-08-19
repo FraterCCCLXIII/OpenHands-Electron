@@ -2,6 +2,10 @@ import React from "react";
 import { useTranslation } from "react-i18next";
 import { ModalBackdrop } from "#/components/shared/modals/modal-backdrop";
 import { ModalCloseButton } from "#/components/shared/modals/modal-close-button";
+import {
+  MODAL_MAX_WIDTH_VIEWPORT,
+  modalWidthClassName,
+} from "#/components/shared/modals/modal-body";
 import { BrandButton } from "#/components/features/settings/brand-button";
 import { SettingsInput } from "#/components/features/settings/settings-input";
 import { useInstallPlugin } from "#/hooks/mutation/use-install-plugin";
@@ -52,7 +56,11 @@ export function AddPluginModal({ onClose, onInstalled }: AddPluginModalProps) {
       <form
         onSubmit={handleSubmit}
         data-testid="add-plugin-modal"
-        className="relative flex w-[520px] max-w-[90vw] max-h-[85vh] flex-col rounded-xl border border-[var(--oh-border)] bg-base-secondary"
+        className={cn(
+          "relative flex max-h-[85vh] flex-col rounded-xl border border-[var(--oh-border)] bg-base-secondary",
+          modalWidthClassName("lg"),
+          MODAL_MAX_WIDTH_VIEWPORT,
+        )}
       >
         <ModalCloseButton onClose={onClose} testId="add-plugin-modal-close" />
 

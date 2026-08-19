@@ -2,6 +2,10 @@ import React from "react";
 import { useTranslation } from "react-i18next";
 import { ModalBackdrop } from "#/components/shared/modals/modal-backdrop";
 import { ModalCloseButton } from "#/components/shared/modals/modal-close-button";
+import {
+  MODAL_MAX_WIDTH_VIEWPORT,
+  modalWidthClassName,
+} from "#/components/shared/modals/modal-body";
 import { BrandButton } from "#/components/features/settings/brand-button";
 import { SettingsSwitch } from "#/components/features/settings/settings-switch";
 import { I18nKey } from "#/i18n/declaration";
@@ -100,7 +104,11 @@ export function SkillDetailModal({
       <div
         data-testid="skill-detail-modal"
         data-skill-name={skill.name}
-        className="relative bg-base-secondary p-6 rounded-xl flex flex-col gap-4 border border-[var(--oh-border)] w-[520px] max-w-[90vw] max-h-[85vh] overflow-y-auto custom-scrollbar"
+        className={cn(
+          "relative flex max-h-[85vh] flex-col gap-4 overflow-y-auto rounded-xl border border-[var(--oh-border)] bg-base-secondary p-6 custom-scrollbar",
+          modalWidthClassName("lg"),
+          MODAL_MAX_WIDTH_VIEWPORT,
+        )}
       >
         <ModalCloseButton onClose={onClose} testId="skill-detail-modal-close" />
         <div className="flex items-start gap-3 pr-6">
@@ -167,7 +175,7 @@ export function SkillDetailModal({
         {description ? (
           <p
             data-testid={`skill-modal-description-${skill.name}`}
-            className="text-xs text-tertiary-light"
+            className="text-sm leading-relaxed text-tertiary-light"
           >
             {description}
           </p>

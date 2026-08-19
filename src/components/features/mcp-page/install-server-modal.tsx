@@ -3,6 +3,10 @@ import { useTranslation } from "react-i18next";
 import { AxiosError } from "axios";
 import { ModalBackdrop } from "#/components/shared/modals/modal-backdrop";
 import { ModalCloseButton } from "#/components/shared/modals/modal-close-button";
+import {
+  MODAL_MAX_WIDTH_VIEWPORT,
+  modalWidthClassName,
+} from "#/components/shared/modals/modal-body";
 import { BrandButton } from "#/components/features/settings/brand-button";
 import { SettingsInput } from "#/components/features/settings/settings-input";
 import { SaveAsSecretToggle } from "#/components/features/mcp-page/save-as-secret-toggle";
@@ -28,6 +32,7 @@ import { retrieveAxiosErrorMessage } from "#/utils/retrieve-axios-error-message"
 import { useSaveFieldsAsSecrets } from "#/hooks/mutation/use-save-fields-as-secrets";
 import { makeMcpTestErrorMessage } from "#/utils/mcp-test-error-message";
 import { modalTitleLgClassName } from "#/utils/modal-classes";
+import { cn } from "#/utils/utils";
 import McpService from "#/api/mcp-service/mcp-service.api";
 import { toMcpServerName } from "#/utils/mcp-server-name";
 
@@ -665,7 +670,11 @@ export function InstallServerModal({
         data-testid="mcp-install-modal"
         data-marketplace-id={entry.id}
         onSubmit={handleSubmit}
-        className="relative bg-base-secondary p-6 rounded-xl flex flex-col gap-4 border border-[var(--oh-border)] w-[520px] max-w-[90vw] max-h-[85vh] overflow-y-auto custom-scrollbar"
+        className={cn(
+          "relative flex max-h-[85vh] flex-col gap-4 overflow-y-auto rounded-xl border border-[var(--oh-border)] bg-base-secondary p-6 custom-scrollbar",
+          modalWidthClassName("lg"),
+          MODAL_MAX_WIDTH_VIEWPORT,
+        )}
       >
         <ModalCloseButton
           onClose={onClose}
