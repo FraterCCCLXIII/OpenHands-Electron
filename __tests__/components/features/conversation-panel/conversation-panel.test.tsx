@@ -26,6 +26,7 @@ import { renderWithProviders } from "test-utils";
 import { ConversationPanel } from "#/components/features/conversation-panel/conversation-panel";
 import { useConversationPanelPreferencesStore } from "#/stores/conversation-panel-preferences-store";
 import { useArchivedConversationsStore } from "#/stores/archived-conversations-store";
+import { useAutomationCreateDraftStore } from "#/stores/automation-create-draft-store";
 import { usePinnedConversationsStore } from "#/stores/pinned-conversations-store";
 import AgentServerConversationService from "#/api/conversation-service/agent-server-conversation-service.api";
 import { AppConversation } from "#/api/conversation-service/agent-server-conversation-service.types";
@@ -137,6 +138,7 @@ describe("ConversationPanel", () => {
     _mockConversationCounter = 0;
     usePinnedConversationsStore.setState({ pinsByBackendId: {} });
     useArchivedConversationsStore.setState({ archivesByBackendId: {} });
+    useAutomationCreateDraftStore.setState({ drafts: {} });
     useConversationPanelPreferencesStore.setState({
       showArchivedConversations: false,
       automationFilterMode: "all",
@@ -178,6 +180,18 @@ describe("ConversationPanel", () => {
     // NOTE that we filter out conversations that don't have a created_at property
     // (mock data has 4 conversations, but only 3 have a created_at property)
     expect(cards).toHaveLength(3);
+  });
+
+  it("hides automation interview conversations from the list", async () => {
+    useAutomationCreateDraftStore.getState().startDraft("1");
+
+    renderConversationPanel();
+    const cards = await screen.findAllByTestId("conversation-card");
+
+    expect(cards).toHaveLength(2);
+    expect(screen.queryByText("Conversation 1")).not.toBeInTheDocument();
+    expect(screen.getByText("Conversation 2")).toBeInTheDocument();
+    expect(screen.getByText("Conversation 3")).toBeInTheDocument();
   });
 
   it("includes the active backend scope in conversation card links", async () => {

@@ -7,6 +7,8 @@ import toast from "react-hot-toast";
 import { HomeChatLauncher } from "#/components/features/home/home-chat-launcher";
 import AgentServerConversationService from "#/api/conversation-service/agent-server-conversation-service.api";
 import WorkspacesService from "#/api/workspaces-service/workspaces-service.api";
+import { useAutomationCreateDraftStore } from "#/stores/automation-create-draft-store";
+import { I18nKey } from "#/i18n/declaration";
 
 const mockNavigate = vi.fn();
 const mockUseActiveBackend = vi.fn();
@@ -86,18 +88,33 @@ vi.mock("#/components/features/chat/custom-chat-input", () => ({
   CustomChatInput: ({
     onSubmit,
     disabled,
+    allowEmptySubmit,
+    placeholder,
   }: {
     onSubmit: (msg: string) => void;
     disabled?: boolean;
+    allowEmptySubmit?: boolean;
+    placeholder?: string;
   }) => (
-    <button
-      type="button"
-      data-testid="stub-chat-submit"
-      disabled={disabled}
-      onClick={() => onSubmit("hello world")}
-    >
-      stub submit
-    </button>
+    <div>
+      <div data-testid="stub-chat-placeholder">{placeholder ?? ""}</div>
+      <button
+        type="button"
+        data-testid="stub-chat-submit"
+        disabled={disabled}
+        onClick={() => onSubmit("hello world")}
+      >
+        stub submit
+      </button>
+      <button
+        type="button"
+        data-testid="stub-chat-submit-empty"
+        disabled={disabled || !allowEmptySubmit}
+        onClick={() => onSubmit("")}
+      >
+        stub empty submit
+      </button>
+    </div>
   ),
 }));
 
@@ -298,6 +315,7 @@ describe("HomeChatLauncher", () => {
     vi.clearAllMocks();
     mockImages = [];
     mockFiles = [];
+    useAutomationCreateDraftStore.setState({ drafts: {} });
     mockUseActiveBackend.mockReturnValue(localBackend);
     mockUseLlmConfigured.mockReturnValue({
       isConfigured: true,
@@ -321,6 +339,17 @@ describe("HomeChatLauncher", () => {
     toast.remove();
   });
 
+  it("centers the Code/Automate toggle above the composer", () => {
+    renderLauncher();
+
+    const toggle = screen.getByTestId("home-launch-mode-toggle");
+    const composer = screen.getByTestId("stub-chat-submit");
+    expect(
+      toggle.compareDocumentPosition(composer) &
+        Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy();
+  });
+
   it("creates a conversation with just the typed query and navigates when no workspace is selected", async () => {
     const createSpy = vi
       .spyOn(AgentServerConversationService, "createConversation")
@@ -339,6 +368,102 @@ describe("HomeChatLauncher", () => {
     await waitFor(() =>
       expect(mockNavigate).toHaveBeenCalledWith("/conversations/conv-abc"),
     );
+    expect(useAutomationCreateDraftStore.getState().drafts).toEqual({});
+  });
+
+  it("starts an automation interview conversation from the Automate launch mode", async () => {
+    const createSpy = vi
+      .spyOn(AgentServerConversationService, "createConversation")
+      .mockResolvedValue(makeConversationResponse());
+
+    renderLauncher();
+    const user = userEvent.setup();
+
+    await user.click(
+      screen.getByTestId("home-launch-mode-toggle-option-automate"),
+    );
+    await user.click(screen.getByTestId("stub-chat-submit"));
+
+    await waitFor(() => expect(createSpy).toHaveBeenCalledTimes(1));
+    expect(createSpy).toHaveBeenCalledWith({
+      initialUserMsg: `${I18nKey.AUTOMATIONS$CREATE_INTERVIEW_PROMPT}\n\nhello world`,
+      metadata: null,
+    });
+    expect(
+      useAutomationCreateDraftStore.getState().drafts["conv-abc"]?.status,
+    ).toBe("interviewing");
+    expect(
+      useAutomationCreateDraftStore.getState().drafts["conv-abc"]?.prompt,
+    ).toBe("hello world");
+    await waitFor(() =>
+      expect(mockNavigate).toHaveBeenCalledWith("/conversations/conv-abc"),
+    );
+  });
+
+  it("greys out the workspace and plugins rail in Automate mode", async () => {
+    renderLauncher();
+    const user = userEvent.setup();
+
+    expect(screen.getByTestId("home-composer-actions")).toHaveAttribute(
+      "aria-disabled",
+      "false",
+    );
+    expect(screen.getByTestId("open-workspace-button")).toBeEnabled();
+    expect(screen.getByTestId("open-plugin-picker")).toBeEnabled();
+
+    await user.click(
+      screen.getByTestId("home-launch-mode-toggle-option-automate"),
+    );
+
+    expect(screen.getByTestId("home-composer-actions")).toHaveAttribute(
+      "aria-disabled",
+      "true",
+    );
+    expect(screen.getByTestId("open-workspace-button")).toBeDisabled();
+    expect(screen.getByTestId("open-plugin-picker")).toBeDisabled();
+
+    await user.click(screen.getByTestId("home-launch-mode-toggle-option-code"));
+
+    expect(screen.getByTestId("home-composer-actions")).toHaveAttribute(
+      "aria-disabled",
+      "false",
+    );
+    expect(screen.getByTestId("open-workspace-button")).toBeEnabled();
+  });
+
+  it("swaps the composer placeholder in Automate mode", async () => {
+    renderLauncher();
+    const user = userEvent.setup();
+
+    expect(screen.getByTestId("stub-chat-placeholder")).toHaveTextContent("");
+
+    await user.click(
+      screen.getByTestId("home-launch-mode-toggle-option-automate"),
+    );
+
+    expect(screen.getByTestId("stub-chat-placeholder")).toHaveTextContent(
+      I18nKey.HOME$LAUNCH_AUTOMATE_PLACEHOLDER,
+    );
+  });
+
+  it("lets Automate start a conversation without typed text", async () => {
+    const createSpy = vi
+      .spyOn(AgentServerConversationService, "createConversation")
+      .mockResolvedValue(makeConversationResponse());
+
+    renderLauncher();
+    const user = userEvent.setup();
+
+    await user.click(
+      screen.getByTestId("home-launch-mode-toggle-option-automate"),
+    );
+    await user.click(screen.getByTestId("stub-chat-submit-empty"));
+
+    await waitFor(() => expect(createSpy).toHaveBeenCalledTimes(1));
+    expect(createSpy).toHaveBeenCalledWith({
+      initialUserMsg: I18nKey.AUTOMATIONS$CREATE_INTERVIEW_PROMPT,
+      metadata: null,
+    });
   });
 
   it("disables the chat input and won't create a conversation when no LLM is configured", async () => {

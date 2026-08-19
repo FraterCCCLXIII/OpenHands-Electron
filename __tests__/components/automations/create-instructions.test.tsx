@@ -121,7 +121,7 @@ describe("CreateInstructions", () => {
     expect(setMessageToSend).not.toHaveBeenCalled();
   });
 
-  it("navigates to conversations with a prefilled prompt when no drawer handler is provided", async () => {
+  it("navigates to conversations with a prefilled prompt when no dashboard handler is provided", async () => {
     const user = userEvent.setup();
     const setMessageToSend = vi.fn();
     useConversationStore.setState({ setMessageToSend });

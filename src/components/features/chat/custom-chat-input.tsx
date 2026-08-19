@@ -25,6 +25,9 @@ export interface CustomChatInputProps {
   ) => void;
   className?: React.HTMLAttributes<HTMLDivElement>["className"];
   buttonClassName?: React.HTMLAttributes<HTMLButtonElement>["className"];
+  allowEmptySubmit?: boolean;
+  placeholder?: string;
+  composerDrawer?: React.ReactNode;
 }
 
 export function CustomChatInput({
@@ -38,6 +41,9 @@ export function CustomChatInput({
   onFilesPaste,
   className = "",
   buttonClassName = "",
+  allowEmptySubmit = false,
+  placeholder,
+  composerDrawer,
 }: CustomChatInputProps) {
   const [canSubmit, setCanSubmit] = React.useState(false);
   const {
@@ -89,8 +95,8 @@ export function CustomChatInput({
   const syncCanSubmit = React.useCallback(() => {
     const text = chatInputRef.current?.innerText ?? "";
     const hasAttachments = images.length > 0 || files.length > 0;
-    setCanSubmit(text.trim().length > 0 || hasAttachments);
-  }, [chatInputRef, images, files]);
+    setCanSubmit(allowEmptySubmit || text.trim().length > 0 || hasAttachments);
+  }, [allowEmptySubmit, chatInputRef, images, files]);
 
   const {
     fileInputRef,
@@ -163,6 +169,46 @@ export function CustomChatInput({
   useEffect(() => {
     syncCanSubmit();
   }, [syncCanSubmit, images.length, files.length]);
+
+  const chatInputContainerProps = {
+    chatContainerRef,
+    isDragOver,
+    disabled: isDisabled,
+    canSubmit,
+    hasStartedConversation,
+    isNewConversationPending,
+    showButton,
+    buttonClassName,
+    chatInputRef,
+    handleFileIconClick,
+    handleSubmit: handleSubmitAndSync,
+    onDragOver: handleDragOver,
+    onDragLeave: handleDragLeave,
+    onDrop: handleDrop,
+    onInput: () => {
+      handleInput();
+      updateSlashMenu();
+      saveDraft();
+      syncCanSubmit();
+    },
+    onPaste: handlePaste,
+    onKeyDown: (e: React.KeyboardEvent) => {
+      if (handleSlashKeyDown(e)) return;
+      handleKeyDown(e, isDisabled, handleSubmitAndSync);
+    },
+    onFocus: handleFocus,
+    onBlur: () => {
+      handleBlur();
+      closeSlashMenu();
+      syncCanSubmit();
+    },
+    isSlashMenuOpen,
+    slashItems,
+    slashSelectedIndex,
+    onSlashSelect: selectSlashItem,
+    placeholder,
+  };
+
   return (
     <div className={cn("w-full", className)}>
       {/* Hidden file input */}
@@ -183,43 +229,18 @@ export function CustomChatInput({
           handleGripTouchStart={handleGripTouchStart}
         />
 
-        <ChatInputContainer
-          chatContainerRef={chatContainerRef}
-          isDragOver={isDragOver}
-          disabled={isDisabled}
-          canSubmit={canSubmit}
-          hasStartedConversation={hasStartedConversation}
-          isNewConversationPending={isNewConversationPending}
-          showButton={showButton}
-          buttonClassName={buttonClassName}
-          chatInputRef={chatInputRef}
-          handleFileIconClick={handleFileIconClick}
-          handleSubmit={handleSubmitAndSync}
-          onDragOver={handleDragOver}
-          onDragLeave={handleDragLeave}
-          onDrop={handleDrop}
-          onInput={() => {
-            handleInput();
-            updateSlashMenu();
-            saveDraft();
-            syncCanSubmit();
-          }}
-          onPaste={handlePaste}
-          onKeyDown={(e) => {
-            if (handleSlashKeyDown(e)) return;
-            handleKeyDown(e, isDisabled, handleSubmitAndSync);
-          }}
-          onFocus={handleFocus}
-          onBlur={() => {
-            handleBlur();
-            closeSlashMenu();
-            syncCanSubmit();
-          }}
-          isSlashMenuOpen={isSlashMenuOpen}
-          slashItems={slashItems}
-          slashSelectedIndex={slashSelectedIndex}
-          onSlashSelect={selectSlashItem}
-        />
+        {composerDrawer ? (
+          <div data-testid="composer-drawer-stack" className="relative w-full">
+            <div className="rounded-t-[15px] bg-[var(--oh-surface-raised)] pb-[15px]">
+              {composerDrawer}
+            </div>
+            <div className="relative z-10 -mt-[15px]">
+              <ChatInputContainer {...chatInputContainerProps} />
+            </div>
+          </div>
+        ) : (
+          <ChatInputContainer {...chatInputContainerProps} />
+        )}
       </div>
     </div>
   );

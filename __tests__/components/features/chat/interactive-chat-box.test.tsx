@@ -1,10 +1,22 @@
+import type { ReactNode } from "react";
 import { render, screen } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 import { InteractiveChatBox } from "#/components/features/chat/interactive-chat-box";
 import { AgentState } from "#/types/agent-state";
 
 vi.mock("#/components/features/chat/custom-chat-input", () => ({
-  CustomChatInput: () => <div data-testid="stub-chat-input" />,
+  CustomChatInput: ({
+    composerDrawer,
+    placeholder,
+  }: {
+    composerDrawer?: ReactNode;
+    placeholder?: string;
+  }) => (
+    <div data-testid="stub-chat-input">
+      {placeholder}
+      {composerDrawer}
+    </div>
+  ),
 }));
 
 vi.mock("#/components/features/chat/git-control-bar", () => ({
@@ -58,6 +70,32 @@ describe("InteractiveChatBox", () => {
     render(<InteractiveChatBox onSubmit={vi.fn()} />);
 
     expect(screen.getByTestId("git-control-bar")).toBeInTheDocument();
+  });
+
+  it("renders a composer drawer on the chat input", () => {
+    render(
+      <InteractiveChatBox
+        onSubmit={vi.fn()}
+        composerDrawer={<div data-testid="composer-drawer" />}
+      />,
+    );
+
+    expect(screen.getByTestId("stub-chat-input")).toContainElement(
+      screen.getByTestId("composer-drawer"),
+    );
+  });
+
+  it("forwards a composer placeholder", () => {
+    render(
+      <InteractiveChatBox
+        onSubmit={vi.fn()}
+        placeholder="What work do you want to automate?"
+      />,
+    );
+
+    expect(screen.getByTestId("stub-chat-input")).toHaveTextContent(
+      "What work do you want to automate?",
+    );
   });
 
   it("hides the git control bar when showGitControlBar is false", () => {

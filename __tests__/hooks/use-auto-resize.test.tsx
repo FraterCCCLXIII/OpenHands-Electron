@@ -5,6 +5,36 @@ import type { IMessageToSend } from "#/stores/conversation-store";
 
 // Focused coverage for the one-shot "consume" signal that backs the fix for a
 // branch prefill leaking into another conversation's composer.
+describe("useAutoResize — empty height", () => {
+  let el: HTMLDivElement;
+
+  beforeEach(() => {
+    el = document.createElement("div");
+    el.contentEditable = "true";
+    Object.defineProperty(el, "scrollHeight", {
+      configurable: true,
+      get: () => 400,
+    });
+    document.body.appendChild(el);
+  });
+
+  afterEach(() => {
+    el.remove();
+  });
+
+  it("keeps an empty input at minHeight even when scrollHeight is inflated", async () => {
+    const ref = { current: el };
+
+    const { result } = renderHook(() =>
+      useAutoResize(ref, { minHeight: 20, maxHeight: 400 }),
+    );
+
+    result.current.smartResize();
+
+    await waitFor(() => expect(el.style.height).toBe("20px"));
+  });
+});
+
 describe("useAutoResize — value application / onValueApplied", () => {
   let el: HTMLDivElement;
 

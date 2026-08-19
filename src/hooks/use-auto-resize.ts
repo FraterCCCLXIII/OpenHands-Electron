@@ -260,6 +260,17 @@ export const useAutoResize = (
 
     const textIsEmpty = (element.textContent ?? "").trim().length === 0;
 
+    // An empty input in a stretching flex parent can report a huge
+    // scrollHeight. Keep the compact default unless the user resized it.
+    if (textIsEmpty && !hasUserResizedRef.current) {
+      applyResizeStrategy(element, {
+        finalHeight: minHeight,
+        overflowY: "hidden",
+      });
+      executeHeightCallback(minHeight, onHeightChange);
+      return;
+    }
+
     // If empty content and we have a manual height above min, preserve it
     if (
       textIsEmpty &&

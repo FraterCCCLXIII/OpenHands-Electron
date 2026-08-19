@@ -55,7 +55,7 @@ export function SettingsDropdownInput({
   const { t } = useTranslation("openhands");
 
   return (
-    <label
+    <div
       className={cn("flex flex-col gap-2.5 w-full min-w-0", wrapperClassName)}
     >
       {label && (
@@ -85,6 +85,14 @@ export function SettingsDropdownInput({
           selectorButton: heroUiAutocompleteSelectorButtonClassName,
         }}
         selectorButtonProps={{ disableRipple: true }}
+        // Overflow-auto ancestors (interview drawer, settings pages) fire
+        // scroll when the listbox opens; HeroUI's default shouldCloseOnScroll
+        // then dismisses the popover on the same click. Keep the listbox
+        // open and don't lock page scroll.
+        popoverProps={{
+          shouldBlockScroll: false,
+          shouldCloseOnScroll: false,
+        }}
         inputProps={{
           classNames: {
             inputWrapper: cn(
@@ -101,6 +109,6 @@ export function SettingsDropdownInput({
           <AutocompleteItem key={item.key}>{item.label}</AutocompleteItem>
         )}
       </Autocomplete>
-    </label>
+    </div>
   );
 }

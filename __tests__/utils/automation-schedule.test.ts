@@ -1,7 +1,9 @@
 import { describe, it, expect } from "vitest";
 import {
   buildCronSchedule,
+  buildIntervalCron,
   parseCronSchedule,
+  parseIntervalCron,
   parseTimeOfDay,
 } from "#/utils/automation-schedule";
 
@@ -65,6 +67,25 @@ describe("automation-schedule", () => {
       expect(daily).toBe("0 9 * * *");
       expect(weekdays).toBe("30 8 * * 1-5");
       expect(weekly).toBe("0 14 * * 3");
+    });
+  });
+
+  describe("interval cron", () => {
+    it("builds and parses repeating minute and hour schedules", () => {
+      expect(buildIntervalCron(15, "minutes")).toBe("*/15 * * * *");
+      expect(buildIntervalCron(1, "hours")).toBe("0 * * * *");
+      expect(buildIntervalCron(2, "hours")).toBe("0 */2 * * *");
+      expect(parseIntervalCron("*/20 * * * *")).toEqual({
+        kind: "interval",
+        value: 20,
+        unit: "minutes",
+      });
+      expect(parseIntervalCron("0 * * * *")).toEqual({
+        kind: "interval",
+        value: 1,
+        unit: "hours",
+      });
+      expect(parseIntervalCron("0 9 * * *")).toBeNull();
     });
   });
 

@@ -22,7 +22,13 @@ import {
 } from "#/utils/status";
 import { I18nKey } from "#/i18n/declaration";
 
-export function ConversationNameWithStatus() {
+interface ConversationNameWithStatusProps {
+  showRightPanelToggle?: boolean;
+}
+
+export function ConversationNameWithStatus({
+  showRightPanelToggle = true,
+}: ConversationNameWithStatusProps) {
   const { t } = useTranslation("openhands");
   const { conversationId } = useConversationId();
   const { data: conversation } = useActiveConversation();
@@ -139,7 +145,7 @@ export function ConversationNameWithStatus() {
               }
               executionStatus={executionStatus}
               position="bottom"
-              className="bottom-full left-0 mt-0 min-h-fit"
+              className="left-0 mt-0 min-h-fit"
               isPausing={false}
             />
           ) : null}
@@ -149,7 +155,7 @@ export function ConversationNameWithStatus() {
       <div className="mr-2 flex shrink-0 items-center gap-1">
         <ConversationGitActionsToggle />
         <ConversationOverviewToggle />
-        <RightPanelToggle />
+        {showRightPanelToggle ? <RightPanelToggle /> : null}
       </div>
     </div>
   );

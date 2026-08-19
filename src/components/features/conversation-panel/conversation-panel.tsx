@@ -41,6 +41,7 @@ import {
   applyAutomationConversationFilter,
   applyGroupFolderOrder,
   collectAutomationNameFacets,
+  filterOutInterviewConversations,
   filterOutPinnedConversations,
   getGroupDiscoveryConversationIds,
   groupConversations,
@@ -50,6 +51,7 @@ import {
   type ConversationGroupLaunch,
 } from "./conversation-panel-list-helpers";
 import { useArchivedConversationsStore } from "#/stores/archived-conversations-store";
+import { useAutomationCreateDraftStore } from "#/stores/automation-create-draft-store";
 import { usePinnedConversationsStore } from "#/stores/pinned-conversations-store";
 
 interface ConversationPanelProps {
@@ -284,6 +286,13 @@ export function ConversationPanel({
 
   // Fetch in-progress start tasks
   const { data: startTasks } = useStartTasks();
+  const interviewDrafts = useAutomationCreateDraftStore(
+    (state) => state.drafts,
+  );
+  const interviewConversationIds = React.useMemo(
+    () => new Set(Object.keys(interviewDrafts)),
+    [interviewDrafts],
+  );
 
   // Deduped, archive-unaware collection of every conversation currently loaded
   // from the backend. Bulk actions like "Delete all" must use this list so
@@ -330,13 +339,28 @@ export function ConversationPanel({
   // Display collection: same loaded pages, with archived rows filtered out
   // unless the user has opted into "Show archived".
   const conversations = React.useMemo(() => {
-    if (showArchivedConversations) {
-      return allLoadedConversations;
-    }
-    return allLoadedConversations.filter(
-      (conversation) => !archivedIdSet.has(conversation.id),
-    );
-  }, [allLoadedConversations, archivedIdSet, showArchivedConversations]);
+    const visible = showArchivedConversations
+      ? allLoadedConversations
+      : allLoadedConversations.filter(
+          (conversation) => !archivedIdSet.has(conversation.id),
+        );
+    return filterOutInterviewConversations(visible, interviewConversationIds);
+  }, [
+    allLoadedConversations,
+    archivedIdSet,
+    interviewConversationIds,
+    showArchivedConversations,
+  ]);
+
+  const visibleStartTasks = React.useMemo(
+    () =>
+      startTasks?.filter(
+        (task) =>
+          !task.app_conversation_id ||
+          !interviewConversationIds.has(task.app_conversation_id),
+      ) ?? [],
+    [interviewConversationIds, startTasks],
+  );
 
   // Facets derive from the unfiltered list so the automation-name rows in the
   // filter menu don't vanish while a narrowing selection is active.
@@ -1013,7 +1037,7 @@ export function ConversationPanel({
     !compact &&
     listIsEffectivelyEmpty &&
     !showPinnedSection &&
-    !startTasks?.length &&
+    !visibleStartTasks.length &&
     !hasVisibleGroups;
 
   const showConversationHeader = !compact;
@@ -1128,7 +1152,7 @@ export function ConversationPanel({
         {/* Render in-progress start tasks first (skipped in compact mode —
             their rich card layout doesn't fit in the icon rail). */}
         {!compact &&
-          startTasks?.map((task) => (
+          visibleStartTasks.map((task) => (
             <NavigationLink
               key={task.id}
               to={backendScopedPath(`/conversations/task-${task.id}`)}

@@ -8,11 +8,12 @@ interface SegmentedToggleOption<T extends string> {
 }
 
 interface SegmentedToggleProps<T extends string> {
-  value: T;
+  value: T | null;
   options: SegmentedToggleOption<T>[];
   onChange: (value: T) => void;
   ariaLabel: string;
   testId?: string;
+  size?: "sm" | "lg";
   className?: string;
   /** Stretch the control and give each option an equal share of the width. */
   equalWidth?: boolean;
@@ -28,9 +29,12 @@ export function SegmentedToggle<T extends string>({
   onChange,
   ariaLabel,
   testId,
+  size = "sm",
   className,
   equalWidth = false,
 }: SegmentedToggleProps<T>) {
+  const isLarge = size === "lg";
+
   return (
     <div
       role="radiogroup"
@@ -38,7 +42,10 @@ export function SegmentedToggle<T extends string>({
       data-testid={testId}
       className={cn(
         equalWidth ? "flex w-full" : "inline-flex",
-        "items-center rounded-md bg-[var(--oh-surface-raised)] p-0.5 text-xs",
+        "items-center bg-[var(--oh-surface-raised)]",
+        isLarge
+          ? "rounded-full p-1 text-sm font-medium"
+          : "rounded-md p-0.5 text-xs",
         className,
       )}
     >
@@ -55,14 +62,28 @@ export function SegmentedToggle<T extends string>({
             }
             onClick={() => onChange(option.value)}
             className={cn(
-              "inline-flex items-center gap-1.5 px-2 py-0.5 rounded cursor-pointer transition-colors",
+              "inline-flex items-center cursor-pointer transition-colors",
+              isLarge
+                ? "gap-2 px-5 py-2 rounded-full"
+                : "gap-1.5 px-2.5 py-1 rounded",
               equalWidth && "flex-1 justify-center text-center",
               isActive
                 ? "bg-[var(--oh-interactive-hover)] text-white"
                 : "text-[var(--oh-muted)] hover:text-white",
             )}
           >
-            {option.icon}
+            {option.icon ? (
+              <span
+                className={cn(
+                  "inline-flex shrink-0 items-center justify-center",
+                  isLarge
+                    ? "size-4 [&_svg]:size-4"
+                    : "size-3.5 [&_svg]:size-3.5",
+                )}
+              >
+                {option.icon}
+              </span>
+            ) : null}
             {option.label}
           </button>
         );

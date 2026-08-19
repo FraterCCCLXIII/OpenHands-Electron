@@ -111,3 +111,55 @@ export function formatEventOn(on: string | string[] | undefined): string {
   if (Array.isArray(on)) return on.join(", ");
   return on;
 }
+
+export const SCHEDULE_INTERVAL_UNITS = ["minutes", "hours"] as const;
+
+export type ScheduleIntervalUnit = (typeof SCHEDULE_INTERVAL_UNITS)[number];
+
+export interface IntervalSchedule {
+  kind: "interval";
+  value: number;
+  unit: ScheduleIntervalUnit;
+}
+
+export function clampScheduleInterval(
+  value: number,
+  unit: ScheduleIntervalUnit,
+): number {
+  const max = unit === "minutes" ? 59 : 23;
+  return Math.min(max, Math.max(1, Math.trunc(value)));
+}
+
+export function buildIntervalCron(
+  value: number,
+  unit: ScheduleIntervalUnit,
+): string {
+  const interval = clampScheduleInterval(value, unit);
+  if (unit === "minutes") return `*/${interval} * * * *`;
+  if (interval === 1) return "0 * * * *";
+  return `0 */${interval} * * *`;
+}
+
+export function parseIntervalCron(
+  cron: string | undefined | null,
+): IntervalSchedule | null {
+  const raw = (cron ?? "").trim();
+  const minuteMatch = raw.match(/^\*\/(\d+) \* \* \* \*$/);
+  if (minuteMatch) {
+    const value = Number(minuteMatch[1]);
+    if (value >= 1 && value <= 59) {
+      return { kind: "interval", value, unit: "minutes" };
+    }
+  }
+  if (raw === "0 * * * *") {
+    return { kind: "interval", value: 1, unit: "hours" };
+  }
+  const hourMatch = raw.match(/^0 \*\/(\d+) \* \* \*$/);
+  if (hourMatch) {
+    const value = Number(hourMatch[1]);
+    if (value >= 1 && value <= 23) {
+      return { kind: "interval", value, unit: "hours" };
+    }
+  }
+  return null;
+}

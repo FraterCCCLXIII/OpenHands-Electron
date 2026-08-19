@@ -41,7 +41,7 @@ const CREATE_INSTRUCTIONS_INLINE_COMPONENTS = {
 interface CreateInstructionsProps {
   /** If true, the instructions are collapsible and start collapsed */
   collapsible?: boolean;
-  /** Opens the dashboard create-conversation drawer instead of leaving the page. */
+  /** Starts the create-automation conversation from the dashboard. */
   onCreateAutomation?: () => void;
 }
 

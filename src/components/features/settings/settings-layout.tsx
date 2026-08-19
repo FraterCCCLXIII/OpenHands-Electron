@@ -1,6 +1,9 @@
 import { SettingsDesktopSidebar } from "./settings-desktop-sidebar";
 import { SettingsNavRenderedItem } from "#/hooks/use-settings-nav-items";
-import { settingsLayoutMainScrollClassName } from "#/utils/settings-like-page-layout-classes";
+import {
+  SETTINGS_LIKE_CONTENT_COLUMN_CLASS_NAME,
+  settingsLayoutMainScrollClassName,
+} from "#/utils/settings-like-page-layout-classes";
 
 interface SettingsLayoutProps {
   children: React.ReactNode;
@@ -21,7 +24,9 @@ export function SettingsLayout({
       <div className="flex min-h-0 flex-1 gap-10 md:items-start">
         <SettingsDesktopSidebar navigationItems={navigationItems} />
         <main className={settingsLayoutMainScrollClassName}>
-          <div className="mx-auto w-full min-w-0 max-w-[800px]">{children}</div>
+          <div className={SETTINGS_LIKE_CONTENT_COLUMN_CLASS_NAME}>
+            {children}
+          </div>
         </main>
       </div>
     </div>

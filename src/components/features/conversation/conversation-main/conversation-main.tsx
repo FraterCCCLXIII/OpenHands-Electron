@@ -1,3 +1,4 @@
+import { useLayoutEffect, useRef, useState } from "react";
 import { cn } from "#/utils/utils";
 import { ChatInterfaceWrapper } from "./chat-interface-wrapper";
 import { ConversationTabContent } from "../conversation-tabs/conversation-tab-content/conversation-tab-content";
@@ -13,6 +14,19 @@ import {
 import { SidebarMobileMenuToggle } from "#/components/features/sidebar/sidebar-mobile-menu-toggle";
 import { ConversationOverviewDrawer } from "../conversation-overview-drawer";
 import { useConversationOverviewDrawerOptional } from "../conversation-overview-drawer-context";
+import { AutomationInterviewDrawer } from "#/components/features/automations/automation-interview-drawer";
+import { AutomationInterviewHeader } from "#/components/features/automations/automation-interview-header";
+import { useNavigation } from "#/context/navigation-context";
+import { useIsAutomationInterview } from "#/hooks/use-is-automation-interview";
+import { SETTINGS_LIKE_CONTENT_COLUMN_CLASS_NAME } from "#/utils/settings-like-page-layout-classes";
+
+export const DESKTOP_CONVERSATION_PANEL_STORAGE_KEY =
+  "desktop-layout-panel-width";
+export const AUTOMATION_INTERVIEW_PANEL_STORAGE_KEY =
+  "automation-interview-panel-width";
+export const DEFAULT_CONVERSATION_LEFT_WIDTH = 50;
+export const DEFAULT_AUTOMATION_INTERVIEW_LEFT_WIDTH = 36;
+const CHAT_COLUMN_CLOSE_MIN_WIDTH_PX = 360;
 
 function getDesktopTabPanelClass(isRightPanelShown: boolean) {
   return isRightPanelShown
@@ -23,17 +37,61 @@ function getDesktopTabPanelClass(isRightPanelShown: boolean) {
 export function ConversationMain() {
   const isMobile = useBreakpoint();
   const isSidebarRailHidden = useBreakpoint(SIDEBAR_RAIL_COLLAPSE_MAX_WIDTH);
+  const { conversationId } = useNavigation();
+  const isInterview = useIsAutomationInterview(conversationId);
   const { isRightPanelShown } = useConversationStore();
   const overviewDrawer = useConversationOverviewDrawerOptional();
   const isSecondaryDrawerOpen = Boolean(overviewDrawer?.section);
+  const [isInterviewChatShown, setIsInterviewChatShown] = useState(true);
+  const showInterviewHeader = isInterview && Boolean(conversationId);
+  const showInterviewDrawer = isInterview && !isMobile;
+  const showInterviewChat = !showInterviewDrawer || isInterviewChatShown;
+  const showRightPane = !isMobile && (isInterview || isRightPanelShown);
 
   const { leftWidth, rightWidth, isDragging, containerRef, handleMouseDown } =
     useResizablePanels({
-      defaultLeftWidth: 50,
+      defaultLeftWidth: isInterview
+        ? DEFAULT_AUTOMATION_INTERVIEW_LEFT_WIDTH
+        : DEFAULT_CONVERSATION_LEFT_WIDTH,
       minLeftWidth: 30,
       maxLeftWidth: 80,
-      storageKey: "desktop-layout-panel-width",
+      storageKey: isInterview
+        ? AUTOMATION_INTERVIEW_PANEL_STORAGE_KEY
+        : DESKTOP_CONVERSATION_PANEL_STORAGE_KEY,
     });
+  const chatColumnRef = useRef<HTMLDivElement>(null);
+  const [chatColumnMinWidth, setChatColumnMinWidth] = useState(
+    CHAT_COLUMN_CLOSE_MIN_WIDTH_PX,
+  );
+  const [composerDockTarget, setComposerDockTarget] =
+    useState<HTMLDivElement | null>(null);
+  const showDockedComposer = showInterviewDrawer && !showInterviewChat;
+
+  useLayoutEffect(() => {
+    if (!showInterviewChat || isMobile) return;
+    const width = chatColumnRef.current?.getBoundingClientRect().width;
+    if (width && width > 0) {
+      setChatColumnMinWidth(width);
+    }
+  }, [showInterviewChat, isMobile, leftWidth, isDragging]);
+
+  const chatColumnWidth = isInterview
+    ? showRightPane && showInterviewChat
+      ? `${leftWidth}%`
+      : showRightPane
+        ? "0%"
+        : "100%"
+    : isRightPanelShown
+      ? `${leftWidth}%`
+      : "100%";
+
+  const chatColumnTransitionProperty = isInterview
+    ? isDragging
+      ? "none"
+      : "width"
+    : isDragging || isSecondaryDrawerOpen
+      ? "none"
+      : "width";
 
   return (
     <div
@@ -43,6 +101,20 @@ export function ConversationMain() {
           : "h-full flex flex-col overflow-hidden",
       )}
     >
+      {isInterview && conversationId ? (
+        <AutomationInterviewHeader
+          conversationId={conversationId}
+          isChatShown={isInterviewChatShown}
+          onToggleChat={
+            isMobile
+              ? undefined
+              : () => setIsInterviewChatShown((isShown) => !isShown)
+          }
+          leading={
+            isSidebarRailHidden ? <SidebarMobileMenuToggle /> : undefined
+          }
+        />
+      ) : null}
       <div
         ref={containerRef}
         className={cn(
@@ -60,74 +132,143 @@ export function ConversationMain() {
             Owns its own header (name + status) and gets bottom padding so the
             chat input doesn't slam the floor. */}
         <div
+          ref={chatColumnRef}
+          data-testid="conversation-chat-column"
           className={cn(
             "flex flex-col bg-base overflow-hidden",
             isMobile
               ? "flex-1"
-              : cn(
-                  "min-w-0",
-                  !isSecondaryDrawerOpen &&
-                    "transition-[width] duration-300 ease-in-out",
-                ),
+              : isInterview
+                ? "transition-[width] duration-300 ease-in-out"
+                : cn(
+                    "min-w-0",
+                    !isSecondaryDrawerOpen &&
+                      "transition-[width] duration-300 ease-in-out",
+                  ),
           )}
           // panel width computed at runtime by resize hook; transition toggled by drag state
           style={
             !isMobile
               ? {
-                  width: isRightPanelShown ? `${leftWidth}%` : "100%",
-                  transitionProperty:
-                    isDragging || isSecondaryDrawerOpen ? "none" : "width",
+                  width: chatColumnWidth,
+                  transitionProperty: chatColumnTransitionProperty,
                 }
               : undefined
           }
         >
           <div
-            data-testid="chat-pane-header"
+            data-testid="conversation-chat-column-content"
             className={cn(
-              "flex h-10 min-h-10 shrink-0 items-center",
-              isSidebarRailHidden && "gap-2 pl-2.5",
+              "flex h-full min-h-0 flex-col transition-opacity duration-300 ease-in-out",
+              showInterviewChat
+                ? "w-full min-w-0 opacity-100"
+                : "pointer-events-none opacity-0",
             )}
+            style={
+              !isMobile && !showInterviewChat
+                ? { minWidth: chatColumnMinWidth }
+                : undefined
+            }
           >
-            {isSidebarRailHidden ? <SidebarMobileMenuToggle /> : null}
-            <div className="min-w-0 flex-1">
-              <ConversationNameWithStatus />
+            {!showInterviewHeader ? (
+              <div
+                data-testid="chat-pane-header"
+                className={cn(
+                  "flex h-10 min-h-10 shrink-0 items-center",
+                  isSidebarRailHidden && "gap-2 pl-2.5",
+                )}
+              >
+                {isSidebarRailHidden ? <SidebarMobileMenuToggle /> : null}
+                <div className="min-w-0 flex-1">
+                  <ConversationNameWithStatus
+                    showRightPanelToggle={!isInterview}
+                  />
+                </div>
+              </div>
+            ) : null}
+            <div className="flex-1 min-h-0 flex flex-col">
+              <ChatInterfaceWrapper
+                isRightPanelShown={showRightPane}
+                showGitControlBar={!isInterview}
+                composerDockTarget={composerDockTarget}
+                onDockedComposerSubmit={() => setIsInterviewChatShown(true)}
+              />
             </div>
-          </div>
-          <div className="flex-1 min-h-0 flex flex-col">
-            <ChatInterfaceWrapper
-              isRightPanelShown={!isMobile && isRightPanelShown}
-            />
           </div>
         </div>
 
         {/* Resize Handle - only shown on desktop when right panel is visible */}
-        {!isMobile && isRightPanelShown && (
-          <ResizeHandle onMouseDown={handleMouseDown} isDragging={isDragging} />
-        )}
+        {showRightPane && (!isInterview || showInterviewChat) ? (
+          <ResizeHandle
+            onMouseDown={handleMouseDown}
+            isDragging={isDragging}
+            showLine={isInterview}
+          />
+        ) : null}
 
-        {/* Right panel: desktop side drawer. Mobile opens Files/Tools via /panel route. */}
+        {/* Right panel: automation draft form, or Files/Tools. Mobile uses /panel. */}
         {!isMobile && (
           <div
+            data-testid="conversation-right-pane"
             className={cn(
               "transition-all duration-300 ease-in-out overflow-hidden",
-              getDesktopTabPanelClass(isRightPanelShown),
+              getDesktopTabPanelClass(showRightPane),
             )}
             style={{
-              width: isRightPanelShown ? `${rightWidth}%` : "0%",
+              width: showRightPane
+                ? showInterviewChat
+                  ? `${rightWidth}%`
+                  : "100%"
+                : "0%",
               transitionProperty: isDragging ? "opacity, transform" : "all",
             }}
           >
             <div className="flex h-full w-full flex-col">
-              <div className="flex flex-col flex-1 min-h-0 bg-[var(--oh-surface)] border-l border-[var(--oh-border)] overflow-hidden">
-                <div
-                  data-testid="tabs-pane-header"
-                  className="flex shrink-0 flex-col border-b border-[var(--oh-border)]"
-                >
-                  <ConversationTabs isPanelResizing={isDragging} />
-                </div>
-                <div className="flex-1 min-h-0 flex flex-col">
-                  <ConversationTabContent />
-                </div>
+              <div className="relative flex flex-col flex-1 min-h-0 bg-base overflow-hidden">
+                {showInterviewDrawer && conversationId ? (
+                  <>
+                    <div
+                      data-testid="automation-interview-scroll"
+                      className="h-full min-h-0 overflow-y-auto custom-scrollbar-always [scrollbar-gutter:stable] px-5 pt-5 pb-5"
+                    >
+                      <div className={SETTINGS_LIKE_CONTENT_COLUMN_CLASS_NAME}>
+                        <AutomationInterviewDrawer
+                          key={conversationId}
+                          conversationId={conversationId}
+                          reserveComposerSpace={showDockedComposer}
+                        />
+                      </div>
+                    </div>
+                    {showDockedComposer ? (
+                      <div className="pointer-events-none absolute inset-0 z-20 [scrollbar-gutter:stable] px-5">
+                        <div
+                          className={cn(
+                            SETTINGS_LIKE_CONTENT_COLUMN_CLASS_NAME,
+                            "relative h-full",
+                          )}
+                        >
+                          <div
+                            ref={setComposerDockTarget}
+                            data-testid="interview-docked-composer"
+                            className="pointer-events-auto absolute inset-x-0 bottom-5 rounded-[15px] shadow-[0_12px_40px_rgba(0,0,0,0.55)]"
+                          />
+                        </div>
+                      </div>
+                    ) : null}
+                  </>
+                ) : (
+                  <>
+                    <div
+                      data-testid="tabs-pane-header"
+                      className="flex shrink-0 flex-col border-b border-[var(--oh-border)]"
+                    >
+                      <ConversationTabs isPanelResizing={isDragging} />
+                    </div>
+                    <div className="flex-1 min-h-0 flex flex-col">
+                      <ConversationTabContent />
+                    </div>
+                  </>
+                )}
               </div>
             </div>
           </div>

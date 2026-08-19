@@ -48,6 +48,8 @@ interface SettingsInputProps {
    * keep it to a phrase that reads well after the label text.
    */
   hint?: string;
+  /** Extra control rendered after the label / optional tag (e.g. an info button). */
+  labelEnd?: React.ReactNode;
   onBlur?: () => void;
   /** Extra classes merged onto the `<input>` element. */
   inputClassName?: string;
@@ -82,6 +84,7 @@ export const SettingsInput = forwardRef<HTMLInputElement, SettingsInputProps>(
       error,
       showRequiredTag,
       hint,
+      labelEnd,
       onBlur,
       inputClassName,
     },
@@ -107,6 +110,7 @@ export const SettingsInput = forwardRef<HTMLInputElement, SettingsInputProps>(
               {hint}
             </span>
           )}
+          {labelEnd}
         </div>
         <input
           ref={ref}

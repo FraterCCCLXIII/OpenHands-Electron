@@ -147,6 +147,19 @@ export function filterOutPinnedConversations(
   );
 }
 
+export function filterOutInterviewConversations(
+  conversations: readonly AppConversation[],
+  interviewIds: ReadonlySet<string>,
+): AppConversation[] {
+  if (interviewIds.size === 0) {
+    return [...conversations];
+  }
+
+  return conversations.filter(
+    (conversation) => !interviewIds.has(conversation.id),
+  );
+}
+
 /**
  * Facet bucket for automation-born conversations that carry no
  * `automationname` tag (double-underscore prefix mirrors the

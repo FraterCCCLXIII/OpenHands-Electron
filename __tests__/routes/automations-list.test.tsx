@@ -254,6 +254,51 @@ describe("AutomationsList — view mode toggle", () => {
     ).not.toBeInTheDocument();
   });
 
+  it("shows saved interview drafts below the search bar", async () => {
+    const user = userEvent.setup();
+    useAutomationCreateDraftStore.getState().startDraft("conv-draft", {
+      name: "Morning haiku",
+      isSaved: true,
+    });
+    useAutomationCreateDraftStore.getState().startDraft("conv-unsaved", {
+      name: "Unsaved sketch",
+    });
+    useAutomationCreateDraftStore.getState().startDraft("conv-created", {
+      name: "Already created",
+      status: "created",
+      createdAutomationId: "auto-2",
+      isSaved: true,
+    });
+
+    renderList();
+    await screen.findByText(automation.name);
+
+    const drafts = screen.getByTestId("automation-interview-drafts");
+    const search = screen.getByLabelText(I18nKey.AUTOMATIONS$SEARCH_PLACEHOLDER);
+    expect(search.compareDocumentPosition(drafts)).toBe(
+      Node.DOCUMENT_POSITION_FOLLOWING,
+    );
+    expect(within(drafts).getByText("Morning haiku")).toBeInTheDocument();
+    expect(
+      within(drafts).queryByText("Unsaved sketch"),
+    ).not.toBeInTheDocument();
+    expect(
+      within(drafts).queryByText("Already created"),
+    ).not.toBeInTheDocument();
+
+    await user.click(screen.getByTestId("automation-interview-draft-conv-draft"));
+    expect(mockNavigate).toHaveBeenCalledWith("/conversations/conv-draft");
+  });
+
+  it("hides the drafts area when there are no saved interviews", async () => {
+    renderList();
+    await screen.findByText(automation.name);
+
+    expect(
+      screen.queryByTestId("automation-interview-drafts"),
+    ).not.toBeInTheDocument();
+  });
+
   it("keeps the recommended rail inside the empty state instead of above it", async () => {
     vi.mocked(AutomationService.getAutomations).mockResolvedValue({
       automations: [],
@@ -486,8 +531,8 @@ describe("AutomationsList — list freshness on remount", () => {
   });
 });
 
-describe("AutomationsList — create conversation drawer", () => {
-  it("opens a pushing conversation pane when Add Automation is clicked", async () => {
+describe("AutomationsList — create conversation page", () => {
+  it("opens the interview conversation page when Add Automation is clicked", async () => {
     const user = userEvent.setup();
     renderList();
     await screen.findByText(automation.name);
@@ -501,46 +546,16 @@ describe("AutomationsList — create conversation drawer", () => {
       },
       expect.objectContaining({ onSuccess: expect.any(Function) }),
     );
+    expect(mockNavigate).toHaveBeenCalledWith("/conversations/conv-create-1");
     expect(
-      await screen.findByTestId("automation-create-chat-pane"),
-    ).toBeInTheDocument();
-    expect(screen.getByTestId("automation-create-split")).toBeInTheDocument();
-    expect(screen.getByText(automation.name)).toBeInTheDocument();
-    expect(screen.getByTestId("stub-chat-interface")).toBeInTheDocument();
+      screen.queryByTestId("automation-create-chat-pane"),
+    ).not.toBeInTheDocument();
     expect(
       useAutomationCreateDraftStore.getState().drafts["conv-create-1"],
     ).toBeDefined();
   });
 
-  it("closes the pane without leaving the automations page", async () => {
-    const user = userEvent.setup();
-    renderList();
-    await screen.findByText(automation.name);
-    await user.click(screen.getByTestId("automations-add-automation"));
-    await screen.findByTestId("automation-create-chat-pane");
-
-    await user.click(screen.getByTestId("automation-create-chat-close"));
-
-    expect(
-      screen.queryByTestId("automation-create-chat-pane"),
-    ).not.toBeInTheDocument();
-    expect(screen.getByText(automation.name)).toBeInTheDocument();
-    expect(mockNavigate).not.toHaveBeenCalled();
-  });
-
-  it("expands the pane conversation to the full conversation page", async () => {
-    const user = userEvent.setup();
-    renderList();
-    await screen.findByText(automation.name);
-    await user.click(screen.getByTestId("automations-add-automation"));
-    await screen.findByTestId("automation-create-chat-pane");
-
-    await user.click(screen.getByTestId("automation-create-chat-expand"));
-
-    expect(mockNavigate).toHaveBeenCalledWith("/conversations/conv-create-1");
-  });
-
-  it("opens the same drawer from the empty-state Create Automation button", async () => {
+  it("opens the same conversation page from the empty-state Create Automation button", async () => {
     vi.mocked(AutomationService.getAutomations).mockResolvedValue({
       automations: [],
       total: 0,
@@ -552,21 +567,9 @@ describe("AutomationsList — create conversation drawer", () => {
     await user.click(screen.getByTestId("automations-create-automation"));
 
     expect(mockCreateConversationMutate).toHaveBeenCalledTimes(1);
+    expect(mockNavigate).toHaveBeenCalledWith("/conversations/conv-create-1");
     expect(
-      await screen.findByTestId("automation-create-chat-pane"),
-    ).toBeInTheDocument();
-    expect(screen.getByTestId("automations-empty")).toBeInTheDocument();
-  });
-
-  it("reuses the open conversation instead of creating another", async () => {
-    const user = userEvent.setup();
-    renderList();
-    await screen.findByText(automation.name);
-
-    await user.click(screen.getByTestId("automations-add-automation"));
-    await screen.findByTestId("automation-create-chat-pane");
-    await user.click(screen.getByTestId("automations-add-automation"));
-
-    expect(mockCreateConversationMutate).toHaveBeenCalledTimes(1);
+      screen.queryByTestId("automation-create-chat-pane"),
+    ).not.toBeInTheDocument();
   });
 });

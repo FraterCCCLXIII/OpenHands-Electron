@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import { CustomChatInput } from "./custom-chat-input";
 import { useBtwInterceptor } from "#/hooks/chat/use-btw-interceptor";
 import { useGoalInterceptor } from "#/hooks/chat/use-goal-interceptor";
@@ -18,6 +19,8 @@ interface InteractiveChatBoxProps {
   disabled?: boolean;
   hasStartedConversation?: boolean;
   showGitControlBar?: boolean;
+  composerDrawer?: ReactNode;
+  placeholder?: string;
 }
 
 export function InteractiveChatBox({
@@ -25,6 +28,8 @@ export function InteractiveChatBox({
   disabled = false,
   hasStartedConversation,
   showGitControlBar = true,
+  composerDrawer,
+  placeholder,
 }: InteractiveChatBoxProps) {
   const {
     images,
@@ -67,13 +72,15 @@ export function InteractiveChatBox({
     isTaskPolling(subConversationTaskStatus);
 
   return (
-    <div data-testid="interactive-chat-box">
+    <div data-testid="interactive-chat-box" className="w-full shrink-0">
       <CustomChatInput
         disabled={isDisabled}
         isNewConversationPending={disabled}
         hasStartedConversation={hasStartedConversation}
         onSubmit={handleSubmit}
         onFilesPaste={handleUpload}
+        composerDrawer={composerDrawer}
+        placeholder={placeholder}
       />
       {showGitControlBar ? (
         <div className="mt-3 pb-3">

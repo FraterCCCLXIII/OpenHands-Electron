@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { AutomationInterviewPanel } from "#/components/features/automations/automation-interview-panel";
@@ -78,9 +78,34 @@ describe("AutomationInterviewPanel", () => {
     ).not.toBeInTheDocument();
   });
 
-  it("walks from intent to trigger cards", async () => {
+  it("hides the picker until the agent requests a field", () => {
+    useAutomationCreateDraftStore.getState().ensureDraft("conv-1");
+    renderPanel();
+
+    expect(
+      screen.queryByTestId("automation-interview-panel"),
+    ).not.toBeInTheDocument();
+  });
+
+  it("does not show the intent picker when the launch prompt is already known", () => {
+    useAutomationCreateDraftStore.getState().ensureDraft("conv-1");
+    useAutomationCreateDraftStore.getState().patchDraft("conv-1", {
+      prompt: "Write a haiku every morning",
+      requestedField: "intent",
+    });
+    renderPanel();
+
+    expect(
+      screen.queryByTestId("automation-interview-panel"),
+    ).not.toBeInTheDocument();
+  });
+
+  it("walks from intent to trigger cards when the agent requests them", async () => {
     const user = userEvent.setup();
     useAutomationCreateDraftStore.getState().ensureDraft("conv-1");
+    useAutomationCreateDraftStore.getState().patchDraft("conv-1", {
+      requestedField: "intent",
+    });
     renderPanel();
 
     expect(screen.getByTestId("automation-interview-panel")).toHaveAttribute(
@@ -96,10 +121,9 @@ describe("AutomationInterviewPanel", () => {
       screen.getByTestId("automation-interview-intent-continue"),
     );
 
-    expect(screen.getByTestId("automation-interview-panel")).toHaveAttribute(
-      "data-field",
-      "triggerType",
-    );
+    expect(
+      screen.queryByTestId("automation-interview-panel"),
+    ).not.toBeInTheDocument();
     expect(mockSend).toHaveBeenCalledWith(
       expect.objectContaining({
         args: expect.objectContaining({
@@ -107,6 +131,17 @@ describe("AutomationInterviewPanel", () => {
         }),
       }),
     );
+
+    useAutomationCreateDraftStore.getState().patchDraft("conv-1", {
+      requestedField: "triggerType",
+    });
+
+    await waitFor(() => {
+      expect(screen.getByTestId("automation-interview-panel")).toHaveAttribute(
+        "data-field",
+        "triggerType",
+      );
+    });
     expect(
       screen.getByText(I18nKey.AUTOMATIONS$INTERVIEW_TRIGGER_SCHEDULE),
     ).toBeInTheDocument();
@@ -121,6 +156,7 @@ describe("AutomationInterviewPanel", () => {
       triggerType: "schedule",
       schedulePreset: "weekdays",
       tokensResolved: true,
+      requestedField: "review",
     });
     renderPanel();
 
@@ -144,7 +180,7 @@ describe("AutomationInterviewPanel", () => {
     );
   });
 
-  it("shows missing integrations during the interview, not only on review", () => {
+  it("keeps the current interview step when integrations are missing", () => {
     mockMissingIntegrations = [
       { id: "notion", name: "Notion", connectionOptions: [] },
     ];
@@ -152,6 +188,7 @@ describe("AutomationInterviewPanel", () => {
     useAutomationCreateDraftStore.getState().patchDraft("conv-1", {
       prompt: "Save meeting notes in Notion",
       triggerType: "schedule",
+      requestedField: "schedule",
     });
     renderPanel();
 
@@ -160,9 +197,42 @@ describe("AutomationInterviewPanel", () => {
       "schedule",
     );
     expect(
-      screen.getByTestId("automation-interview-missing-integrations"),
-    ).toBeInTheDocument();
-    expect(screen.getByText("Notion")).toBeInTheDocument();
+      screen.queryByTestId("automation-interview-missing-integrations"),
+    ).not.toBeInTheDocument();
+    expect(screen.getByTestId("automation-interview-cron")).toBeInTheDocument();
+  });
+
+  it("keeps a cron input visible beside the schedule presets", async () => {
+    const user = userEvent.setup();
+    useAutomationCreateDraftStore.getState().ensureDraft("conv-1");
+    useAutomationCreateDraftStore.getState().patchDraft("conv-1", {
+      requestedField: "schedule",
+    });
+    renderPanel();
+
+    const cronInput = screen.getByTestId("automation-interview-cron");
+    expect(cronInput).toHaveValue("");
+    expect(
+      screen.getByTestId("automation-interview-schedule-continue"),
+    ).toBeDisabled();
+
+    await user.click(screen.getByTestId("automation-interview-schedule-daily"));
+    expect(cronInput).toHaveValue("0 9 * * *");
+    expect(
+      screen.getByTestId("automation-interview-schedule-continue"),
+    ).toBeEnabled();
+
+    await user.clear(cronInput);
+    await user.type(cronInput, "*/5 * * * *");
+    expect(useAutomationCreateDraftStore.getState().drafts["conv-1"]).toEqual(
+      expect.objectContaining({
+        schedulePreset: "custom",
+        cronExpression: "*/5 * * * *",
+      }),
+    );
+    expect(
+      screen.getByTestId("automation-interview-schedule-continue"),
+    ).toBeEnabled();
   });
 
   it("blocks create when required integrations are missing", () => {
@@ -176,13 +246,13 @@ describe("AutomationInterviewPanel", () => {
       triggerType: "schedule",
       schedulePreset: "weekdays",
       tokensResolved: true,
+      requestedField: "review",
     });
     renderPanel();
 
     expect(
-      screen.getByTestId("automation-interview-missing-integrations"),
-    ).toBeInTheDocument();
-    expect(screen.getByText("Slack")).toBeInTheDocument();
+      screen.queryByTestId("automation-interview-missing-integrations"),
+    ).not.toBeInTheDocument();
     expect(screen.getByTestId("automation-interview-create")).toBeDisabled();
     expect(mockCreate).not.toHaveBeenCalled();
   });

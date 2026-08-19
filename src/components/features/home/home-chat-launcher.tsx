@@ -36,6 +36,13 @@ import { OpenLauncherButton } from "./open-launcher-button";
 import { OpenWorkspaceDialog } from "./open-workspace-dialog";
 import { OpenRepositoryDialog } from "./open-repository-dialog";
 import { HomeGitControlBarPreview } from "./home-git-control-bar-preview";
+import {
+  HomeLaunchModeToggle,
+  type HomeLaunchMode,
+} from "./home-launch-mode-toggle";
+import { useAutomationCreateDraftStore } from "#/stores/automation-create-draft-store";
+import { buildAutomationInterviewCreateQuery } from "#/utils/automation-create-interview";
+import { cn } from "#/utils/utils";
 
 export function HomeChatLauncher() {
   const { t } = useTranslation("openhands");
@@ -54,6 +61,8 @@ export function HomeChatLauncher() {
     useState<WorkspaceMode>("local_repo");
   const [selectedPlugins, setSelectedPlugins] = useState<PluginSpec[]>([]);
   const [isPluginPickerOpen, setIsPluginPickerOpen] = useState(false);
+  const [launchMode, setLaunchMode] = useState<HomeLaunchMode>("code");
+  const startDraft = useAutomationCreateDraftStore((state) => state.startDraft);
 
   const { mutateAsync: createConversation, isPending } =
     useCreateConversation();
@@ -79,7 +88,8 @@ export function HomeChatLauncher() {
   const handleSubmit = (message: string) => {
     const trimmed = message.trim();
     const hasAttachments = images.length > 0 || files.length > 0;
-    if ((!trimmed && !hasAttachments) || isCreating) return;
+    const isAutomate = launchMode === "automate";
+    if ((!trimmed && !hasAttachments && !isAutomate) || isCreating) return;
 
     // Safety net: the input is disabled when there's no usable LLM, but never
     // create a conversation that can't run (it would fail with a cryptic
@@ -97,17 +107,27 @@ export function HomeChatLauncher() {
     // When attachments are present the first user message is sent afterward
     // via sendMessageWithAttachments / flushPendingTaskAttachments. Passing
     // query here would create a duplicate text-only initial_message.
+    const automateQuery = isAutomate
+      ? buildAutomationInterviewCreateQuery(
+          t(I18nKey.AUTOMATIONS$CREATE_INTERVIEW_PROMPT),
+          trimmed,
+        )
+      : undefined;
     let variables: Parameters<typeof createConversation>[0] = {
-      query: hasAttachments ? undefined : trimmed || undefined,
-      entryPoint: "home_chat_launcher",
+      query: hasAttachments
+        ? undefined
+        : isAutomate
+          ? automateQuery
+          : trimmed || undefined,
+      entryPoint: isAutomate ? "home_automate" : "home_chat_launcher",
     };
-    if (isLocal && pendingWorkspace) {
+    if (!isAutomate && isLocal && pendingWorkspace) {
       variables = {
         ...variables,
         workingDir: pendingWorkspace.path,
         workspaceMode,
       };
-    } else if (!isLocal && pendingRepository && pendingBranch) {
+    } else if (!isAutomate && !isLocal && pendingRepository && pendingBranch) {
       variables = {
         ...variables,
         repository: {
@@ -120,8 +140,9 @@ export function HomeChatLauncher() {
 
     // Explicitly-attached plugins are additive on top of any ambient set and
     // are resolved from git at run time. Omitted entirely when none selected so
-    // nothing attaches unless the user picked it.
-    if (selectedPlugins.length > 0) {
+    // nothing attaches unless the user picked it. Automate conversations do
+    // not take a workspace or plugins.
+    if (!isAutomate && selectedPlugins.length > 0) {
       variables = { ...variables, plugins: selectedPlugins };
     }
 
@@ -142,6 +163,12 @@ export function HomeChatLauncher() {
           // sessionStorage not available
         }
         const targetConversationId = data.conversation_id;
+        if (isAutomate) {
+          startDraft(
+            targetConversationId,
+            trimmed ? { prompt: trimmed } : undefined,
+          );
+        }
         const isTaskConversation = targetConversationId.startsWith("task-");
 
         if (hasAttachments) {
@@ -162,7 +189,7 @@ export function HomeChatLauncher() {
             }
 
             setPendingTaskAttachments(taskId, {
-              content: trimmed,
+              content: isAutomate ? (automateQuery ?? trimmed) : trimmed,
               images: attachmentSnapshot.images,
               files: attachmentSnapshot.files,
               imagesMarkedUploadAsFile: [...imagesMarkedUploadAsFile],
@@ -170,7 +197,7 @@ export function HomeChatLauncher() {
             clearAllFiles();
             await enqueueHomeTaskPendingMessage({
               conversationId: targetConversationId,
-              text: trimmed,
+              text: isAutomate ? (automateQuery ?? trimmed) : trimmed,
               images: attachmentSnapshot.images,
               imagesMarkedUploadAsFile,
             });
@@ -180,7 +207,7 @@ export function HomeChatLauncher() {
             try {
               await sendMessageWithAttachments({
                 conversationId: targetConversationId,
-                content: trimmed,
+                content: isAutomate ? (automateQuery ?? trimmed) : trimmed,
                 images: attachmentSnapshot.images,
                 files: attachmentSnapshot.files,
                 imagesMarkedUploadAsFile,
@@ -194,10 +221,10 @@ export function HomeChatLauncher() {
           }
         }
 
-        if (isTaskConversation && trimmed) {
+        if (isTaskConversation && (trimmed || isAutomate)) {
           await enqueueHomeTaskPendingMessage({
             conversationId: targetConversationId,
-            text: trimmed,
+            text: isAutomate ? (automateQuery ?? trimmed) : trimmed,
             images: [],
             imagesMarkedUploadAsFile: [],
           });
@@ -227,15 +254,34 @@ export function HomeChatLauncher() {
           <HomeHeaderTitle />
         </div>
 
+        <HomeLaunchModeToggle
+          value={launchMode}
+          onChange={setLaunchMode}
+          disabled={isCreating || llmBlocked}
+        />
+
         <div className="w-full">
           <CustomChatInput
             onSubmit={handleSubmitWithModelGuard}
             onFilesPaste={handleUpload}
             disabled={isCreating || llmBlocked}
+            allowEmptySubmit={launchMode === "automate"}
+            placeholder={
+              launchMode === "automate"
+                ? t(I18nKey.HOME$LAUNCH_AUTOMATE_PLACEHOLDER)
+                : undefined
+            }
           />
         </div>
 
-        <div className="flex items-center justify-start gap-2">
+        <div
+          data-testid="home-composer-actions"
+          aria-disabled={launchMode === "automate"}
+          className={cn(
+            "flex items-center justify-start gap-2",
+            launchMode === "automate" && "pointer-events-none opacity-40",
+          )}
+        >
           {hasSelection ? (
             <HomeGitControlBarPreview
               workspace={pendingWorkspace}
@@ -251,14 +297,18 @@ export function HomeChatLauncher() {
             <OpenLauncherButton
               kind={isLocal ? "local" : "cloud"}
               onClick={() => setIsDialogOpen(true)}
-              disabled={isCreating || Boolean(workspacesUnsupportedMessage)}
+              disabled={
+                isCreating ||
+                launchMode === "automate" ||
+                Boolean(workspacesUnsupportedMessage)
+              }
               disabledTooltip={workspacesUnsupportedMessage}
             />
           )}
           <PluginPickerTrigger
             count={selectedPlugins.length}
             onClick={() => setIsPluginPickerOpen(true)}
-            disabled={isCreating}
+            disabled={isCreating || launchMode === "automate"}
           />
         </div>
 

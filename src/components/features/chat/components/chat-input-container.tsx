@@ -32,6 +32,7 @@ interface ChatInputContainerProps {
   slashItems?: SlashCommandItem[];
   slashSelectedIndex?: number;
   onSlashSelect?: (item: SlashCommandItem) => void;
+  placeholder?: string;
 }
 
 export function ChatInputContainer({
@@ -58,6 +59,7 @@ export function ChatInputContainer({
   slashItems = [],
   slashSelectedIndex = 0,
   onSlashSelect,
+  placeholder,
 }: ChatInputContainerProps) {
   const conversationMode = useConversationStore(
     (state) => state.conversationMode,
@@ -67,7 +69,7 @@ export function ChatInputContainer({
     <div
       ref={chatContainerRef}
       className={cn(
-        "bg-[var(--oh-surface)] box-border content-stretch flex flex-col items-start justify-center p-4 relative rounded-[15px] w-full",
+        "bg-[var(--oh-surface)] box-border content-stretch flex h-auto shrink-0 flex-col items-start justify-center p-4 relative rounded-[15px] w-full",
         conversationMode === "plan" && "border border-[#597FF4]",
       )}
       onDragOver={(e) => onDragOver(e, disabled)}
@@ -93,6 +95,7 @@ export function ChatInputContainer({
         <ChatInputRow
           chatInputRef={chatInputRef}
           isNewConversationPending={isNewConversationPending}
+          placeholder={placeholder}
           onInput={onInput}
           onPaste={onPaste}
           onKeyDown={onKeyDown}

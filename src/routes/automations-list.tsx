@@ -26,6 +26,7 @@ import { useAutomationHealth } from "#/hooks/query/use-automation-health";
 import { useActiveBackend } from "#/contexts/active-backend-context";
 import { useNavigation } from "#/context/navigation-context";
 import { SearchInput } from "#/components/features/automations/search-input";
+import { AutomationInterviewDrafts } from "#/components/features/automations/automation-interview-drafts";
 import { AutomationGroup } from "#/components/features/automations/automation-group";
 import { AutomationViewToggle } from "#/components/features/automations/automation-view-toggle";
 import {
@@ -39,13 +40,12 @@ import { ErrorState } from "#/components/features/automations/error-state";
 import { BackendNotConfigured } from "#/components/features/automations/backend-not-configured";
 import { DeleteConfirmationModal } from "#/components/features/automations/delete-confirmation-modal";
 import { EditAutomationModal } from "#/components/features/automations/detail/edit-automation-modal";
-import { AutomationCreateChatPane } from "#/components/features/automations/automation-create-chat-pane";
-import { AutomationCreateSplitLayout } from "#/components/features/automations/automation-create-split-layout";
 import { ImportAutomationModal } from "#/components/features/automations/import-automation-modal";
 import { RecommendedAutomationsLauncher } from "#/components/features/automations/recommended-automations-launcher";
 import { BrandButton } from "#/components/features/settings/brand-button";
 import { useCreateConversation } from "#/hooks/mutation/use-create-conversation";
 import { useAutomationCreateDraftStore } from "#/stores/automation-create-draft-store";
+import { listSavedAutomationInterviewDrafts } from "#/utils/automation-create-interview";
 import { useTracking } from "#/hooks/use-tracking";
 import type { Automation, AutomationSpec } from "#/types/automation";
 import {
@@ -121,9 +121,6 @@ export default function AutomationsList() {
     name: string;
   } | null>(null);
   const [editTarget, setEditTarget] = useState<Automation | null>(null);
-  const [createConversationId, setCreateConversationId] = useState<
-    string | null
-  >(null);
   const [importSpec, setImportSpec] = useState<AutomationSpec | null>(null);
   const importInputRef = useRef<HTMLInputElement>(null);
 
@@ -157,8 +154,11 @@ export default function AutomationsList() {
     trackAutomationCreatedButton,
   } = useTracking();
   const createConversation = useCreateConversation();
-  const ensureDraft = useAutomationCreateDraftStore(
-    (state) => state.ensureDraft,
+  const startDraft = useAutomationCreateDraftStore((state) => state.startDraft);
+  const draftsById = useAutomationCreateDraftStore((state) => state.drafts);
+  const interviewDrafts = useMemo(
+    () => listSavedAutomationInterviewDrafts(draftsById),
+    [draftsById],
   );
   const toggleMutation = useToggleAutomation();
   const deleteMutation = useDeleteAutomation();
@@ -303,8 +303,8 @@ export default function AutomationsList() {
     writeStoredAutomationViewMode(view);
   }, []);
 
-  const openCreateConversationDrawer = useCallback(() => {
-    if (createConversationId || createConversation.isPending) return;
+  const openCreateConversation = useCallback(() => {
+    if (createConversation.isPending) return;
 
     trackAutomationCreatedButton({ backendKind: active.backend.kind });
     createConversation.mutate(
@@ -314,8 +314,8 @@ export default function AutomationsList() {
       },
       {
         onSuccess: (conversation) => {
-          ensureDraft(conversation.conversation_id);
-          setCreateConversationId(conversation.conversation_id);
+          startDraft(conversation.conversation_id);
+          navigate?.(`/conversations/${conversation.conversation_id}`);
         },
         onError: (error) => {
           displayErrorToast(
@@ -327,8 +327,8 @@ export default function AutomationsList() {
   }, [
     active.backend.kind,
     createConversation,
-    createConversationId,
-    ensureDraft,
+    navigate,
+    startDraft,
     t,
     trackAutomationCreatedButton,
   ]);
@@ -378,20 +378,7 @@ export default function AutomationsList() {
       </div>
     );
 
-    return (
-      <AutomationCreateSplitLayout
-        drawer={
-          createConversationId ? (
-            <AutomationCreateChatPane
-              conversationId={createConversationId}
-              onClose={() => setCreateConversationId(null)}
-            />
-          ) : null
-        }
-      >
-        {page}
-      </AutomationCreateSplitLayout>
-    );
+    return page;
   };
 
   const hasMore = data ? data.total > data.automations.length : false;
@@ -477,7 +464,7 @@ export default function AutomationsList() {
             testId="automations-add-automation"
             className="whitespace-nowrap"
             isDisabled={createConversation.isPending}
-            onClick={openCreateConversationDrawer}
+            onClick={openCreateConversation}
           >
             {t(I18nKey.AUTOMATIONS$ADD_AUTOMATION)}
           </BrandButton>
@@ -518,6 +505,8 @@ export default function AutomationsList() {
         />
       </div>
 
+      <AutomationInterviewDrafts drafts={interviewDrafts} />
+
       {/* Content */}
       <div className={cn("flex flex-col gap-6", !dashboard && "mt-6")}>
         {isLoading && (
@@ -531,7 +520,7 @@ export default function AutomationsList() {
         {isError && !isLoading && <ErrorState onRetry={refetch} />}
 
         {hasNoAutomations && (
-          <EmptyState onCreateAutomation={openCreateConversationDrawer} />
+          <EmptyState onCreateAutomation={openCreateConversation} />
         )}
 
         {!isLoading &&

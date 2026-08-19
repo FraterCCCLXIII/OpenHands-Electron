@@ -7,6 +7,8 @@ interface ResizeHandleProps {
   /** While the parent panel drag is active, keep the grip line highlighted. */
   isDragging?: boolean;
   testId?: string;
+  /** Keep a 1px divider visible at rest (hover/drag still highlight it). */
+  showLine?: boolean;
 }
 
 export function ResizeHandle({
@@ -14,9 +16,16 @@ export function ResizeHandle({
   className,
   isDragging = false,
   testId,
+  showLine = false,
 }: ResizeHandleProps) {
   const [isHovering, setIsHovering] = useState(false);
   const lineActive = isDragging || isHovering;
+  let lineClassName = "bg-transparent";
+  if (lineActive) {
+    lineClassName = "bg-white";
+  } else if (showLine) {
+    lineClassName = "bg-[var(--oh-border)]";
+  }
 
   return (
     <div
@@ -33,7 +42,7 @@ export function ResizeHandle({
       <div
         className={cn(
           "pointer-events-none absolute inset-y-0 left-1/2 w-px -translate-x-1/2 transition-colors",
-          lineActive ? "bg-white" : "bg-transparent",
+          lineClassName,
         )}
         aria-hidden
       />

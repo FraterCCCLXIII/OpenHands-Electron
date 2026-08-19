@@ -31,6 +31,8 @@ import { useTaskPolling } from "#/hooks/query/use-task-polling";
 import { AgentState } from "#/types/agent-state";
 import { useConversationStore } from "#/stores/conversation-store";
 import { useGoalStore } from "#/stores/goal-store";
+import { useAutomationCreateDraftStore } from "#/stores/automation-create-draft-store";
+import { I18nKey } from "#/i18n/declaration";
 import { act } from "@testing-library/react";
 
 const mockSend = vi.fn();
@@ -1140,5 +1142,65 @@ describe("ChatInterface - Build plan keyboard shortcut", () => {
     await waitFor(() => {
       expect(sentBuildPrompt()).toBe(true);
     });
+  });
+});
+
+describe("ChatInterface - interview composer placeholder", () => {
+  beforeEach(() => {
+    (
+      useUnifiedUploadFiles as unknown as ReturnType<typeof vi.fn>
+    ).mockReturnValue({
+      mutateAsync: vi
+        .fn()
+        .mockResolvedValue({ skipped_files: [], uploaded_files: [] }),
+      isLoading: false,
+    });
+  });
+
+  afterEach(() => {
+    useAutomationCreateDraftStore.setState({ drafts: {} });
+  });
+
+  it("keeps the default placeholder in a regular conversation", () => {
+    renderChatInterfaceWithRouter();
+
+    expect(screen.getByTestId("chat-input")).toHaveAttribute(
+      "data-placeholder",
+      I18nKey.SUGGESTIONS$WHAT_TO_BUILD,
+    );
+  });
+
+  it("keeps the default placeholder in an interview when the composer is not docked", () => {
+    useAutomationCreateDraftStore
+      .getState()
+      .ensureDraft("test-conversation-id");
+
+    renderChatInterfaceWithRouter();
+
+    expect(screen.getByTestId("chat-input")).toHaveAttribute(
+      "data-placeholder",
+      I18nKey.SUGGESTIONS$WHAT_TO_BUILD,
+    );
+  });
+
+  it("uses the automate placeholder only on the docked interview composer", () => {
+    useAutomationCreateDraftStore
+      .getState()
+      .ensureDraft("test-conversation-id");
+    const dock = document.createElement("div");
+    document.body.appendChild(dock);
+
+    renderWithProviders(
+      <MemoryRouter>
+        <ChatInterface composerDockTarget={dock} />
+      </MemoryRouter>,
+    );
+
+    expect(within(dock).getByTestId("chat-input")).toHaveAttribute(
+      "data-placeholder",
+      I18nKey.HOME$LAUNCH_AUTOMATE_PLACEHOLDER,
+    );
+
+    dock.remove();
   });
 });

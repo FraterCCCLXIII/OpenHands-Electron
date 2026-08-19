@@ -1,20 +1,17 @@
-import { useMemo, useState, type ReactNode } from "react";
+import { useState, type ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 import { BrandButton } from "#/components/features/settings/brand-button";
-import { MissingIntegrationsBanner } from "#/components/features/automations/missing-integrations-banner";
+import { useInterviewMissingIntegrations } from "#/components/features/automations/automation-interview-missing-integrations";
 import { useAutomationCreateInterview } from "#/hooks/use-automation-create-interview";
-import { useMissingCatalogIntegrations } from "#/hooks/query/use-missing-catalog-integrations";
 import { I18nKey } from "#/i18n/declaration";
 import { cn } from "#/utils/utils";
 import {
   AUTOMATION_EVENT_OPTIONS,
   AUTOMATION_INTEGRATION_OPTIONS,
   AUTOMATION_PROMPT_TOKENS,
-  AUTOMATION_SCHEDULE_PRESETS,
+  AUTOMATION_SCHEDULE_CHIP_PRESETS,
   AUTOMATION_TIMEZONE_OPTIONS,
-  inferRequiredIntegrationIds,
   insertTokenIntoPrompt,
-  integrationHintsFromDraft,
   resolveDraftCron,
   suggestNameFromPrompt,
   type AutomationCreateDraft,
@@ -37,6 +34,7 @@ const EVENT_LABELS: Record<AutomationEventOption, I18nKey> = {
 const SCHEDULE_LABELS: Record<AutomationSchedulePreset, I18nKey> = {
   "15m": I18nKey.AUTOMATIONS$INTERVIEW_SCHEDULE_15M,
   hourly: I18nKey.AUTOMATIONS$INTERVIEW_SCHEDULE_HOURLY,
+  interval: I18nKey.AUTOMATIONS$INTERVIEW_FREQUENCY_INTERVAL,
   daily: I18nKey.AUTOMATIONS$INTERVIEW_SCHEDULE_DAILY,
   weekdays: I18nKey.AUTOMATIONS$INTERVIEW_SCHEDULE_WEEKDAYS,
   weekly: I18nKey.AUTOMATIONS$INTERVIEW_SCHEDULE_WEEKLY,
@@ -55,81 +53,61 @@ function cardClassName(selected?: boolean) {
 export function AutomationInterviewPanel({
   conversationId,
 }: AutomationInterviewPanelProps) {
-  const { t } = useTranslation("openhands");
   const interview = useAutomationCreateInterview(conversationId);
-  const requiredIds = useMemo(
-    () =>
-      interview.draft
-        ? inferRequiredIntegrationIds(
-            integrationHintsFromDraft(interview.draft),
-          )
-        : [],
-    [interview.draft],
-  );
-  const integrations = useMissingCatalogIntegrations(requiredIds);
+  const integrations = useInterviewMissingIntegrations(interview.draft);
 
   if (!interview.draft || !interview.field) return null;
 
-  const missingBanner =
-    integrations.missing.length > 0 ? (
-      <div className="mt-3">
-        <MissingIntegrationsBanner
-          testId="automation-interview-missing-integrations"
-          missing={integrations.missing}
-          installedServers={integrations.installedServers}
-          message={t(I18nKey.AUTOMATIONS$INTERVIEW_INTEGRATIONS_MISSING)}
-        />
-      </div>
-    ) : null;
-
   return (
-    <div
-      data-testid="automation-interview-panel"
-      data-field={interview.field}
-      className="mb-3 max-h-[280px] overflow-y-auto rounded-[15px] border border-[var(--oh-border)] bg-[var(--oh-surface)] p-4"
-    >
-      {interview.field === "intent" && (
-        <IntentStep draft={interview.draft} onSubmit={interview.submitField} />
-      )}
-      {interview.field === "triggerType" && (
-        <TriggerStep onSubmit={interview.submitField} />
-      )}
-      {interview.field === "schedule" && (
-        <ScheduleStep
-          draft={interview.draft}
-          onPatch={interview.patchDraft}
-          onSubmit={interview.submitField}
-        />
-      )}
-      {interview.field === "events" && (
-        <EventsStep
-          draft={interview.draft}
-          onPatch={interview.patchDraft}
-          onSubmit={interview.submitField}
-        />
-      )}
-      {interview.field === "name" && (
-        <NameStep draft={interview.draft} onSubmit={interview.submitField} />
-      )}
-      {interview.field === "tokens" && (
-        <TokensStep
-          draft={interview.draft}
-          onPatch={interview.patchDraft}
-          onSubmit={interview.submitField}
-        />
-      )}
-      {interview.field === "review" && (
-        <ReviewStep
-          draft={interview.draft}
-          isCreating={interview.isCreating}
-          isIntegrationsLoading={integrations.isLoading}
-          missingCount={integrations.missing.length}
-          onCreate={interview.createAutomation}
-        >
-          {missingBanner}
-        </ReviewStep>
-      )}
-      {interview.field !== "review" ? missingBanner : null}
+    <div className="mb-3">
+      <div
+        data-testid="automation-interview-panel"
+        data-field={interview.field}
+        className="max-h-[280px] overflow-y-auto rounded-[15px] border border-[var(--oh-border)] bg-[var(--oh-surface)] p-4"
+      >
+        {interview.field === "intent" && (
+          <IntentStep
+            draft={interview.draft}
+            onSubmit={interview.submitField}
+          />
+        )}
+        {interview.field === "triggerType" && (
+          <TriggerStep onSubmit={interview.submitField} />
+        )}
+        {interview.field === "schedule" && (
+          <ScheduleStep
+            draft={interview.draft}
+            onPatch={interview.patchDraft}
+            onSubmit={interview.submitField}
+          />
+        )}
+        {interview.field === "events" && (
+          <EventsStep
+            draft={interview.draft}
+            onPatch={interview.patchDraft}
+            onSubmit={interview.submitField}
+          />
+        )}
+        {interview.field === "name" && (
+          <NameStep draft={interview.draft} onSubmit={interview.submitField} />
+        )}
+        {interview.field === "tokens" && (
+          <TokensStep
+            draft={interview.draft}
+            onPatch={interview.patchDraft}
+            onSubmit={interview.submitField}
+          />
+        )}
+        {interview.field === "review" && (
+          <ReviewStep
+            draft={interview.draft}
+            isCreating={interview.isCreating}
+            isIntegrationsLoading={integrations.isLoading}
+            missingCount={integrations.missing.length}
+            onCreate={interview.createAutomation}
+          />
+        )}
+      </div>
     </div>
   );
 }
@@ -258,9 +236,13 @@ function ScheduleStep({
   onSubmit: ReturnType<typeof useAutomationCreateInterview>["submitField"];
 }) {
   const { t } = useTranslation("openhands");
+  const cronValue =
+    draft.schedulePreset && draft.schedulePreset !== "custom"
+      ? resolveDraftCron(draft)
+      : draft.cronExpression;
   const canContinue =
-    draft.schedulePreset &&
-    (draft.schedulePreset !== "custom" || draft.cronExpression.trim());
+    (draft.schedulePreset && draft.schedulePreset !== "custom") ||
+    draft.cronExpression.trim().length > 0;
 
   return (
     <div>
@@ -269,7 +251,7 @@ function ScheduleStep({
         help={t(I18nKey.AUTOMATIONS$INTERVIEW_SCHEDULE_HELP)}
       />
       <div className="flex flex-wrap gap-2">
-        {AUTOMATION_SCHEDULE_PRESETS.map((preset) => (
+        {AUTOMATION_SCHEDULE_CHIP_PRESETS.map((preset) => (
           <button
             key={preset}
             type="button"
@@ -281,19 +263,20 @@ function ScheduleStep({
           </button>
         ))}
       </div>
-      {draft.schedulePreset === "custom" && (
-        <label className="mt-3 block text-xs text-[var(--oh-text-tertiary)]">
-          {t(I18nKey.AUTOMATIONS$INTERVIEW_CRON_LABEL)}
-          <input
-            data-testid="automation-interview-cron"
-            value={draft.cronExpression}
-            onChange={(event) =>
-              onPatch({ cronExpression: event.target.value })
-            }
-            className="mt-1 w-full rounded-[12px] border border-[var(--oh-border)] bg-transparent px-3 py-2 text-sm text-content outline-none"
-          />
-        </label>
-      )}
+      <label className="mt-3 block text-xs text-[var(--oh-text-tertiary)]">
+        {t(I18nKey.AUTOMATIONS$INTERVIEW_CRON_LABEL)}
+        <input
+          data-testid="automation-interview-cron"
+          value={cronValue}
+          onChange={(event) =>
+            onPatch({
+              schedulePreset: "custom",
+              cronExpression: event.target.value,
+            })
+          }
+          className="mt-1 w-full rounded-[12px] border border-[var(--oh-border)] bg-transparent px-3 py-2 text-sm text-content outline-none"
+        />
+      </label>
       <label className="mt-3 block text-xs text-[var(--oh-text-tertiary)]">
         {t(I18nKey.AUTOMATIONS$INTERVIEW_TIMEZONE_LABEL)}
         <select
@@ -536,14 +519,12 @@ function ReviewStep({
   isIntegrationsLoading,
   missingCount,
   onCreate,
-  children,
 }: {
   draft: AutomationCreateDraft;
   isCreating: boolean;
   isIntegrationsLoading: boolean;
   missingCount: number;
   onCreate: () => void;
-  children?: ReactNode;
 }) {
   const { t } = useTranslation("openhands");
   const triggerSummary =
@@ -572,7 +553,6 @@ function ReviewStep({
           <dd className="line-clamp-4 whitespace-pre-wrap">{draft.prompt}</dd>
         </div>
       </dl>
-      {children}
       {draft.status === "created" ? (
         <p className="mt-3 text-sm text-content">
           {t(I18nKey.AUTOMATIONS$INTERVIEW_REVIEW_CREATED)}

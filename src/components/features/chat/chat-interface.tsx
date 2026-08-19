@@ -1,4 +1,5 @@
 import React from "react";
+import { createPortal } from "react-dom";
 import { useNavigate } from "react-router";
 import { useTracking } from "#/hooks/use-tracking";
 import { useTranslation } from "react-i18next";
@@ -51,8 +52,13 @@ import { useOptionalConversationId } from "#/hooks/use-conversation-id";
 import { useActiveConversation } from "#/hooks/query/use-active-conversation";
 import { I18nKey } from "#/i18n/declaration";
 import { hasConversationStarted } from "./components/resolve-picker-kind";
+import {
+  AutomationInterviewMissingIntegrations,
+  useInterviewMissingIntegrations,
+} from "#/components/features/automations/automation-interview-missing-integrations";
 import { AutomationInterviewPanel } from "#/components/features/automations/automation-interview-panel";
 import { useAutomationCreateInterview } from "#/hooks/use-automation-create-interview";
+import { useIsAutomationInterview } from "#/hooks/use-is-automation-interview";
 
 function getEntryPoint(
   hasRepository: boolean | null,
@@ -65,10 +71,16 @@ function getEntryPoint(
 
 interface ChatInterfaceProps {
   showGitControlBar?: boolean;
+  showInterviewPanel?: boolean;
+  composerDockTarget?: HTMLElement | null;
+  onDockedComposerSubmit?: () => void;
 }
 
 export function ChatInterface({
   showGitControlBar = true,
+  showInterviewPanel = true,
+  composerDockTarget,
+  onDockedComposerSubmit,
 }: ChatInterfaceProps) {
   const { trackInitialQuerySubmitted, trackUserMessageSent } = useTracking();
   const { setMessageToSend, conversationMode, planContent } =
@@ -176,6 +188,10 @@ export function ChatInterface({
   const { selectedRepository, replayJson } = useInitialQueryStore();
   const { conversationId } = useOptionalConversationId();
   const automationInterview = useAutomationCreateInterview(conversationId);
+  const isAutomationInterview = useIsAutomationInterview(conversationId);
+  const interviewIntegrations = useInterviewMissingIntegrations(
+    automationInterview.draft,
+  );
 
   // The live goal banner renders in the scroll stream but advances via store
   // updates (in-progress goal events are filtered out of `renderableEvents`),
@@ -496,6 +512,36 @@ export function ChatInterface({
     t,
   });
 
+  const composer = (
+    <InteractiveChatBox
+      onSubmit={(content, images, files) => {
+        if (composerDockTarget) {
+          onDockedComposerSubmit?.();
+        }
+        return handleSendMessage(content, images, files);
+      }}
+      disabled={isNewConversationPending || llmBlocked}
+      hasStartedConversation={hasStartedConversation}
+      showGitControlBar={showGitControlBar}
+      placeholder={
+        composerDockTarget && isAutomationInterview
+          ? t(I18nKey.HOME$LAUNCH_AUTOMATE_PLACEHOLDER)
+          : undefined
+      }
+      composerDrawer={
+        automationInterview.draft &&
+        interviewIntegrations.missing.length > 0 ? (
+          <AutomationInterviewMissingIntegrations
+            draft={automationInterview.draft}
+          />
+        ) : undefined
+      }
+    />
+  );
+  const dockedOrInlineComposer = composerDockTarget
+    ? createPortal(composer, composerDockTarget)
+    : composer;
+
   return (
     <ScrollProvider value={scrollProviderValue}>
       <div
@@ -631,7 +677,7 @@ export function ChatInterface({
               </p>
             </div>
           ) : (
-            <div className="relative">
+            <div className="relative shrink-0">
               <div className="pointer-events-none absolute inset-x-0 bottom-full mb-1 z-20">
                 <div className="flex justify-between relative">
                   <div className="flex items-end gap-1 pointer-events-auto">
@@ -658,15 +704,12 @@ export function ChatInterface({
                 </div>
               </div>
 
-              {conversationId && automationInterview.draft ? (
+              {showInterviewPanel &&
+              conversationId &&
+              automationInterview.draft ? (
                 <AutomationInterviewPanel conversationId={conversationId} />
               ) : null}
-              <InteractiveChatBox
-                onSubmit={handleSendMessage}
-                disabled={isNewConversationPending || llmBlocked}
-                hasStartedConversation={hasStartedConversation}
-                showGitControlBar={showGitControlBar}
-              />
+              {dockedOrInlineComposer}
             </div>
           )}
         </div>

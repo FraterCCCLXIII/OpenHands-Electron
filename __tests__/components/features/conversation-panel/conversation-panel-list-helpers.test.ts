@@ -3,6 +3,7 @@ import {
   applyAutomationConversationFilter,
   applyGroupFolderOrder,
   collectAutomationNameFacets,
+  filterOutInterviewConversations,
   getGroupConversationPreview,
   getGroupDiscoveryConversationIds,
   groupConversations,
@@ -64,6 +65,22 @@ describe("conversation-panel-list-helpers", () => {
     expect(
       sortConversationsByField([a, b], "updated").map((c) => c.id),
     ).toEqual(["b", "a"]);
+  });
+
+  it("hides interview conversations from the left-nav list", () => {
+    const interview: AppConversation = { ...base, id: "interview", title: "interview" };
+    const regular: AppConversation = { ...base, id: "regular", title: "regular" };
+
+    expect(
+      filterOutInterviewConversations([interview, regular], new Set(["interview"])).map(
+        (conversation) => conversation.id,
+      ),
+    ).toEqual(["regular"]);
+    expect(
+      filterOutInterviewConversations([interview, regular], new Set()).map(
+        (conversation) => conversation.id,
+      ),
+    ).toEqual(["interview", "regular"]);
   });
 
   it("sorts by created desc independently of updated", () => {

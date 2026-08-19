@@ -8,7 +8,10 @@ import { useAutomationCreateDraftStore } from "#/stores/automation-create-draft-
 import { createChatMessage } from "#/services/chat-service";
 import { parseMessageFromEvent } from "#/components/conversation-events/chat/event-content-helpers/parse-message-from-event";
 import { isMessageEvent } from "#/types/agent-server/type-guards";
-import { displayErrorToast } from "#/utils/custom-toast-handlers";
+import {
+  displayErrorToast,
+  displaySuccessToast,
+} from "#/utils/custom-toast-handlers";
 import { getApiErrorMessage } from "#/utils/api-error-message";
 import { I18nKey } from "#/i18n/declaration";
 import {
@@ -16,8 +19,8 @@ import {
   canCreateAutomationFromDraft,
   draftToAutomationSpec,
   formatInterviewReply,
-  getNextInterviewField,
   parseAutomationInterviewFences,
+  resolveVisibleInterviewField,
   type AutomationCreateDraft,
   type AutomationInterviewField,
 } from "#/utils/automation-create-interview";
@@ -28,6 +31,9 @@ export function useAutomationCreateInterview(conversationId: string | null) {
   const { send } = useSendMessage();
   const createMutation = useCreateInterviewAutomation();
   const events = useEventStore((state) => state.events);
+  const loadedConversationId = useEventStore(
+    (state) => state.loadedConversationId,
+  );
   const draft = useAutomationCreateDraftStore((state) =>
     conversationId ? state.drafts[conversationId] : undefined,
   );
@@ -36,13 +42,17 @@ export function useAutomationCreateInterview(conversationId: string | null) {
     (state) => state.markCreated,
   );
 
-  const field = draft ? getNextInterviewField(draft) : null;
+  const field = draft ? resolveVisibleInterviewField(draft) : null;
 
   useEffect(() => {
     if (!conversationId || !draft || draft.status === "created") return;
+    // The event store is global. Do not copy another conversation's draft
+    // fences onto this interview when switching or opening a new session.
+    if (loadedConversationId !== conversationId) return;
 
     let merged: Partial<AutomationCreateDraft> = {};
     const nextKeys = [...draft.appliedFenceKeys];
+    let requestedField = draft.requestedField;
     let changed = false;
 
     for (const event of events) {
@@ -53,17 +63,29 @@ export function useAutomationCreateInterview(conversationId: string | null) {
         parseMessageFromEvent(event),
       );
       for (const { key, patch } of parsed.draftPatches) {
-        if (nextKeys.includes(key)) continue;
-        nextKeys.push(key);
+        const appliedKey = `draft:${key}`;
+        if (nextKeys.includes(appliedKey)) continue;
+        nextKeys.push(appliedKey);
         merged = { ...merged, ...patch };
+        changed = true;
+      }
+      for (const { key, field: uiField } of parsed.uiFields) {
+        const appliedKey = `ui:${key}`;
+        if (nextKeys.includes(appliedKey)) continue;
+        nextKeys.push(appliedKey);
+        requestedField = uiField;
         changed = true;
       }
     }
 
     if (changed) {
-      patchDraft(conversationId, { ...merged, appliedFenceKeys: nextKeys });
+      patchDraft(conversationId, {
+        ...merged,
+        requestedField,
+        appliedFenceKeys: nextKeys,
+      });
     }
-  }, [conversationId, draft, events, patchDraft]);
+  }, [conversationId, draft, events, loadedConversationId, patchDraft]);
 
   const submitField = useCallback(
     async (
@@ -72,7 +94,7 @@ export function useAutomationCreateInterview(conversationId: string | null) {
       patch: Partial<AutomationCreateDraft>,
     ) => {
       if (!conversationId) return;
-      patchDraft(conversationId, patch);
+      patchDraft(conversationId, { ...patch, requestedField: null });
       await send(
         createChatMessage(
           formatInterviewReply(answerField, summary),
@@ -110,14 +132,22 @@ export function useAutomationCreateInterview(conversationId: string | null) {
     });
   }, [conversationId, createMutation, draft, markCreated, navigate, t]);
 
+  const saveDraft = useCallback(() => {
+    if (!conversationId || !draft) return;
+    patchDraft(conversationId, { isSaved: true });
+    displaySuccessToast(t(I18nKey.AUTOMATIONS$INTERVIEW_DRAFT_SAVED));
+  }, [conversationId, draft, patchDraft, t]);
+
   return useMemo(
     () => ({
       draft,
       field,
       isCreating: createMutation.isPending,
+      canCreate: draft ? canCreateAutomationFromDraft(draft) : false,
       submitField,
       applyComposerText,
       createAutomation,
+      saveDraft,
       patchDraft: (patch: Partial<AutomationCreateDraft>) => {
         if (conversationId) patchDraft(conversationId, patch);
       },
@@ -130,6 +160,7 @@ export function useAutomationCreateInterview(conversationId: string | null) {
       draft,
       field,
       patchDraft,
+      saveDraft,
       submitField,
     ],
   );
