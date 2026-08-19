@@ -20,6 +20,8 @@ interface ManifestSubpageLayoutProps {
   /** Prefix for the desktop/mobile nav testids. */
   navTestIdBase: string;
   items: SubPageNavItem[];
+  /** Optional width cap for the scrolling content column. */
+  contentClassName?: string;
   children: React.ReactNode;
 }
 
@@ -57,6 +59,7 @@ export function ManifestSubpageLayout({
   heading,
   navTestIdBase,
   items,
+  contentClassName,
   children,
 }: ManifestSubpageLayoutProps) {
   return (
@@ -73,7 +76,12 @@ export function ManifestSubpageLayout({
         </div>
       </aside>
       <main className={cn(settingsLikeMainScrollClassName, "h-full")}>
-        <div className="mx-auto flex w-full min-w-0 max-w-[800px] flex-col gap-6">
+        <div
+          className={cn(
+            "mx-auto flex w-full min-w-0 flex-col gap-6",
+            contentClassName ?? "max-w-[800px]",
+          )}
+        >
           <nav
             data-testid={`${navTestIdBase}-mobile`}
             className="md:hidden flex gap-1 overflow-x-auto border-b border-[var(--oh-border)] pb-2"

@@ -117,6 +117,11 @@ export function automationTemplatesPath(): string {
   return MOUNTED_ROUTES.templates;
 }
 
+/** Host-owned SDLC workflows board under Automate. */
+export function automationWorkflowsPath(): string {
+  return "/automations/workflows";
+}
+
 /**
  * A declared endpoint path. Empty for one the manifest may omit - the two a
  * bundle needs were added after the block shipped - so a caller that needs one

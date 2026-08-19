@@ -31,7 +31,7 @@ import { AutomationViewToggle } from "#/components/features/automations/automati
 import {
   readStoredAutomationViewMode,
   writeStoredAutomationViewMode,
-  type AutomationViewMode,
+  type AutomationListViewMode,
 } from "#/components/features/automations/automation-view-mode";
 import { AutomationCardSkeleton } from "#/components/features/automations/automation-card-skeleton";
 import { EmptyState } from "#/components/features/automations/empty-state";
@@ -109,7 +109,7 @@ export default function AutomationsList() {
   const [sortValue, setSortValue] = useState<DashboardSortValue>(
     dashboardSpec?.sort.default ?? "last-run",
   );
-  const [viewMode, setViewMode] = useState<AutomationViewMode>(() =>
+  const [viewMode, setViewMode] = useState<AutomationListViewMode>(() =>
     readStoredAutomationViewMode(),
   );
   const [limit, setLimit] = useState(PAGE_SIZE);
@@ -286,7 +286,7 @@ export default function AutomationsList() {
     }
   };
 
-  const handleViewModeChange = useCallback((view: AutomationViewMode) => {
+  const handleViewModeChange = useCallback((view: AutomationListViewMode) => {
     setViewMode(view);
     writeStoredAutomationViewMode(view);
   }, []);
@@ -332,7 +332,7 @@ export default function AutomationsList() {
       </ManifestSubpageLayout>
     ) : (
       <div className="min-h-full">
-        <div className="p-6 max-w-4xl mx-auto">{content}</div>
+        <div className="mx-auto max-w-4xl p-6">{content}</div>
       </div>
     );
 
@@ -455,7 +455,7 @@ export default function AutomationsList() {
         <AutomationViewToggle
           view={viewMode}
           onChange={handleViewModeChange}
-          disabled={hasNoAutomations}
+          disableListViews={hasNoAutomations}
         />
       </div>
 

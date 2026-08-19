@@ -1,50 +1,43 @@
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import ReactDOM from "react-dom";
-import { Grid2x2, Rows3 } from "lucide-react";
+import { Briefcase, Zap } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { ContextMenuListItem } from "#/components/features/context-menu/context-menu-list-item";
+import { ViewMenuItemContent } from "#/components/features/automations/view-menu-item-content";
 import { I18nKey } from "#/i18n/declaration";
 import { ContextMenu } from "#/ui/context-menu";
 import { cn } from "#/utils/utils";
-import type { AutomationListViewMode } from "./automation-view-mode";
-import { ViewMenuItemContent } from "./view-menu-item-content";
+import type { WorkflowBoardViewMode } from "./workflow-board-view-mode";
 
-interface AutomationViewToggleProps {
-  view: AutomationListViewMode;
-  onChange: (view: AutomationListViewMode) => void;
-  disabled?: boolean;
-  disableListViews?: boolean;
+interface WorkflowBoardViewToggleProps {
+  view: WorkflowBoardViewMode;
+  onChange: (view: WorkflowBoardViewMode) => void;
 }
 
 const VIEW_OPTIONS: {
-  value: AutomationListViewMode;
-  icon: typeof Grid2x2;
+  value: WorkflowBoardViewMode;
+  icon: typeof Zap;
   labelKey: I18nKey;
   testId: string;
-  disableWhenEmpty?: boolean;
 }[] = [
   {
-    value: "grid",
-    icon: Grid2x2,
-    labelKey: I18nKey.AUTOMATIONS$VIEW_GRID,
-    testId: "automations-view-toggle-grid",
-    disableWhenEmpty: true,
+    value: "automations",
+    icon: Zap,
+    labelKey: I18nKey.WORKFLOWS$AUTOMATIONS_LABEL,
+    testId: "workflows-board-view-automations",
   },
   {
-    value: "list",
-    icon: Rows3,
-    labelKey: I18nKey.AUTOMATIONS$VIEW_LIST,
-    testId: "automations-view-toggle-list",
-    disableWhenEmpty: true,
+    value: "work",
+    icon: Briefcase,
+    labelKey: I18nKey.WORKFLOWS$WORK_LABEL,
+    testId: "workflows-board-view-work",
   },
 ];
 
-export function AutomationViewToggle({
+export function WorkflowBoardViewToggle({
   view,
   onChange,
-  disabled = false,
-  disableListViews = false,
-}: AutomationViewToggleProps) {
+}: WorkflowBoardViewToggleProps) {
   const { t } = useTranslation("openhands");
   const [open, setOpen] = useState(false);
   const [portalStyle, setPortalStyle] = useState<React.CSSProperties>();
@@ -111,31 +104,24 @@ export function AutomationViewToggle({
   const menu =
     open && portalStyle ? (
       <ContextMenu ref={menuRef} theme="popover" className="min-w-[10rem]">
-        {VIEW_OPTIONS.map((option) => {
-          const optionDisabled =
-            disableListViews && option.disableWhenEmpty === true;
-
-          return (
-            <li key={option.value}>
-              <ContextMenuListItem
-                testId={option.testId}
-                isDisabled={optionDisabled}
-                onClick={() => {
-                  if (optionDisabled) return;
-                  onChange(option.value);
-                  setOpen(false);
-                }}
-                className="group"
-              >
-                <ViewMenuItemContent
-                  icon={option.icon}
-                  label={t(option.labelKey)}
-                  isSelected={view === option.value}
-                />
-              </ContextMenuListItem>
-            </li>
-          );
-        })}
+        {VIEW_OPTIONS.map((option) => (
+          <li key={option.value}>
+            <ContextMenuListItem
+              testId={option.testId}
+              onClick={() => {
+                onChange(option.value);
+                setOpen(false);
+              }}
+              className="group"
+            >
+              <ViewMenuItemContent
+                icon={option.icon}
+                label={t(option.labelKey)}
+                isSelected={view === option.value}
+              />
+            </ContextMenuListItem>
+          </li>
+        ))}
       </ContextMenu>
     ) : null;
 
@@ -144,19 +130,13 @@ export function AutomationViewToggle({
       <button
         ref={triggerRef}
         type="button"
-        data-testid="automations-view-toggle"
-        aria-label={t(I18nKey.AUTOMATIONS$VIEW_MODE)}
+        data-testid="workflows-board-view-toggle"
+        aria-label={t(I18nKey.WORKFLOWS$VIEW_MODE)}
         aria-haspopup="menu"
         aria-expanded={open}
-        aria-disabled={disabled}
-        disabled={disabled}
-        onClick={() => {
-          if (disabled) return;
-          setOpen((current) => !current);
-        }}
+        onClick={() => setOpen((current) => !current)}
         className={cn(
           "inline-flex size-9 shrink-0 cursor-pointer items-center justify-center rounded-lg border border-[var(--oh-border)] bg-base-secondary text-white transition-colors hover:bg-[var(--oh-interactive-hover)] focus-visible:border-white/40 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-white/20",
-          "disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:bg-base-secondary",
         )}
       >
         <ActiveIcon className="size-4" aria-hidden />

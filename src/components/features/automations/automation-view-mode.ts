@@ -1,17 +1,20 @@
-export type AutomationViewMode = "grid" | "list";
+export type AutomationListViewMode = "grid" | "list";
 
 export const AUTOMATIONS_VIEW_MODE_STORAGE_KEY = "openhands-automations-view";
 
-export function readStoredAutomationViewMode(): AutomationViewMode {
+export function readStoredAutomationViewMode(): AutomationListViewMode {
   if (typeof window === "undefined") {
     return "grid";
   }
 
   const stored = window.localStorage.getItem(AUTOMATIONS_VIEW_MODE_STORAGE_KEY);
-  return stored === "list" ? "list" : "grid";
+  if (stored === "list") return "list";
+  return "grid";
 }
 
-export function writeStoredAutomationViewMode(view: AutomationViewMode): void {
+export function writeStoredAutomationViewMode(
+  view: AutomationListViewMode,
+): void {
   window.localStorage.setItem(AUTOMATIONS_VIEW_MODE_STORAGE_KEY, view);
 }
 

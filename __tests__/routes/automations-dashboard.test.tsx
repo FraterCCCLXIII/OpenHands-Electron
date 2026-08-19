@@ -161,6 +161,7 @@ describe("AutomationsList — manifest-declared dashboard", () => {
       navLabels: [
         within(nav).getByText("Widget dashboard"),
         within(nav).getByText("Widget templates"),
+        within(nav).getByText(I18nKey.WORKFLOWS$TITLE),
       ].length,
       tileCaption: within(automationsTile).getByText("Widget count"),
       tileDetail: within(automationsTile).getByText("2 live"),
@@ -169,7 +170,7 @@ describe("AutomationsList — manifest-declared dashboard", () => {
       statsCaptions: screen.getAllByText("Widget wins").length,
       launcher: screen.queryByTestId("recommended-automations-section"),
     }).toMatchObject({
-      navLabels: 2,
+      navLabels: 3,
       statsCaptions: 2,
       launcher: null,
     });

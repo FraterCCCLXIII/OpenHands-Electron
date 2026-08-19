@@ -5,7 +5,7 @@ import { AutomationListRow } from "./automation-list-row";
 import { StatusBadge } from "./status-badge";
 import {
   automationListTableClassName,
-  type AutomationViewMode,
+  type AutomationListViewMode,
 } from "./automation-view-mode";
 import {
   extensionModuleCardGridClassName,
@@ -24,7 +24,7 @@ interface AutomationGroupProps {
   title: string;
   count: number;
   automations: Automation[];
-  view: AutomationViewMode;
+  view: AutomationListViewMode;
   onToggle: (id: string, enabled: boolean) => void;
   onRunNow: (id: string) => void;
   runPendingId?: string | null;
