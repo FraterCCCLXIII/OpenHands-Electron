@@ -5,6 +5,7 @@ import { cn } from "#/utils/utils";
 import CopyIcon from "#/icons/copy.svg?react";
 import CheckmarkIcon from "#/icons/checkmark.svg?react";
 import { CirclePlusCheckToggle } from "#/components/shared/buttons/circle-plus-check-toggle";
+import { CircleInstallButton } from "#/components/shared/buttons/circle-install-button";
 import { SkillCardPillRow } from "#/components/features/skills/skill-card-pill-row";
 import { isCopyableSkillSource } from "#/components/features/skills/is-copyable-skill-source";
 import {
@@ -79,25 +80,22 @@ export function PluginCard({
       isSelected={plugin.enabled}
       isDisabled={isDisabled || isBusy}
       onToggle={onToggle}
+      enableLabelKey={I18nKey.SETTINGS$PLUGINS_ENABLE_PLUGIN}
+      disableLabelKey={I18nKey.SETTINGS$PLUGINS_DISABLE_PLUGIN}
+      enableTooltipKey={I18nKey.COMMON$ENABLE}
       disableTooltipKey={I18nKey.COMMON$DISABLE}
     />
   ) : plugin.isLocal ? null : (
-    <CirclePlusCheckToggle
+    <CircleInstallButton
       testId={`plugin-install-${plugin.name}`}
-      isSelected={false}
       isDisabled={isDisabled || isBusy}
-      onToggle={(selected) => {
-        if (selected) {
-          onInstall();
-        }
-      }}
-      enableLabelKey={
+      onInstall={onInstall}
+      labelKey={
         isBusy
           ? I18nKey.SETTINGS$PLUGINS_INSTALLING
           : I18nKey.SETTINGS$PLUGINS_INSTALL
       }
-      disableLabelKey={I18nKey.SETTINGS$PLUGINS_INSTALL}
-      enableTooltipKey={
+      tooltipKey={
         isBusy
           ? I18nKey.SETTINGS$PLUGINS_INSTALLING
           : I18nKey.SETTINGS$PLUGINS_INSTALL

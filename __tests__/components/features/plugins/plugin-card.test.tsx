@@ -100,4 +100,23 @@ describe("PluginCard", () => {
       I18nKey.SETTINGS$PLUGINS_INSTALL,
     );
   });
+
+  it("shows an enable toggle for installed plugins", () => {
+    render(
+      <PluginCard
+        plugin={buildPlugin({ installed: true, enabled: false })}
+        onOpen={vi.fn()}
+        onInstall={vi.fn()}
+        onToggle={vi.fn()}
+      />,
+    );
+
+    expect(screen.getByTestId("plugin-toggle-city-weather")).toHaveAttribute(
+      "aria-label",
+      I18nKey.SETTINGS$PLUGINS_ENABLE_PLUGIN,
+    );
+    expect(
+      screen.queryByTestId("plugin-install-city-weather"),
+    ).not.toBeInTheDocument();
+  });
 });
