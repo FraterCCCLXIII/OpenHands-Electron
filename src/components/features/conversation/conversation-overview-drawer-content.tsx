@@ -10,7 +10,6 @@ import {
   type ConversationOverviewDrawerSection,
 } from "./conversation-overview-drawer.types";
 import { ConversationOverviewAutomationsPanel } from "./conversation-overview-automations-panel";
-import { ConversationOverviewSkillsPanel } from "./conversation-overview-skills-panel";
 import { ConversationOverviewMcpPanel } from "./conversation-overview-mcp-panel";
 import { ConversationOverviewSecretsPanel } from "./conversation-overview-secrets-panel";
 import {
@@ -32,8 +31,6 @@ function getSectionTitleKey(section: ConversationOverviewDrawerSection) {
   switch (section) {
     case CONVERSATION_OVERVIEW_DRAWER_SECTION.automations:
       return I18nKey.AUTOMATIONS$TITLE;
-    case CONVERSATION_OVERVIEW_DRAWER_SECTION.skills:
-      return I18nKey.SETTINGS$NAV_SKILLS;
     case CONVERSATION_OVERVIEW_DRAWER_SECTION.mcp:
       return I18nKey.CONVERSATION$OVERVIEW_MCP;
     case CONVERSATION_OVERVIEW_DRAWER_SECTION.secrets:
@@ -68,18 +65,6 @@ function ConversationOverviewDrawerHeaderAddAction({
           onClick={requestAdd}
         >
           {t(I18nKey.AUTOMATIONS$ADD_AUTOMATION)}
-        </BrandButton>
-      );
-    case CONVERSATION_OVERVIEW_DRAWER_SECTION.skills:
-      return (
-        <BrandButton
-          type="button"
-          variant="primary"
-          testId="conversation-overview-skills-add-skill-button"
-          className={CONVERSATION_SECONDARY_DRAWER_HEADER_ACTION_CLASSNAME}
-          onClick={requestAdd}
-        >
-          {t(I18nKey.SETTINGS$SKILLS_ADD_BUTTON)}
         </BrandButton>
       );
     case CONVERSATION_OVERVIEW_DRAWER_SECTION.mcp:
@@ -125,8 +110,6 @@ function ConversationOverviewDrawerBody({
   switch (section) {
     case CONVERSATION_OVERVIEW_DRAWER_SECTION.automations:
       return <ConversationOverviewAutomationsPanel openAdd={openAdd} />;
-    case CONVERSATION_OVERVIEW_DRAWER_SECTION.skills:
-      return <ConversationOverviewSkillsPanel openAdd={openAdd} />;
     case CONVERSATION_OVERVIEW_DRAWER_SECTION.mcp:
       return <ConversationOverviewMcpPanel openAdd={openAdd} />;
     case CONVERSATION_OVERVIEW_DRAWER_SECTION.secrets:

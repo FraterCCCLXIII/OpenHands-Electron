@@ -39,7 +39,7 @@ vi.mock(
   "#/components/features/conversation/conversation-overview-drawer-context",
   () => ({
     useConversationOverviewDrawerOptional: () => ({
-      section: "skills",
+      section: "automations",
       openAdd: false,
       openSection: vi.fn(),
       closeDrawer: closeDrawerMock,

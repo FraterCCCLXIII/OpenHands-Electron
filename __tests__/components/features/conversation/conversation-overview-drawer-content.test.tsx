@@ -9,10 +9,6 @@ import {
 } from "#/components/features/conversation/conversation-overview-drawer-context";
 import { CONVERSATION_OVERVIEW_DRAWER_SECTION } from "#/components/features/conversation/conversation-overview-drawer.types";
 import { ActiveBackendProvider } from "#/contexts/active-backend-context";
-import SettingsService from "#/api/settings-service/settings-service.api";
-import SkillsService from "#/api/skills-service";
-import { MOCK_DEFAULT_USER_SETTINGS } from "#/mocks/handlers";
-import type { SkillInfo } from "#/types/settings";
 
 vi.mock("#/hooks/use-conversation-overview-stats", () => ({
   useConversationOverviewStats: () => ({
@@ -86,24 +82,6 @@ vi.mock("#/hooks/mutation/use-create-conversation", () => ({
   useCreateConversation: () => ({ mutate: vi.fn(), isPending: false }),
 }));
 
-function buildSkill(overrides: Partial<SkillInfo> = {}): SkillInfo {
-  return {
-    name: "deno",
-    type: "knowledge",
-    source: "/Users/test/.openhands/cache/skills/public-skills/skills/deno/SKILL.md",
-    description: "Use this skill for Deno projects.",
-    triggers: ["deno"],
-    version: "1.0.0",
-    license: "Apache-2.0",
-    compatibility: null,
-    metadata: null,
-    allowed_tools: null,
-    is_agentskills_format: true,
-    disable_model_invocation: false,
-    ...overrides,
-  };
-}
-
 function OpenSection({
   section,
 }: {
@@ -148,15 +126,11 @@ function renderDrawer(
 describe("ConversationOverviewDrawerContent", () => {
   beforeEach(() => {
     vi.restoreAllMocks();
-    vi.spyOn(SettingsService, "getSettings").mockResolvedValue(
-      MOCK_DEFAULT_USER_SETTINGS,
-    );
-    vi.spyOn(SkillsService, "getSkills").mockResolvedValue([buildSkill()]);
   });
 
   it("places the close button left of the title and the add control on the right", async () => {
     const user = userEvent.setup();
-    renderDrawer(CONVERSATION_OVERVIEW_DRAWER_SECTION.skills);
+    renderDrawer(CONVERSATION_OVERVIEW_DRAWER_SECTION.automations);
 
     await user.click(screen.getByTestId("open-drawer-section"));
 
@@ -169,7 +143,7 @@ describe("ConversationOverviewDrawerContent", () => {
     expect(header).toHaveClass("pr-4");
     expect(
       within(header as HTMLElement).getByTestId(
-        "conversation-overview-skills-add-skill-button",
+        "conversation-overview-automations-add",
       ),
     ).toHaveClass("h-7");
 
@@ -180,20 +154,8 @@ describe("ConversationOverviewDrawerContent", () => {
     );
     expect(headerItems[1]).toHaveAttribute(
       "data-testid",
-      "conversation-overview-skills-add-skill-button",
+      "conversation-overview-automations-add",
     );
-  });
-
-  it("opens the add skill modal from the header add button", async () => {
-    const user = userEvent.setup();
-    renderDrawer(CONVERSATION_OVERVIEW_DRAWER_SECTION.skills);
-
-    await user.click(screen.getByTestId("open-drawer-section"));
-    await user.click(
-      await screen.findByTestId("conversation-overview-skills-add-skill-button"),
-    );
-
-    expect(await screen.findByTestId("add-skill-modal")).toBeInTheDocument();
   });
 
   it("shows the automations add button in the header", async () => {
@@ -205,12 +167,6 @@ describe("ConversationOverviewDrawerContent", () => {
     expect(
       await screen.findByTestId("conversation-overview-automations-add"),
     ).toBeInTheDocument();
-    expect(
-      screen.queryByTestId("conversation-overview-automations-panel")
-        ?.querySelector(
-          '[data-testid="conversation-overview-automations-add"]',
-        ),
-    ).toBeNull();
   });
 
   it("shows the mcp add button in the header", async () => {
