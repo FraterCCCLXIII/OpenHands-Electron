@@ -112,8 +112,13 @@ export function UserAssistantEventMessage({
       ]
     : undefined;
 
+  const turnAnchorProps =
+    event.source === "user"
+      ? { "data-conversation-turn-id": String(event.id) }
+      : undefined;
+
   return (
-    <>
+    <div {...turnAnchorProps}>
       {reasoning && <CollapsibleThinking content={reasoning} />}
       <ChatMessage
         type={event.source}
@@ -129,6 +134,6 @@ export function UserAssistantEventMessage({
       {event.source === "agent" && event.critic_result != null && (
         <CriticResultDisplay criticResult={event.critic_result} />
       )}
-    </>
+    </div>
   );
 }

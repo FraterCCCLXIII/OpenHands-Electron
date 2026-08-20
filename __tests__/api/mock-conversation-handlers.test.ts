@@ -7,6 +7,7 @@ import {
   CANVAS_DEMO_CONVERSATION_ID,
   CANVAS_DEMO_FILE_PATH,
 } from "#/fixtures/canvas-demo-conversation";
+import { MINIMAP_DEMO_CONVERSATION_ID } from "#/fixtures/minimap-demo-conversation";
 
 describe("mock conversation handlers", () => {
   it("returns adapted conversations for batch lookups", async () => {
@@ -94,5 +95,33 @@ describe("mock conversation handlers", () => {
         }),
       ]),
     );
+  });
+
+  it("returns the minimap demo conversation with paginated history", async () => {
+    const [conversation] =
+      await AgentServerConversationService.batchGetAppConversations([
+        MINIMAP_DEMO_CONVERSATION_ID,
+      ]);
+    const firstPage = await EventService.searchEvents(
+      MINIMAP_DEMO_CONVERSATION_ID,
+      null,
+      null,
+      { limit: 50, sortOrder: "TIMESTAMP_DESC" },
+    );
+    const secondPage = await EventService.searchEvents(
+      MINIMAP_DEMO_CONVERSATION_ID,
+      null,
+      null,
+      {
+        limit: 50,
+        sortOrder: "TIMESTAMP_DESC",
+        timestampLt: firstPage.items.at(-1)?.timestamp ?? undefined,
+      },
+    );
+
+    expect(conversation?.title).toBe("Minimap demo (55 turns)");
+    expect(firstPage.items).toHaveLength(50);
+    expect(firstPage.next_page_id).toBe("next-page");
+    expect(secondPage.items.length).toBeGreaterThan(0);
   });
 });

@@ -50,6 +50,7 @@ import { useNewConversationCommand } from "#/hooks/mutation/use-new-conversation
 import { useOptionalConversationId } from "#/hooks/use-conversation-id";
 import { useActiveConversation } from "#/hooks/query/use-active-conversation";
 import { I18nKey } from "#/i18n/declaration";
+import { useRegisterConversationMinimapScroll } from "./conversation-minimap/conversation-minimap-context";
 import { hasConversationStarted } from "./components/resolve-picker-kind";
 
 function getEntryPoint(
@@ -473,6 +474,11 @@ export function ChatInterface() {
     isStopStatus,
     curAgentState,
   });
+  useRegisterConversationMinimapScroll({
+    scrollContainerRef: scrollRef,
+    visible: showConversationMessages && renderableEvents.length > 0,
+  });
+
   const serverStatusText = getStatusText({
     isPausing,
     isTask,
