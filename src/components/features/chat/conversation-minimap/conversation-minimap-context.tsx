@@ -11,6 +11,8 @@ import {
 export interface ConversationMinimapScrollRegistration {
   scrollContainerRef: RefObject<HTMLElement | null>;
   visible: boolean;
+  /** Loads older chat history when needed, then scrolls to the user turn. */
+  navigateToTurn?: (userEventId: string) => void | Promise<void>;
 }
 
 interface ConversationMinimapContextValue {
@@ -50,16 +52,21 @@ export function useRegisterConversationMinimapScroll(
   const setScrollRegistration = useContext(
     ConversationMinimapContext,
   )?.setScrollRegistration;
+  const { scrollContainerRef, visible, navigateToTurn } = registration;
 
   useEffect(() => {
     if (!setScrollRegistration) {
       return;
     }
-    setScrollRegistration(registration);
+    setScrollRegistration({
+      scrollContainerRef,
+      visible,
+      navigateToTurn,
+    });
     return () => {
       setScrollRegistration(EMPTY_SCROLL_REGISTRATION);
     };
-  }, [registration, setScrollRegistration]);
+  }, [navigateToTurn, scrollContainerRef, setScrollRegistration, visible]);
 }
 
 export function useConversationMinimapScrollRegistration(): ConversationMinimapScrollRegistration | null {

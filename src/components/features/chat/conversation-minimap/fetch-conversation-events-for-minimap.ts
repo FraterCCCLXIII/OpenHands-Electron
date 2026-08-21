@@ -76,6 +76,11 @@ export async function fetchEventSearchPagesNewestFirst(
 /**
  * Fetch the full conversation event history for minimap rendering. Does not
  * mutate the chat event store, so chat scroll-up pagination stays independent.
+ *
+ * @spec MM-001 — Do not walk full event history to build the Cloud minimap
+ * This full-page walk is the expensive Cloud open-path. Replace it with the
+ * chat store (until MM-003) or a cheap turn index (MM-003). See
+ * specs/conversation-minimap.md.
  */
 export async function fetchConversationEventsForMinimap(
   conversationId: string,

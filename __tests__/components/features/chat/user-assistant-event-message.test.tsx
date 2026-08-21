@@ -80,6 +80,32 @@ const renderMessage = (event: MessageEvent) =>
     />,
   );
 
+describe("UserAssistantEventMessage — turn wrapper layout", () => {
+  beforeEach(() => {
+    useActiveBackendMock.mockReturnValue({
+      backend: { kind: "local" },
+      orgId: null,
+    });
+    useOptionalConversationIdMock.mockReturnValue({ conversationId: "conv-1" });
+  });
+
+  it("anchors user turns for the minimap and keeps bubbles right-aligned", () => {
+    renderMessage(makeEvent("user", "evt-user"));
+
+    const turn = screen.getByTestId("user-message").parentElement;
+    expect(turn).toHaveAttribute("data-conversation-turn-id", "evt-user");
+    expect(turn).toHaveClass("items-end");
+  });
+
+  it("does not anchor agent turns", () => {
+    renderMessage(makeEvent("agent", "evt-agent"));
+
+    const wrapper = screen.getByTestId("agent-message").parentElement;
+    expect(wrapper).not.toHaveAttribute("data-conversation-turn-id");
+    expect(wrapper).not.toHaveClass("items-end");
+  });
+});
+
 describe("UserAssistantEventMessage — branch action", () => {
   beforeEach(() => {
     vi.restoreAllMocks();

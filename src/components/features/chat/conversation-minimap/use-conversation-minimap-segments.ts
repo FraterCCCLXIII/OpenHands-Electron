@@ -37,6 +37,10 @@ function mergeEventsById(
 /**
  * Build minimap segments from an independent REST backfill plus whatever the
  * chat store already holds (including live websocket events).
+ *
+ * @spec MM-001 — Cloud must not use this full-history backfill on open.
+ * Until MM-003 (cheap turn index) ships, Cloud segments should come from the
+ * chat store only. See specs/conversation-minimap.md.
  */
 export function useConversationMinimapSegments(
   conversationId?: string | null,

@@ -21,6 +21,7 @@ import { ConversationMinimapVerticalScroll } from "./conversation-minimap-vertic
 interface ConversationMinimapProps {
   segments: readonly ConversationMinimapSegment[];
   scrollContainerRef: RefObject<HTMLElement | null>;
+  navigateToTurn?: (userEventId: string) => void | Promise<void>;
   testId?: string;
 }
 
@@ -184,6 +185,7 @@ function MinimapHoverPanel({
 export function ConversationMinimap({
   segments,
   scrollContainerRef,
+  navigateToTurn,
   testId = "conversation-minimap",
 }: ConversationMinimapProps) {
   const { t } = useTranslation("openhands");
@@ -204,9 +206,13 @@ export function ConversationMinimap({
   const selectSegment = useCallback(
     (userEventId: string) => {
       setActiveSegmentId(userEventId);
+      if (navigateToTurn) {
+        void navigateToTurn(userEventId);
+        return;
+      }
       scrollToConversationTurn(scrollContainerRef.current, userEventId);
     },
-    [scrollContainerRef],
+    [navigateToTurn, scrollContainerRef],
   );
 
   const handlePointerLeave = useCallback(
@@ -298,6 +304,7 @@ export function ConversationMinimapHost() {
     <ConversationMinimap
       segments={segments}
       scrollContainerRef={scrollRegistration.scrollContainerRef}
+      navigateToTurn={scrollRegistration.navigateToTurn}
     />
   );
 }
