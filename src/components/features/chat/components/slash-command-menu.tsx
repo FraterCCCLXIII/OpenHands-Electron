@@ -130,12 +130,14 @@ interface SlashCommandMenuProps {
   items: SlashCommandItem[];
   selectedIndex: number;
   onSelect: (item: SlashCommandItem) => void;
+  isPortaled?: boolean;
 }
 
 export function SlashCommandMenu({
   items,
   selectedIndex,
   onSelect,
+  isPortaled = false,
 }: SlashCommandMenuProps) {
   const { t } = useTranslation("openhands");
   const itemRefs = useRef<(HTMLButtonElement | null)[]>([]);
@@ -159,7 +161,10 @@ export function SlashCommandMenu({
     <div
       role="listbox"
       aria-label={t(I18nKey.CHAT_INTERFACE$COMMANDS)}
-      className="absolute bottom-full left-0 w-full mb-1 bg-[var(--oh-surface)] border border-[var(--oh-border-subtle)] rounded-lg shadow-lg max-h-[300px] overflow-y-auto custom-scrollbar z-50"
+      className={cn(
+        "absolute bottom-full left-0 w-full mb-1 bg-[var(--oh-surface)] border border-[var(--oh-border-subtle)] rounded-lg shadow-lg max-h-[300px] overflow-y-auto custom-scrollbar z-50",
+        isPortaled && "!static !bottom-auto !left-auto !mb-0 w-full",
+      )}
       data-testid="slash-command-menu"
     >
       <div className="px-3 py-2 text-xs text-[var(--oh-muted)] border-b border-[var(--oh-border-subtle)]">

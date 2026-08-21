@@ -78,6 +78,7 @@ vi.mock("#/hooks/mutation/conversation-mutation-utils", () => ({
 
 // eslint-disable-next-line import/first
 import { ChatInputActions } from "#/components/features/chat/components/chat-input-actions";
+import { ComposerDockedProvider } from "#/context/composer-docked-context";
 
 const cloudBackend: Backend = {
   id: "prod",
@@ -387,5 +388,21 @@ describe("ChatInputActions — Switch agent profile gate (OSS-5735)", () => {
     expect(
       screen.queryByTestId("switch-agent-profile-button"),
     ).not.toBeInTheDocument();
+  });
+});
+
+describe("ChatInputActions — docked interview composer", () => {
+  it("shows only the send button in minimal docked mode", () => {
+    renderWithProviders(
+      <ComposerDockedProvider enabled minimal>
+        <ChatInputActions disabled={false} />
+      </ComposerDockedProvider>,
+    );
+
+    expect(screen.getByTestId("chat-input-actions-minimal")).toBeInTheDocument();
+    expect(screen.getByTestId("submit-button")).toBeInTheDocument();
+    expect(screen.queryByTestId("chat-plus-button")).not.toBeInTheDocument();
+    expect(screen.queryByTestId("llm-profile-picker-stub")).not.toBeInTheDocument();
+    expect(screen.queryByTestId("context-window-meter")).not.toBeInTheDocument();
   });
 });

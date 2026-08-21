@@ -1,6 +1,9 @@
 import { useCallback, useEffect, useMemo } from "react";
 import { useTranslation } from "react-i18next";
-import { useCreateInterviewAutomation } from "#/hooks/query/use-automations";
+import {
+  useCreateInterviewAutomation,
+  useDispatchAutomation,
+} from "#/hooks/query/use-automations";
 import { useSendMessage } from "#/hooks/use-send-message";
 import { useNavigation } from "#/context/navigation-context";
 import { useEventStore } from "#/stores/use-event-store";
@@ -30,6 +33,7 @@ export function useAutomationCreateInterview(conversationId: string | null) {
   const { navigate } = useNavigation();
   const { send } = useSendMessage();
   const createMutation = useCreateInterviewAutomation();
+  const dispatchMutation = useDispatchAutomation();
   const events = useEventStore((state) => state.events);
   const loadedConversationId = useEventStore(
     (state) => state.loadedConversationId,
@@ -138,16 +142,57 @@ export function useAutomationCreateInterview(conversationId: string | null) {
     displaySuccessToast(t(I18nKey.AUTOMATIONS$INTERVIEW_DRAFT_SAVED));
   }, [conversationId, draft, patchDraft, t]);
 
+  const testDraft = useCallback(() => {
+    if (!conversationId || !draft?.isSaved) return;
+
+    const dispatchTestRun = (automationId: string) => {
+      dispatchMutation.mutate(automationId, {
+        onSuccess: () => {
+          displaySuccessToast(t(I18nKey.AUTOMATIONS$RUN_NOW_SUCCESS));
+        },
+        onError: (error) => {
+          displayErrorToast(
+            getApiErrorMessage(error, t(I18nKey.AUTOMATIONS$RUN_NOW_ERROR)),
+          );
+        },
+      });
+    };
+
+    if (draft.createdAutomationId) {
+      dispatchTestRun(draft.createdAutomationId);
+      return;
+    }
+
+    if (!canCreateAutomationFromDraft(draft)) {
+      displayErrorToast(t(I18nKey.AUTOMATIONS$INTERVIEW_TEST_INCOMPLETE));
+      return;
+    }
+
+    createMutation.mutate(draftToAutomationSpec(draft), {
+      onSuccess: (automation) => {
+        patchDraft(conversationId, { createdAutomationId: automation.id });
+        dispatchTestRun(automation.id);
+      },
+      onError: (error) => {
+        displayErrorToast(getApiErrorMessage(error, t(I18nKey.ERROR$GENERIC)));
+      },
+    });
+  }, [conversationId, createMutation, dispatchMutation, draft, patchDraft, t]);
+
   return useMemo(
     () => ({
       draft,
       field,
       isCreating: createMutation.isPending,
+      isTesting:
+        dispatchMutation.isPending ||
+        (createMutation.isPending && Boolean(draft?.isSaved)),
       canCreate: draft ? canCreateAutomationFromDraft(draft) : false,
       submitField,
       applyComposerText,
       createAutomation,
       saveDraft,
+      testDraft,
       patchDraft: (patch: Partial<AutomationCreateDraft>) => {
         if (conversationId) patchDraft(conversationId, patch);
       },
@@ -157,11 +202,13 @@ export function useAutomationCreateInterview(conversationId: string | null) {
       conversationId,
       createAutomation,
       createMutation.isPending,
+      dispatchMutation.isPending,
       draft,
       field,
       patchDraft,
       saveDraft,
       submitField,
+      testDraft,
     ],
   );
 }

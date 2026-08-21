@@ -4,6 +4,8 @@ import { UploadedFiles } from "../uploaded-files";
 import { ChatInputRow } from "./chat-input-row";
 import { ChatInputActions } from "./chat-input-actions";
 import { SlashCommandMenu } from "./slash-command-menu";
+import { ComposerPopoverPortal } from "#/components/features/chat/composer-popover-portal";
+import { useComposerDocked } from "#/context/composer-docked-context";
 import { useConversationStore } from "#/stores/conversation-store";
 import { cn } from "#/utils/utils";
 import { SlashCommandItem } from "#/hooks/chat/use-slash-command";
@@ -64,6 +66,8 @@ export function ChatInputContainer({
   const conversationMode = useConversationStore(
     (state) => state.conversationMode,
   );
+  const isComposerDocked = useComposerDocked();
+  const slashMenuAnchorRef = React.useRef<HTMLDivElement>(null);
 
   return (
     <div
@@ -83,13 +87,19 @@ export function ChatInputContainer({
 
       {/* Wrapper so the slash menu anchors just above the input row,
           not above the entire (possibly resized) container */}
-      <div className="relative w-full">
+      <div ref={slashMenuAnchorRef} className="relative w-full">
         {isSlashMenuOpen && onSlashSelect && (
-          <SlashCommandMenu
-            items={slashItems}
-            selectedIndex={slashSelectedIndex}
-            onSelect={onSlashSelect}
-          />
+          <ComposerPopoverPortal
+            triggerRef={slashMenuAnchorRef}
+            open={isSlashMenuOpen}
+          >
+            <SlashCommandMenu
+              items={slashItems}
+              selectedIndex={slashSelectedIndex}
+              onSelect={onSlashSelect}
+              isPortaled={isComposerDocked}
+            />
+          </ComposerPopoverPortal>
         )}
 
         <ChatInputRow

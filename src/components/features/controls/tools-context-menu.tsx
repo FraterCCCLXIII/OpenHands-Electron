@@ -46,6 +46,7 @@ interface ToolsContextMenuProps {
     label: string;
     onClick: () => void;
   };
+  className?: string;
 }
 
 export function ToolsContextMenu({
@@ -59,6 +60,7 @@ export function ToolsContextMenu({
   shouldShowPlugins = false,
   showAgentProfileSwitch = false,
   footerAction,
+  className,
 }: ToolsContextMenuProps) {
   const { t } = useTranslation("openhands");
   const { data: conversation } = useActiveConversation();
@@ -93,7 +95,10 @@ export function ToolsContextMenu({
       testId="tools-context-menu"
       position="top"
       alignment="left"
-      className="left-[-16px] mb-2 bottom-full overflow-visible min-w-[200px]"
+      className={cn(
+        "left-[-16px] mb-2 bottom-full overflow-visible min-w-[200px]",
+        className,
+      )}
     >
       {/* Switch agent profile — only while starting a new conversation; the
           profile is locked once the conversation starts (OSS-5735). Selecting

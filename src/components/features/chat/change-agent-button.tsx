@@ -21,9 +21,16 @@ import { useSubConversationTaskPolling } from "#/hooks/query/use-sub-conversatio
 import { useHandlePlanClick } from "#/hooks/use-handle-plan-click";
 import { useOptionalConversationId } from "#/hooks/use-conversation-id";
 import { StyledTooltip } from "#/components/shared/buttons/styled-tooltip";
+import {
+  COMPOSER_PORTAL_MENU_CLASS_NAME,
+  ComposerPopoverPortal,
+} from "#/components/features/chat/composer-popover-portal";
+import { useComposerDocked } from "#/context/composer-docked-context";
 
 export function ChangeAgentButton() {
   const [contextMenuOpen, setContextMenuOpen] = useState<boolean>(false);
+  const triggerRef = useRef<HTMLButtonElement>(null);
+  const isComposerDocked = useComposerDocked();
 
   const { conversationMode, setConversationMode, subConversationTaskId } =
     useConversationStore();
@@ -161,6 +168,7 @@ export function ChangeAgentButton() {
   const button = (
     <div className="relative">
       <button
+        ref={triggerRef}
         type="button"
         onClick={handleButtonClick}
         disabled={isButtonDisabled}
@@ -192,12 +200,22 @@ export function ChangeAgentButton() {
         <ComboboxCaretInline isOpen={contextMenuOpen} />
       </button>
       {contextMenuOpen && (
-        <ChangeAgentContextMenu
-          activeMode={conversationMode}
-          onClose={() => setContextMenuOpen(false)}
-          onCodeClick={handleCodeClick}
-          onPlanClick={handlePlanClick}
-        />
+        <ComposerPopoverPortal
+          triggerRef={triggerRef}
+          open={contextMenuOpen}
+          minWidth={195}
+          maxWidth={195}
+        >
+          <ChangeAgentContextMenu
+            activeMode={conversationMode}
+            onClose={() => setContextMenuOpen(false)}
+            onCodeClick={handleCodeClick}
+            onPlanClick={handlePlanClick}
+            className={
+              isComposerDocked ? COMPOSER_PORTAL_MENU_CLASS_NAME : undefined
+            }
+          />
+        </ComposerPopoverPortal>
       )}
     </div>
   );

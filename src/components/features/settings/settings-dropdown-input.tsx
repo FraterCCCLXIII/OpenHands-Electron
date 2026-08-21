@@ -28,6 +28,7 @@ interface SettingsDropdownInputProps {
   startContent?: ReactNode;
   inputWrapperClassName?: string;
   inputClassName?: string;
+  ariaLabel?: string;
 }
 
 export function SettingsDropdownInput({
@@ -51,6 +52,7 @@ export function SettingsDropdownInput({
   startContent,
   inputWrapperClassName,
   inputClassName,
+  ariaLabel,
 }: SettingsDropdownInputProps) {
   const { t } = useTranslation("openhands");
 
@@ -65,7 +67,7 @@ export function SettingsDropdownInput({
         </div>
       )}
       <Autocomplete
-        aria-label={typeof label === "string" ? label : name}
+        aria-label={ariaLabel ?? (typeof label === "string" ? label : name)}
         data-testid={testId}
         name={name}
         defaultItems={items}

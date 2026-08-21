@@ -8,6 +8,11 @@ import { useOptionalConversationId } from "#/hooks/use-conversation-id";
 import { useActiveConversation } from "#/hooks/query/use-active-conversation";
 import { useConversationNameContextMenu } from "#/hooks/use-conversation-name-context-menu";
 import { ToolsContextMenu } from "#/components/features/controls/tools-context-menu";
+import {
+  COMPOSER_PORTAL_MENU_CLASS_NAME,
+  ComposerPopoverPortal,
+} from "#/components/features/chat/composer-popover-portal";
+import { useComposerDocked } from "#/context/composer-docked-context";
 import { SystemMessageModal } from "#/components/features/conversation-panel/system-message-modal";
 import { SkillsModal } from "#/components/features/conversation-panel/skills-modal";
 import { PluginsModal } from "#/components/features/conversation-panel/plugins-modal";
@@ -31,9 +36,11 @@ export function ChatAddFileButton({
   showAgentProfileSwitch = false,
 }: ChatAddFileButtonProps) {
   const { t } = useTranslation("openhands");
+  const isComposerDocked = useComposerDocked();
   const { conversationId } = useOptionalConversationId();
   const { data: conversation } = useActiveConversation();
   const [menuOpen, setMenuOpen] = React.useState(false);
+  const triggerRef = React.useRef<HTMLButtonElement>(null);
 
   const {
     handleShowAgentTools,
@@ -69,6 +76,7 @@ export function ChatAddFileButton({
   return (
     <div className="relative">
       <button
+        ref={triggerRef}
         type="button"
         className={cn(
           chatInputIconButtonClassName,
@@ -91,29 +99,38 @@ export function ChatAddFileButton({
       </button>
 
       {menuOpen && (
-        <ToolsContextMenu
-          onClose={() => setMenuOpen(false)}
-          showAgentProfileSwitch={showAgentProfileSwitch}
-          onShowSkills={handleShowSkills}
-          onShowPlugins={handleShowPlugins}
-          onShowHooks={handleShowHooks}
-          onShowAgentTools={handleShowAgentTools}
-          shouldShowAgentTools={shouldShowAgentTools}
-          shouldShowHooks={shouldShowHooks}
-          shouldShowPlugins={shouldShowPlugins}
-          footerAction={{
-            testId: "add-files-and-images-button",
-            icon: (
-              <Paperclip
-                className="h-4 w-4 shrink-0"
-                strokeWidth={2}
-                aria-hidden
-              />
-            ),
-            label: t(I18nKey.CHAT_INTERFACE$ADD_FILES_AND_IMAGES),
-            onClick: handleFileIconClick,
-          }}
-        />
+        <ComposerPopoverPortal
+          triggerRef={triggerRef}
+          open={menuOpen}
+          minWidth={200}
+        >
+          <ToolsContextMenu
+            onClose={() => setMenuOpen(false)}
+            showAgentProfileSwitch={showAgentProfileSwitch}
+            onShowSkills={handleShowSkills}
+            onShowPlugins={handleShowPlugins}
+            onShowHooks={handleShowHooks}
+            onShowAgentTools={handleShowAgentTools}
+            shouldShowAgentTools={shouldShowAgentTools}
+            shouldShowHooks={shouldShowHooks}
+            shouldShowPlugins={shouldShowPlugins}
+            className={
+              isComposerDocked ? COMPOSER_PORTAL_MENU_CLASS_NAME : undefined
+            }
+            footerAction={{
+              testId: "add-files-and-images-button",
+              icon: (
+                <Paperclip
+                  className="h-4 w-4 shrink-0"
+                  strokeWidth={2}
+                  aria-hidden
+                />
+              ),
+              label: t(I18nKey.CHAT_INTERFACE$ADD_FILES_AND_IMAGES),
+              onClick: handleFileIconClick,
+            }}
+          />
+        </ComposerPopoverPortal>
       )}
 
       <SystemMessageModal

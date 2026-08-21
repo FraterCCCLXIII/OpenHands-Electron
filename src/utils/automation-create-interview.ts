@@ -10,7 +10,9 @@ import {
 import {
   buildCronSchedule,
   buildIntervalCron,
+  buildOnceCron,
   parseCronSchedule,
+  parseScheduleDateTime,
   parseTimeOfDay,
   type ScheduleIntervalUnit,
 } from "#/utils/automation-schedule";
@@ -63,6 +65,18 @@ export const AUTOMATION_FREQUENCY_OPTIONS = [
   "weekly",
   "custom",
 ] as const;
+
+export const AUTOMATION_SCHEDULE_FREQUENCY_TABS = [
+  "once",
+  "hourly",
+  "daily",
+  "weekdays",
+  "weekly",
+  "custom",
+] as const;
+
+export type AutomationScheduleFrequencyTab =
+  (typeof AUTOMATION_SCHEDULE_FREQUENCY_TABS)[number];
 
 export type AutomationFrequencyOption =
   (typeof AUTOMATION_FREQUENCY_OPTIONS)[number];
@@ -148,6 +162,52 @@ export function frequencyOptionFromPreset(
   return undefined;
 }
 
+export function scheduleFrequencyTabFromPreset(
+  preset: AutomationSchedulePreset | null,
+): AutomationScheduleFrequencyTab {
+  if (preset === "hourly" || preset === "15m") return "hourly";
+  if (preset === "daily") return "daily";
+  if (preset === "weekdays") return "weekdays";
+  if (preset === "weekly") return "weekly";
+  if (preset === "custom") return "custom";
+  if (preset === "interval") return "hourly";
+  return "daily";
+}
+
+export function schedulePresetFromFrequencyTab(
+  tab: AutomationScheduleFrequencyTab,
+): AutomationSchedulePreset {
+  switch (tab) {
+    case "once":
+    case "daily":
+      return "daily";
+    case "hourly":
+      return "hourly";
+    case "weekdays":
+      return "weekdays";
+    case "weekly":
+      return "weekly";
+    case "custom":
+      return "custom";
+    default: {
+      const _exhaustive: never = tab;
+      return _exhaustive;
+    }
+  }
+}
+
+export function showsScheduleTimeRow(
+  tab: AutomationScheduleFrequencyTab,
+): boolean {
+  return tab === "daily" || tab === "weekdays" || tab === "weekly";
+}
+
+export function showsScheduleDateTimeRow(
+  tab: AutomationScheduleFrequencyTab,
+): boolean {
+  return tab === "once";
+}
+
 export function resolveDraftInterval(draft: AutomationCreateDraft): {
   value: number;
   unit: ScheduleIntervalUnit;
@@ -182,6 +242,7 @@ export interface AutomationCreateDraft {
   prompt: string;
   triggerType: AutomationTriggerType | null;
   schedulePreset: AutomationSchedulePreset | null;
+  scheduleFrequencyTab: AutomationScheduleFrequencyTab | null;
   cronExpression: string;
   timezone: string;
   integration: AutomationIntegrationOption;
@@ -194,6 +255,7 @@ export interface AutomationCreateDraft {
   eventFilter: string;
   plugins: string;
   timeOfDay: string;
+  scheduleDateTime: string;
   weekday: number;
   intervalValue: number;
   intervalUnit: ScheduleIntervalUnit;
@@ -216,8 +278,9 @@ export function createEmptyAutomationDraft(
     conversationId,
     name: "",
     prompt: "",
-    triggerType: null,
-    schedulePreset: null,
+    triggerType: "schedule",
+    schedulePreset: "daily",
+    scheduleFrequencyTab: "daily",
     cronExpression: "",
     timezone: "America/New_York",
     integration: "github",
@@ -230,6 +293,7 @@ export function createEmptyAutomationDraft(
     eventFilter: "",
     plugins: "",
     timeOfDay: "",
+    scheduleDateTime: "",
     weekday: 1,
     intervalValue: 15,
     intervalUnit: "minutes",
@@ -276,6 +340,9 @@ export function buildAutomationInterviewCreateQuery(
 }
 
 export function hasSchedule(draft: AutomationCreateDraft): boolean {
+  if (draft.scheduleFrequencyTab === "once") {
+    return parseScheduleDateTime(draft.scheduleDateTime) != null;
+  }
   if (!draft.schedulePreset) return false;
   if (draft.schedulePreset === "custom") {
     return draft.cronExpression.trim().length > 0;
@@ -291,6 +358,15 @@ export function hasEvents(draft: AutomationCreateDraft): boolean {
 }
 
 export function resolveDraftCron(draft: AutomationCreateDraft): string {
+  const selectedTab =
+    draft.scheduleFrequencyTab ??
+    scheduleFrequencyTabFromPreset(draft.schedulePreset);
+
+  if (selectedTab === "once") {
+    const parsed = parseScheduleDateTime(draft.scheduleDateTime);
+    return parsed ? buildOnceCron(parsed) : "";
+  }
+
   if (draft.schedulePreset === "custom") {
     return draft.cronExpression.trim();
   }
@@ -604,6 +680,9 @@ export function sanitizeDraftPatch(
     patch.plugins = input.plugins;
   }
   if (typeof input.timeOfDay === "string") patch.timeOfDay = input.timeOfDay;
+  if (typeof input.scheduleDateTime === "string") {
+    patch.scheduleDateTime = input.scheduleDateTime;
+  }
   if (
     typeof input.weekday === "number" &&
     Number.isInteger(input.weekday) &&

@@ -106,6 +106,76 @@ export function parseTimeOfDay(
   return { hour, minute };
 }
 
+export interface ScheduleDateTimeParts {
+  minute: number;
+  hour: number;
+  day: number;
+  month: number;
+}
+
+export function formatScheduleDateTimeLocal(date: Date): string {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  const hour = String(date.getHours()).padStart(2, "0");
+  const minute = String(date.getMinutes()).padStart(2, "0");
+  return `${year}-${month}-${day}T${hour}:${minute}`;
+}
+
+export function defaultScheduleDateTimeLocal(): string {
+  const date = new Date();
+  date.setSeconds(0, 0);
+  date.setMinutes(0);
+  date.setHours(date.getHours() + 1);
+  return formatScheduleDateTimeLocal(date);
+}
+
+export function parseScheduleDateTime(
+  value: string,
+): ScheduleDateTimeParts | null {
+  const match = value.match(/^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})$/);
+  if (!match) return null;
+
+  const month = Number(match[2]);
+  const day = Number(match[3]);
+  const hour = Number(match[4]);
+  const minute = Number(match[5]);
+  if (
+    Number.isNaN(month) ||
+    Number.isNaN(day) ||
+    Number.isNaN(hour) ||
+    Number.isNaN(minute) ||
+    month < 1 ||
+    month > 12 ||
+    day < 1 ||
+    day > 31 ||
+    hour < 0 ||
+    hour > 23 ||
+    minute < 0 ||
+    minute > 59
+  ) {
+    return null;
+  }
+
+  const parsed = new Date(Number(match[1]), month - 1, day, hour, minute);
+  if (
+    parsed.getFullYear() !== Number(match[1]) ||
+    parsed.getMonth() !== month - 1 ||
+    parsed.getDate() !== day ||
+    parsed.getHours() !== hour ||
+    parsed.getMinutes() !== minute
+  ) {
+    return null;
+  }
+
+  return { minute, hour, day, month };
+}
+
+export function buildOnceCron(input: ScheduleDateTimeParts): string {
+  const { minute, hour, day, month } = input;
+  return `${minute} ${hour} ${day} ${month} *`;
+}
+
 export function formatEventOn(on: string | string[] | undefined): string {
   if (!on) return "—";
   if (Array.isArray(on)) return on.join(", ");

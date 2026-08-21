@@ -14,6 +14,11 @@ import { I18nKey } from "#/i18n/declaration";
 import { cn } from "#/utils/utils";
 import { chatInputPillButtonClassName } from "#/utils/form-control-classes";
 import { formatModelNameForDisplay } from "#/utils/format-model-name";
+import {
+  COMPOSER_PORTAL_MENU_CLASS_NAME,
+  ComposerPopoverPortal,
+} from "#/components/features/chat/composer-popover-portal";
+import { useComposerDocked } from "#/context/composer-docked-context";
 
 const PROFILE_LABEL_MAX_CHARS = 18;
 
@@ -160,6 +165,7 @@ export function ChatInputLlmProfileMenuContent({
 
 export function ChatInputLlmProfilePicker() {
   const { t } = useTranslation("openhands");
+  const isComposerDocked = useComposerDocked();
   const { profiles, currentProfileName, isLoading, isSwitching } =
     useChatInputLlmProfileState();
   const [isPopoverOpen, setIsPopoverOpen] = React.useState(false);
@@ -201,18 +207,28 @@ export function ChatInputLlmProfilePicker() {
       </button>
 
       {isPopoverOpen && (
-        <ContextMenu
-          ref={popoverRef}
-          testId="chat-input-llm-profile-popover"
-          position="top"
-          alignment="left"
-          spacing="none"
-          className="z-[60] mb-2 min-w-[200px] max-w-[320px] max-h-[60vh] overflow-y-auto"
+        <ComposerPopoverPortal
+          triggerRef={triggerRef}
+          open={isPopoverOpen}
+          minWidth={200}
+          maxWidth={320}
         >
-          <ChatInputLlmProfileMenuContent
-            onClose={() => setIsPopoverOpen(false)}
-          />
-        </ContextMenu>
+          <ContextMenu
+            ref={popoverRef}
+            testId="chat-input-llm-profile-popover"
+            position="top"
+            alignment="left"
+            spacing="none"
+            className={cn(
+              "z-[60] mb-2 min-w-[200px] max-w-[320px] max-h-[60vh] overflow-y-auto",
+              isComposerDocked && COMPOSER_PORTAL_MENU_CLASS_NAME,
+            )}
+          >
+            <ChatInputLlmProfileMenuContent
+              onClose={() => setIsPopoverOpen(false)}
+            />
+          </ContextMenu>
+        </ComposerPopoverPortal>
       )}
     </div>
   );

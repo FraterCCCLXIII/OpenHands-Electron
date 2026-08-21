@@ -2,8 +2,10 @@ import { describe, it, expect } from "vitest";
 import {
   buildCronSchedule,
   buildIntervalCron,
+  buildOnceCron,
   parseCronSchedule,
   parseIntervalCron,
+  parseScheduleDateTime,
   parseTimeOfDay,
 } from "#/utils/automation-schedule";
 
@@ -100,6 +102,21 @@ describe("automation-schedule", () => {
       expect(valid).toEqual({ hour: 9, minute: 30 });
       expect(invalidHour).toBeNull();
       expect(malformed).toBeNull();
+    });
+  });
+
+  describe("once schedule datetime", () => {
+    it("builds a one-time cron from a datetime-local value", () => {
+      expect(parseScheduleDateTime("2026-08-21T16:00")).toEqual({
+        minute: 0,
+        hour: 16,
+        day: 21,
+        month: 8,
+      });
+      expect(buildOnceCron(parseScheduleDateTime("2026-08-21T16:00")!)).toBe(
+        "0 16 21 8 *",
+      );
+      expect(parseScheduleDateTime("2026-02-31T09:00")).toBeNull();
     });
   });
 });

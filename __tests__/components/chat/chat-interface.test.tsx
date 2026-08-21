@@ -1198,8 +1198,20 @@ describe("ChatInterface - interview composer placeholder", () => {
 
     expect(within(dock).getByTestId("chat-input")).toHaveAttribute(
       "data-placeholder",
-      I18nKey.HOME$LAUNCH_AUTOMATE_PLACEHOLDER,
+      I18nKey.AUTOMATIONS$INTERVIEW_DOCKED_COMPOSER_PLACEHOLDER,
     );
+    expect(
+      within(dock).queryByTestId("chat-plus-button"),
+    ).not.toBeInTheDocument();
+    expect(
+      within(dock).queryByTestId("chat-input-llm-profile"),
+    ).not.toBeInTheDocument();
+    expect(
+      within(dock).queryByTestId("context-window-meter"),
+    ).not.toBeInTheDocument();
+    expect(
+      within(dock).getByTestId("chat-input-actions-minimal"),
+    ).toBeInTheDocument();
 
     dock.remove();
   });

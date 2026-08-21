@@ -246,12 +246,7 @@ export default function AutomationsList() {
     trackAutomationExported({ backendKind: active.backend.kind });
   };
 
-  const handleImportFile = async (event: ChangeEvent<HTMLInputElement>) => {
-    const input = event.currentTarget;
-    const file = input.files?.[0];
-    input.value = "";
-    if (!file) return;
-
+  const handleImportFileContents = async (file: File) => {
     try {
       let parsed: unknown;
       try {
@@ -266,6 +261,14 @@ export default function AutomationsList() {
         error instanceof Error ? error.message : t(I18nKey.ERROR$GENERIC),
       );
     }
+  };
+
+  const handleImportFile = async (event: ChangeEvent<HTMLInputElement>) => {
+    const input = event.currentTarget;
+    const file = input.files?.[0];
+    input.value = "";
+    if (!file) return;
+    await handleImportFileContents(file);
   };
 
   const handleImportConfirm = () => {
@@ -609,6 +612,7 @@ export default function AutomationsList() {
         isImporting={importMutation.isPending}
         onClose={() => setImportSpec(null)}
         onImport={handleImportConfirm}
+        onFile={handleImportFileContents}
       />
     </>,
   );

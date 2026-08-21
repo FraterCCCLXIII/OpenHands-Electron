@@ -29,7 +29,10 @@ vi.mock("#/hooks/query/use-automations", () => ({
 
 vi.mock("#/hooks/query/use-llm-profiles", () => ({
   useLlmProfiles: () => ({
-    data: { profiles: [] },
+    data: {
+      profiles: [{ name: "Fast", model: "openai/gpt-4o-mini" }],
+      active_profile: "Fast",
+    },
     isLoading: false,
   }),
 }));

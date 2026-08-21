@@ -23,6 +23,7 @@ import {
   schedulePendingTaskMessageReassign,
 } from "#/utils/pending-task-message-link";
 import { useBackendScopedPath } from "#/hooks/use-backend-scoped-path";
+import { useAutomationCreateDraftStore } from "#/stores/automation-create-draft-store";
 
 const storeTaskPlugins = (
   task: AppConversationStartTask,
@@ -160,6 +161,9 @@ export const useTaskPollingController = () => {
       await flushPendingTaskAttachments(taskId, appConversationId);
 
       const taskConversationId = `task-${taskId}`;
+      useAutomationCreateDraftStore
+        .getState()
+        .reassignDraft(taskConversationId, appConversationId);
       linkPendingTaskMessages(appConversationId, taskConversationId);
       schedulePendingTaskMessageReassign(taskConversationId, appConversationId);
 

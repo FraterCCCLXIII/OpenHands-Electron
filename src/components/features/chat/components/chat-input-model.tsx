@@ -16,6 +16,11 @@ import { Typography } from "#/ui/typography";
 import { I18nKey } from "#/i18n/declaration";
 import { cn } from "#/utils/utils";
 import { chatInputPillButtonClassName } from "#/utils/form-control-classes";
+import {
+  COMPOSER_PORTAL_MENU_CLASS_NAME,
+  ComposerPopoverPortal,
+} from "#/components/features/chat/composer-popover-portal";
+import { useComposerDocked } from "#/context/composer-docked-context";
 import React from "react";
 
 const MODEL_LABEL_MAX_CHARS = 10;
@@ -141,6 +146,7 @@ export function ChatInputModelMenuContent({
 
 export function ChatInputModel() {
   const model = useChatInputModelState();
+  const isComposerDocked = useComposerDocked();
   const [isPopoverOpen, setIsPopoverOpen] = React.useState(false);
   const triggerRef = React.useRef<HTMLButtonElement>(null);
   const popoverRef = useClickOutsideElement<HTMLUListElement>(
@@ -178,19 +184,29 @@ export function ChatInputModel() {
       </button>
 
       {isPopoverOpen && (
-        <ContextMenu
-          ref={popoverRef}
-          testId="chat-input-llm-model-popover"
-          position="top"
-          alignment="left"
-          spacing="none"
-          className="z-[60] mb-2 min-w-[200px] max-w-[320px] max-h-[60vh] overflow-y-auto"
+        <ComposerPopoverPortal
+          triggerRef={triggerRef}
+          open={isPopoverOpen}
+          minWidth={200}
+          maxWidth={320}
         >
-          <ChatInputModelMenuContent
-            model={model}
-            onClose={() => setIsPopoverOpen(false)}
-          />
-        </ContextMenu>
+          <ContextMenu
+            ref={popoverRef}
+            testId="chat-input-llm-model-popover"
+            position="top"
+            alignment="left"
+            spacing="none"
+            className={cn(
+              "z-[60] mb-2 min-w-[200px] max-w-[320px] max-h-[60vh] overflow-y-auto",
+              isComposerDocked && COMPOSER_PORTAL_MENU_CLASS_NAME,
+            )}
+          >
+            <ChatInputModelMenuContent
+              model={model}
+              onClose={() => setIsPopoverOpen(false)}
+            />
+          </ContextMenu>
+        </ComposerPopoverPortal>
       )}
     </div>
   );

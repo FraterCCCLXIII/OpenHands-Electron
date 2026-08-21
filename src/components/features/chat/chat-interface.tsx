@@ -19,6 +19,7 @@ import { useLoadOlderEvents } from "#/hooks/use-load-older-events";
 import { TypingIndicator } from "./typing-indicator";
 import { ChatSuggestions } from "./chat-suggestions";
 import { ScrollProvider } from "#/context/scroll-context";
+import { ComposerDockedProvider } from "#/context/composer-docked-context";
 import { useInitialQueryStore } from "#/stores/initial-query-store";
 import { useSendMessage } from "#/hooks/use-send-message";
 import { useAgentState } from "#/hooks/use-agent-state";
@@ -513,30 +514,35 @@ export function ChatInterface({
   });
 
   const composer = (
-    <InteractiveChatBox
-      onSubmit={(content, images, files) => {
-        if (composerDockTarget) {
-          onDockedComposerSubmit?.();
+    <ComposerDockedProvider
+      enabled={Boolean(composerDockTarget)}
+      minimal={Boolean(composerDockTarget && isAutomationInterview)}
+    >
+      <InteractiveChatBox
+        onSubmit={(content, images, files) => {
+          if (composerDockTarget) {
+            onDockedComposerSubmit?.();
+          }
+          return handleSendMessage(content, images, files);
+        }}
+        disabled={isNewConversationPending || llmBlocked}
+        hasStartedConversation={hasStartedConversation}
+        showGitControlBar={showGitControlBar}
+        placeholder={
+          composerDockTarget && isAutomationInterview
+            ? t(I18nKey.AUTOMATIONS$INTERVIEW_DOCKED_COMPOSER_PLACEHOLDER)
+            : undefined
         }
-        return handleSendMessage(content, images, files);
-      }}
-      disabled={isNewConversationPending || llmBlocked}
-      hasStartedConversation={hasStartedConversation}
-      showGitControlBar={showGitControlBar}
-      placeholder={
-        composerDockTarget && isAutomationInterview
-          ? t(I18nKey.HOME$LAUNCH_AUTOMATE_PLACEHOLDER)
-          : undefined
-      }
-      composerDrawer={
-        automationInterview.draft &&
-        interviewIntegrations.missing.length > 0 ? (
-          <AutomationInterviewMissingIntegrations
-            draft={automationInterview.draft}
-          />
-        ) : undefined
-      }
-    />
+        composerDrawer={
+          automationInterview.draft &&
+          interviewIntegrations.missing.length > 0 ? (
+            <AutomationInterviewMissingIntegrations
+              draft={automationInterview.draft}
+            />
+          ) : undefined
+        }
+      />
+    </ComposerDockedProvider>
   );
   const dockedOrInlineComposer = composerDockTarget
     ? createPortal(composer, composerDockTarget)

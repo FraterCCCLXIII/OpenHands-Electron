@@ -12,6 +12,8 @@ import { I18nKey } from "#/i18n/declaration";
 import { Divider } from "#/ui/divider";
 import { cn } from "#/utils/utils";
 import { chatInputIconButtonClassName } from "#/utils/form-control-classes";
+import { ComposerPopoverPortal } from "#/components/features/chat/composer-popover-portal";
+import { useComposerDocked } from "#/context/composer-docked-context";
 import {
   formatCompactTokenCount,
   getContextWindowUsagePercentage,
@@ -36,6 +38,7 @@ const TONE_LABEL_CLASS = {
 
 export function ContextWindowMeter() {
   const { t } = useTranslation("openhands");
+  const isComposerDocked = useComposerDocked();
   const usage = useContextWindowUsage();
   const { navigateToTab } = useSelectConversationTab();
   const [isPopoverOpen, setIsPopoverOpen] = React.useState(false);
@@ -92,92 +95,104 @@ export function ContextWindowMeter() {
       </StyledTooltip>
 
       {isPopoverOpen && (
-        <div
-          ref={popoverRef}
-          data-testid="context-window-meter-popover"
-          className={cn(
-            "absolute bottom-full right-0 z-[60] mb-2 w-[280px]",
-            "flex flex-col gap-0.5 rounded-md border border-[var(--oh-border-subtle)] bg-tertiary px-1 py-1 shadow-lg",
-          )}
+        <ComposerPopoverPortal
+          triggerRef={triggerRef}
+          open={isPopoverOpen}
+          align="right"
+          minWidth={280}
+          maxWidth={280}
         >
-          <div className="flex flex-col gap-2 px-2 py-1.5">
-            <div className="flex items-center justify-between gap-2 text-sm">
-              <span className="font-semibold text-[var(--oh-foreground)]">
-                {t(I18nKey.CONVERSATION$CONTEXT_WINDOW)}
-              </span>
-              <span className={cn("shrink-0 text-xs", TONE_LABEL_CLASS[tone])}>
-                {usagePercentLabel}
-              </span>
+          <div
+            ref={popoverRef}
+            data-testid="context-window-meter-popover"
+            className={cn(
+              "absolute bottom-full right-0 z-[60] mb-2 w-[280px]",
+              "flex flex-col gap-0.5 rounded-md border border-[var(--oh-border-subtle)] bg-tertiary px-1 py-1 shadow-lg",
+              isComposerDocked &&
+                "!static !bottom-auto !right-auto !mb-0 w-[280px]",
+            )}
+          >
+            <div className="flex flex-col gap-2 px-2 py-1.5">
+              <div className="flex items-center justify-between gap-2 text-sm">
+                <span className="font-semibold text-[var(--oh-foreground)]">
+                  {t(I18nKey.CONVERSATION$CONTEXT_WINDOW)}
+                </span>
+                <span
+                  className={cn("shrink-0 text-xs", TONE_LABEL_CLASS[tone])}
+                >
+                  {usagePercentLabel}
+                </span>
+              </div>
+
+              <button
+                type="button"
+                data-testid="context-window-meter-bar-button"
+                className="relative h-1.5 w-full rounded-full cursor-pointer"
+                style={{ backgroundColor: CONTEXT_WINDOW_TRACK_COLOR }}
+                aria-label={t(I18nKey.COMMON$USAGE)}
+                onClick={(event) => {
+                  event.preventDefault();
+                  event.stopPropagation();
+                  openUsagePanel();
+                }}
+              >
+                <span
+                  className={cn(
+                    "absolute inset-y-0 left-0 rounded-full transition-all duration-300",
+                    TONE_BAR_CLASS[tone],
+                  )}
+                  style={{ width: `${Math.min(100, usagePercentage)}%` }}
+                />
+              </button>
+
+              <div className="flex items-center justify-between gap-2">
+                <button
+                  type="button"
+                  data-testid="context-window-compact-button"
+                  disabled={isDisabled}
+                  aria-busy={isCompacting}
+                  aria-label={t(I18nKey.CONVERSATION$COMPACT_CONTEXT)}
+                  className={cn(
+                    "inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-xs",
+                    "text-[var(--oh-muted)] hover:bg-[var(--oh-interactive-hover)] hover:text-[var(--oh-foreground)]",
+                    "transition-colors disabled:cursor-not-allowed disabled:opacity-50",
+                  )}
+                  onClick={(event) => {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    handleCompact();
+                  }}
+                >
+                  {isCompacting ? (
+                    <Loader2 className="size-3 animate-spin" aria-hidden />
+                  ) : (
+                    <Minimize className="size-3" aria-hidden />
+                  )}
+                  <span>{t(I18nKey.CONVERSATION$COMPACT_CONTEXT)}</span>
+                </button>
+                <span className="text-xs text-[var(--oh-muted)]">
+                  {usageTokenSummary}
+                </span>
+              </div>
             </div>
 
-            <button
-              type="button"
-              data-testid="context-window-meter-bar-button"
-              className="relative h-1.5 w-full rounded-full cursor-pointer"
-              style={{ backgroundColor: CONTEXT_WINDOW_TRACK_COLOR }}
-              aria-label={t(I18nKey.COMMON$USAGE)}
+            <Divider inset="menu" />
+
+            <ContextMenuListItem
+              testId="context-window-plan-usage"
               onClick={(event) => {
                 event.preventDefault();
                 event.stopPropagation();
                 openUsagePanel();
               }}
             >
-              <span
-                className={cn(
-                  "absolute inset-y-0 left-0 rounded-full transition-all duration-300",
-                  TONE_BAR_CLASS[tone],
-                )}
-                style={{ width: `${Math.min(100, usagePercentage)}%` }}
+              <ConversationNameContextMenuIconText
+                icon={<Gauge size={16} />}
+                text={t(I18nKey.COMMON$USAGE)}
               />
-            </button>
-
-            <div className="flex items-center justify-between gap-2">
-              <button
-                type="button"
-                data-testid="context-window-compact-button"
-                disabled={isDisabled}
-                aria-busy={isCompacting}
-                aria-label={t(I18nKey.CONVERSATION$COMPACT_CONTEXT)}
-                className={cn(
-                  "inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-xs",
-                  "text-[var(--oh-muted)] hover:bg-[var(--oh-interactive-hover)] hover:text-[var(--oh-foreground)]",
-                  "transition-colors disabled:cursor-not-allowed disabled:opacity-50",
-                )}
-                onClick={(event) => {
-                  event.preventDefault();
-                  event.stopPropagation();
-                  handleCompact();
-                }}
-              >
-                {isCompacting ? (
-                  <Loader2 className="size-3 animate-spin" aria-hidden />
-                ) : (
-                  <Minimize className="size-3" aria-hidden />
-                )}
-                <span>{t(I18nKey.CONVERSATION$COMPACT_CONTEXT)}</span>
-              </button>
-              <span className="text-xs text-[var(--oh-muted)]">
-                {usageTokenSummary}
-              </span>
-            </div>
+            </ContextMenuListItem>
           </div>
-
-          <Divider inset="menu" />
-
-          <ContextMenuListItem
-            testId="context-window-plan-usage"
-            onClick={(event) => {
-              event.preventDefault();
-              event.stopPropagation();
-              openUsagePanel();
-            }}
-          >
-            <ConversationNameContextMenuIconText
-              icon={<Gauge size={16} />}
-              text={t(I18nKey.COMMON$USAGE)}
-            />
-          </ContextMenuListItem>
-        </div>
+        </ComposerPopoverPortal>
       )}
     </div>
   );

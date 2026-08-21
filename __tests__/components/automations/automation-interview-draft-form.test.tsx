@@ -13,7 +13,10 @@ vi.mock("react-i18next", () => ({
 
 vi.mock("#/hooks/query/use-llm-profiles", () => ({
   useLlmProfiles: () => ({
-    data: { profiles: [{ name: "glm-5.2" }] },
+    data: {
+      profiles: [{ name: "Fast", model: "openai/gpt-4o-mini" }],
+      active_profile: "Fast",
+    },
     isLoading: false,
   }),
 }));
@@ -43,37 +46,31 @@ describe("AutomationInterviewDraftForm", () => {
     );
   });
 
-  it("shows schedule fields after choosing a schedule trigger", async () => {
+  it("shows schedule fields by default", async () => {
     const user = userEvent.setup();
     const onPatch = vi.fn();
-    const draft = {
-      ...createEmptyAutomationDraft("conv-1"),
-      triggerType: "schedule" as const,
-    };
+    const draft = createEmptyAutomationDraft("conv-1");
 
     render(<AutomationInterviewDraftForm draft={draft} onPatch={onPatch} />);
 
     expect(
+      screen.getByTestId("automation-interview-draft-trigger-option-schedule"),
+    ).toHaveAttribute("aria-checked", "true");
+    expect(
       screen.getByTestId("automation-interview-draft-schedule"),
     ).toBeInTheDocument();
     expect(
-      screen.getByTestId("automation-interview-draft-cron"),
+      screen.getByTestId("automation-interview-draft-time"),
     ).toBeInTheDocument();
     expect(
       screen.getByTestId("automation-interview-draft-timezone"),
     ).toBeInTheDocument();
     expect(
+      screen.queryByTestId("automation-interview-draft-cron"),
+    ).not.toBeInTheDocument();
+    expect(
       screen.queryByTestId("automation-interview-draft-integration"),
     ).not.toBeInTheDocument();
-
-    await user.type(
-      screen.getByTestId("automation-interview-draft-cron"),
-      "0 6 * * *",
-    );
-    expect(onPatch).toHaveBeenCalledWith({
-      schedulePreset: "custom",
-      cronExpression: expect.stringContaining("0"),
-    });
 
     await user.click(
       screen.getByTestId("automation-interview-draft-trigger-option-event"),
@@ -117,57 +114,100 @@ describe("AutomationInterviewDraftForm", () => {
     expect(onPatch).toHaveBeenCalledWith({
       selectedEvents: ["push", "issues.opened"],
     });
-
-    const helpButton = screen.getByTestId(
-      "automation-interview-draft-event-filter-help",
-    );
-    expect(helpButton).toBeInTheDocument();
     expect(
-      screen.queryByTestId(
-        "automation-interview-draft-event-filter-help-popover",
-      ),
+      screen.queryByTestId("automation-interview-draft-event-filter"),
     ).not.toBeInTheDocument();
-
-    await user.click(helpButton);
-    expect(
-      screen.getByTestId("automation-interview-draft-event-filter-help-popover"),
-    ).toHaveTextContent(I18nKey.AUTOMATIONS$DETAIL$EVENT_FILTER_HELP);
   });
 
-  it("keeps model, timeout, notification, plugins, and repo visible before a trigger is chosen", () => {
+  it("nests the model picker inside the prompt container", () => {
     const draft = createEmptyAutomationDraft("conv-1");
 
     render(<AutomationInterviewDraftForm draft={draft} onPatch={vi.fn()} />);
 
-    expect(
+    const promptStack = screen.getByTestId(
+      "automation-interview-draft-prompt-stack",
+    );
+    const promptContainer = screen.getByTestId(
+      "automation-interview-draft-prompt-container",
+    );
+    const promptDrawer = screen.getByTestId(
+      "automation-interview-draft-prompt-drawer",
+    );
+
+    expect(promptStack).toContainElement(promptContainer);
+    expect(promptStack).toContainElement(promptDrawer);
+    expect(promptContainer).toContainElement(
+      screen.getByTestId("automation-interview-draft-prompt"),
+    );
+    expect(promptContainer).toContainElement(
       screen.getByTestId("automation-interview-draft-model"),
+    );
+    expect(
+      screen.getByTestId("automation-interview-draft-prompt-grip"),
     ).toBeInTheDocument();
+    expect(screen.getByTestId("automation-interview-draft-prompt")).toHaveClass(
+      "resize-none",
+    );
+    expect(promptDrawer).toContainElement(
+      screen.getByTestId("automation-interview-draft-repository"),
+    );
+    expect(
+      screen.queryByTestId("automation-interview-draft-timeout"),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.getByTestId("automation-interview-draft-timeout-add"),
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByTestId("automation-interview-draft-notification"),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.queryByTestId("automation-interview-draft-plugins"),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.getByTestId("automation-interview-draft-repository"),
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByTestId("automation-interview-draft-branch"),
+    ).not.toBeInTheDocument();
+  });
+
+  it("reveals the timeout field from the add chip and removes it with x", async () => {
+    const user = userEvent.setup();
+    const onPatch = vi.fn();
+    const draft = createEmptyAutomationDraft("conv-1");
+
+    render(<AutomationInterviewDraftForm draft={draft} onPatch={onPatch} />);
+
+    await user.click(
+      screen.getByTestId("automation-interview-draft-timeout-add"),
+    );
+
     expect(
       screen.getByTestId("automation-interview-draft-timeout"),
     ).toBeInTheDocument();
     expect(
-      screen.getByTestId("automation-interview-draft-notification"),
-    ).toBeInTheDocument();
-    expect(
-      screen.getByTestId("automation-interview-draft-plugins"),
-    ).toBeInTheDocument();
-    const repoBranch = screen.getByTestId(
-      "automation-interview-draft-repo-branch",
+      screen.queryByTestId("automation-interview-draft-timeout-add"),
+    ).not.toBeInTheDocument();
+
+    await user.click(
+      screen.getByTestId("automation-interview-draft-timeout-remove"),
     );
-    expect(repoBranch).toContainElement(
-      screen.getByTestId("automation-interview-draft-repository"),
-    );
-    expect(repoBranch).toContainElement(
-      screen.getByTestId("automation-interview-draft-branch"),
-    );
+
+    expect(onPatch).toHaveBeenCalledWith({ timeout: "" });
   });
 
-  it("places the timeout hint under the timeout field", () => {
+  it("places the timeout hint under the timeout field", async () => {
+    const user = userEvent.setup();
+
     render(
       <AutomationInterviewDraftForm
         draft={createEmptyAutomationDraft("conv-1")}
         onPatch={vi.fn()}
       />,
+    );
+
+    await user.click(
+      screen.getByTestId("automation-interview-draft-timeout-add"),
     );
 
     const timeout = screen.getByTestId("automation-interview-draft-timeout");
@@ -179,29 +219,24 @@ describe("AutomationInterviewDraftForm", () => {
     );
   });
 
-  it("lets the user set a custom interval frequency", () => {
+  it("selects hourly from the segmented frequency control", async () => {
+    const user = userEvent.setup();
     const onPatch = vi.fn();
     const draft = {
       ...createEmptyAutomationDraft("conv-1"),
       triggerType: "schedule" as const,
-      schedulePreset: "15m" as const,
+      schedulePreset: "daily" as const,
     };
 
     render(<AutomationInterviewDraftForm draft={draft} onPatch={onPatch} />);
 
-    expect(
-      screen.getByTestId("automation-interview-draft-interval-value"),
-    ).toHaveValue(15);
-
-    fireEvent.change(
-      screen.getByTestId("automation-interview-draft-interval-value"),
-      { target: { value: "20" } },
+    await user.click(
+      screen.getByTestId("automation-interview-draft-schedule-option-hourly"),
     );
 
     expect(onPatch).toHaveBeenCalledWith({
-      schedulePreset: "interval",
-      intervalValue: 20,
-      intervalUnit: "minutes",
+      scheduleFrequencyTab: "hourly",
+      schedulePreset: "hourly",
     });
   });
 
@@ -210,6 +245,7 @@ describe("AutomationInterviewDraftForm", () => {
       ...createEmptyAutomationDraft("conv-1"),
       triggerType: "schedule" as const,
       schedulePreset: "weekly" as const,
+      scheduleFrequencyTab: "weekly" as const,
     };
 
     render(<AutomationInterviewDraftForm draft={draft} onPatch={vi.fn()} />);
@@ -220,5 +256,40 @@ describe("AutomationInterviewDraftForm", () => {
     expect(
       screen.getByTestId("automation-interview-draft-time"),
     ).toBeInTheDocument();
+  });
+
+  it("patches the draft model when a profile is picked from the prompt footer", () => {
+    const onPatch = vi.fn();
+    const draft = createEmptyAutomationDraft("conv-1");
+
+    render(<AutomationInterviewDraftForm draft={draft} onPatch={onPatch} />);
+
+    fireEvent.click(screen.getByTestId("automation-interview-draft-model"));
+    fireEvent.click(
+      screen.getByTestId("automation-interview-draft-model-option-Fast"),
+    );
+
+    expect(onPatch).toHaveBeenCalledWith({ model: "Fast" });
+  });
+
+  it("adds a repository address through the plus modal", async () => {
+    const user = userEvent.setup();
+    const onPatch = vi.fn();
+    const draft = createEmptyAutomationDraft("conv-1");
+
+    render(<AutomationInterviewDraftForm draft={draft} onPatch={onPatch} />);
+
+    await user.click(
+      screen.getByTestId("automation-interview-draft-repository-add"),
+    );
+    await user.type(
+      screen.getByTestId("automation-interview-add-repository-address"),
+      "github:org/repo",
+    );
+    await user.click(
+      screen.getByTestId("automation-interview-add-repository-submit"),
+    );
+
+    expect(onPatch).toHaveBeenCalledWith({ repository: "github:org/repo" });
   });
 });

@@ -37,11 +37,12 @@ describe("automation create interview", () => {
     expect(getNextInterviewField(empty)).toBe("intent");
 
     const withPrompt = draftWith({ prompt: "Summarize standups" });
-    expect(getNextInterviewField(withPrompt)).toBe("triggerType");
+    expect(getNextInterviewField(withPrompt)).toBe("name");
 
     const schedule = draftWith({
       prompt: "Summarize standups",
       triggerType: "schedule",
+      schedulePreset: null,
     });
     expect(getNextInterviewField(schedule)).toBe("schedule");
 
@@ -102,6 +103,17 @@ describe("automation create interview", () => {
       plugins: ["github:acme/tools"],
     });
     expect(canCreateAutomationFromDraft(draftWith({ name: "x" }))).toBe(false);
+  });
+
+  it("builds cron from a one-time schedule datetime", () => {
+    expect(
+      resolveDraftCron(
+        draftWith({
+          scheduleFrequencyTab: "once",
+          scheduleDateTime: "2026-08-21T16:00",
+        }),
+      ),
+    ).toBe("0 16 21 8 *");
   });
 
   it("builds cron from a custom interval frequency", () => {

@@ -18,6 +18,8 @@ import {
 } from "#/utils/conversation-local-storage";
 import { resetPendingTaskMessageLinkState } from "#/utils/pending-task-message-link";
 import { getStoredConversationMetadata } from "#/api/conversation-metadata-store";
+import { useAutomationCreateDraftStore } from "#/stores/automation-create-draft-store";
+import { isAutomationInterviewDraft } from "#/utils/automation-create-interview";
 
 vi.mock(
   "#/api/conversation-service/agent-server-conversation-service.api",
@@ -75,11 +77,47 @@ describe("useTaskPolling", () => {
     localStorage.clear();
     resetPendingTaskMessageLinkState();
     useOptimisticUserMessageStore.setState({ pendingMessages: [] });
+    useAutomationCreateDraftStore.setState({ drafts: {} });
   });
 
   afterEach(() => {
     queryClient?.clear();
     localStorage.clear();
+  });
+
+  it("moves automation interview drafts onto the real conversation before redirecting", async () => {
+    vi.mocked(AgentServerConversationService.getStartTask).mockResolvedValue(
+      readyTask,
+    );
+    useAutomationCreateDraftStore.getState().startDraft("task-123", {
+      prompt: "Daily standup summary",
+    });
+
+    renderHook(() => useTaskPollingController(), {
+      wrapper: createWrapper(),
+    });
+
+    await waitFor(() => {
+      expect(navigate).toHaveBeenCalledWith(
+        "/conversations/conversation-1?backend=default-local",
+        {
+          replace: true,
+        },
+      );
+    });
+
+    const draft =
+      useAutomationCreateDraftStore.getState().drafts["conversation-1"];
+    expect(draft).toEqual(
+      expect.objectContaining({
+        conversationId: "conversation-1",
+        prompt: "Daily standup summary",
+      }),
+    );
+    expect(isAutomationInterviewDraft(draft)).toBe(true);
+    expect(
+      useAutomationCreateDraftStore.getState().drafts["task-123"],
+    ).toBeUndefined();
   });
 
   it("moves pending task drafts onto the real conversation before redirecting", async () => {

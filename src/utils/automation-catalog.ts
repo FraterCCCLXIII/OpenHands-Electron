@@ -33,7 +33,10 @@ const SKILL_BY_NAME = new Map<string, SkillCatalogEntry>(
 export function getAutomationIcon(
   automation: RecommendedAutomation,
 ): LucideIcon | null {
-  const slug = automation.icon;
+  const slug =
+    "icon" in automation && typeof automation.icon === "string"
+      ? automation.icon
+      : undefined;
   if (!slug) return null;
   return (
     (MANIFEST_ICON_BY_SLUG as Record<string, LucideIcon | undefined>)[slug] ??

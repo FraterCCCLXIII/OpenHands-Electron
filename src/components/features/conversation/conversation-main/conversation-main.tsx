@@ -47,6 +47,20 @@ export function ConversationMain() {
   const showInterviewDrawer = isInterview && !isMobile;
   const showInterviewChat = !showInterviewDrawer || isInterviewChatShown;
   const showRightPane = !isMobile && (isInterview || isRightPanelShown);
+  const showChatPaneHeader = !showInterviewHeader;
+  const interviewHeader =
+    showInterviewHeader && conversationId ? (
+      <AutomationInterviewHeader
+        conversationId={conversationId}
+        isChatShown={isInterviewChatShown}
+        onToggleChat={
+          isMobile
+            ? undefined
+            : () => setIsInterviewChatShown((isShown) => !isShown)
+        }
+        leading={isSidebarRailHidden ? <SidebarMobileMenuToggle /> : undefined}
+      />
+    ) : null;
 
   const { leftWidth, rightWidth, isDragging, containerRef, handleMouseDown } =
     useResizablePanels({
@@ -101,20 +115,7 @@ export function ConversationMain() {
           : "h-full flex flex-col overflow-hidden",
       )}
     >
-      {isInterview && conversationId ? (
-        <AutomationInterviewHeader
-          conversationId={conversationId}
-          isChatShown={isInterviewChatShown}
-          onToggleChat={
-            isMobile
-              ? undefined
-              : () => setIsInterviewChatShown((isShown) => !isShown)
-          }
-          leading={
-            isSidebarRailHidden ? <SidebarMobileMenuToggle /> : undefined
-          }
-        />
-      ) : null}
+      {interviewHeader}
       <div
         ref={containerRef}
         className={cn(
@@ -170,7 +171,7 @@ export function ConversationMain() {
                 : undefined
             }
           >
-            {!showInterviewHeader ? (
+            {showChatPaneHeader ? (
               <div
                 data-testid="chat-pane-header"
                 className={cn(
@@ -200,9 +201,10 @@ export function ConversationMain() {
         {/* Resize Handle - only shown on desktop when right panel is visible */}
         {showRightPane && (!isInterview || showInterviewChat) ? (
           <ResizeHandle
+            testId="conversation-panel-resize-handle"
             onMouseDown={handleMouseDown}
             isDragging={isDragging}
-            showLine={isInterview}
+            showLine
           />
         ) : null}
 
@@ -224,52 +226,50 @@ export function ConversationMain() {
             }}
           >
             <div className="flex h-full w-full flex-col">
-              <div className="relative flex flex-col flex-1 min-h-0 bg-base overflow-hidden">
-                {showInterviewDrawer && conversationId ? (
-                  <>
-                    <div
-                      data-testid="automation-interview-scroll"
-                      className="h-full min-h-0 overflow-y-auto custom-scrollbar-always [scrollbar-gutter:stable] px-5 pt-5 pb-5"
-                    >
-                      <div className={SETTINGS_LIKE_CONTENT_COLUMN_CLASS_NAME}>
-                        <AutomationInterviewDrawer
-                          key={conversationId}
-                          conversationId={conversationId}
-                          reserveComposerSpace={showDockedComposer}
+              {showInterviewDrawer && conversationId ? (
+                <div className="relative flex flex-col flex-1 min-h-0 bg-base overflow-hidden">
+                  <div
+                    data-testid="automation-interview-scroll"
+                    className="h-full min-h-0 overflow-y-auto custom-scrollbar-always [scrollbar-gutter:stable] px-5 pt-5 pb-5"
+                  >
+                    <div className={SETTINGS_LIKE_CONTENT_COLUMN_CLASS_NAME}>
+                      <AutomationInterviewDrawer
+                        key={conversationId}
+                        conversationId={conversationId}
+                        reserveComposerSpace={showDockedComposer}
+                      />
+                    </div>
+                  </div>
+                  {showDockedComposer ? (
+                    <div className="pointer-events-none absolute inset-0 z-20 [scrollbar-gutter:stable] px-5">
+                      <div
+                        className={cn(
+                          SETTINGS_LIKE_CONTENT_COLUMN_CLASS_NAME,
+                          "relative h-full",
+                        )}
+                      >
+                        <div
+                          ref={setComposerDockTarget}
+                          data-testid="interview-docked-composer"
+                          className="pointer-events-auto absolute inset-x-0 bottom-5 overflow-visible rounded-[15px] shadow-[0_12px_40px_rgba(0,0,0,0.55)]"
                         />
                       </div>
                     </div>
-                    {showDockedComposer ? (
-                      <div className="pointer-events-none absolute inset-0 z-20 [scrollbar-gutter:stable] px-5">
-                        <div
-                          className={cn(
-                            SETTINGS_LIKE_CONTENT_COLUMN_CLASS_NAME,
-                            "relative h-full",
-                          )}
-                        >
-                          <div
-                            ref={setComposerDockTarget}
-                            data-testid="interview-docked-composer"
-                            className="pointer-events-auto absolute inset-x-0 bottom-5 rounded-[15px] shadow-[0_12px_40px_rgba(0,0,0,0.55)]"
-                          />
-                        </div>
-                      </div>
-                    ) : null}
-                  </>
-                ) : (
-                  <>
-                    <div
-                      data-testid="tabs-pane-header"
-                      className="flex shrink-0 flex-col border-b border-[var(--oh-border)]"
-                    >
-                      <ConversationTabs isPanelResizing={isDragging} />
-                    </div>
-                    <div className="flex-1 min-h-0 flex flex-col">
-                      <ConversationTabContent />
-                    </div>
-                  </>
-                )}
-              </div>
+                  ) : null}
+                </div>
+              ) : (
+                <>
+                  <div
+                    data-testid="tabs-pane-header"
+                    className="flex shrink-0 flex-col border-b border-[var(--oh-border)]"
+                  >
+                    <ConversationTabs isPanelResizing={isDragging} />
+                  </div>
+                  <div className="flex-1 min-h-0 flex flex-col">
+                    <ConversationTabContent />
+                  </div>
+                </>
+              )}
             </div>
           </div>
         )}

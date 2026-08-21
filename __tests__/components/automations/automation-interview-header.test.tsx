@@ -30,10 +30,15 @@ vi.mock("#/hooks/use-send-message", () => ({
 }));
 
 const mockCreate = vi.fn();
+const mockDispatch = vi.fn();
 
 vi.mock("#/hooks/query/use-automations", () => ({
   useCreateInterviewAutomation: () => ({
     mutate: mockCreate,
+    isPending: false,
+  }),
+  useDispatchAutomation: () => ({
+    mutate: mockDispatch,
     isPending: false,
   }),
 }));
@@ -53,6 +58,7 @@ const navigation: NavigationContextValue = {
 describe("AutomationInterviewHeader", () => {
   beforeEach(() => {
     mockCreate.mockReset();
+    mockDispatch.mockReset();
     mockDeleteConversation.mockReset();
     mockDeleteConversation.mockImplementation((_vars, options) => {
       options?.onSuccess?.();
@@ -90,6 +96,9 @@ describe("AutomationInterviewHeader", () => {
     expect(
       screen.getByTestId("automation-interview-drawer-save"),
     ).toBeInTheDocument();
+    expect(
+      screen.getByTestId("automation-interview-drawer-test"),
+    ).toBeDisabled();
     expect(
       screen.getByTestId("automation-interview-drawer-create"),
     ).toBeDisabled();
@@ -177,7 +186,11 @@ describe("AutomationInterviewHeader", () => {
     );
 
     const toggle = screen.getByTestId("automation-interview-chat-toggle");
-    expect(toggle).toHaveTextContent(I18nKey.AUTOMATIONS$INTERVIEW_HIDE_AGENT);
+    expect(toggle).toHaveAttribute(
+      "aria-label",
+      I18nKey.AUTOMATIONS$INTERVIEW_HIDE_AGENT,
+    );
+    expect(toggle).toHaveAttribute("aria-pressed", "true");
 
     await user.click(toggle);
     expect(onToggleChat).toHaveBeenCalledTimes(1);
@@ -194,7 +207,13 @@ describe("AutomationInterviewHeader", () => {
 
     expect(
       screen.getByTestId("automation-interview-chat-toggle"),
-    ).toHaveTextContent(I18nKey.AUTOMATIONS$INTERVIEW_SHOW_AGENT);
+    ).toHaveAttribute(
+      "aria-label",
+      I18nKey.AUTOMATIONS$INTERVIEW_SHOW_AGENT,
+    );
+    expect(
+      screen.getByTestId("automation-interview-chat-toggle"),
+    ).toHaveAttribute("aria-pressed", "false");
   });
 
   it("saves the draft and creates when the form is complete", async () => {
@@ -228,6 +247,45 @@ describe("AutomationInterviewHeader", () => {
         prompt: "Write a haiku",
       }),
       expect.objectContaining({ onSuccess: expect.any(Function) }),
+    );
+  });
+
+  it("enables test after the draft is saved and dispatches a run", async () => {
+    const user = userEvent.setup();
+    useAutomationCreateDraftStore.getState().ensureDraft("conv-1");
+    useAutomationCreateDraftStore.getState().patchDraft("conv-1", {
+      name: "Hourly haiku",
+      prompt: "Write a haiku",
+      triggerType: "schedule",
+      schedulePreset: "hourly",
+      isSaved: true,
+    });
+
+    mockCreate.mockImplementation((_spec, options) => {
+      options?.onSuccess?.({ id: "auto-1" });
+    });
+    mockDispatch.mockImplementation((_id, options) => {
+      options?.onSuccess?.({});
+    });
+
+    render(
+      <NavigationProvider value={navigation}>
+        <AutomationInterviewHeader conversationId="conv-1" />
+      </NavigationProvider>,
+    );
+
+    const testButton = screen.getByTestId("automation-interview-drawer-test");
+    expect(testButton).toBeEnabled();
+
+    await user.click(testButton);
+
+    expect(mockCreate).toHaveBeenCalled();
+    expect(mockDispatch).toHaveBeenCalledWith(
+      "auto-1",
+      expect.objectContaining({ onSuccess: expect.any(Function) }),
+    );
+    expect(displaySuccessToast).toHaveBeenCalledWith(
+      I18nKey.AUTOMATIONS$RUN_NOW_SUCCESS,
     );
   });
 });

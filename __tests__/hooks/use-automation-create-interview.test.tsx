@@ -24,6 +24,10 @@ vi.mock("#/hooks/query/use-automations", () => ({
     mutate: vi.fn(),
     isPending: false,
   }),
+  useDispatchAutomation: () => ({
+    mutate: vi.fn(),
+    isPending: false,
+  }),
 }));
 
 const navigation: NavigationContextValue = {
@@ -92,7 +96,9 @@ describe("useAutomationCreateInterview", () => {
       expect.objectContaining({
         name: "",
         prompt: "",
-        triggerType: null,
+        triggerType: "schedule",
+        schedulePreset: "daily",
+        scheduleFrequencyTab: "daily",
         requestedField: null,
       }),
     );

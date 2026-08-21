@@ -1,12 +1,15 @@
 import type { ReactNode } from "react";
 import { useTranslation } from "react-i18next";
+import { ChatActionTooltip } from "#/components/features/chat/chat-action-tooltip";
 import { ConfirmDeleteModal } from "#/components/features/conversation-panel/confirm-delete-modal";
 import { BrandButton } from "#/components/features/settings/brand-button";
 import { BackNavButton } from "#/components/shared/buttons/back-nav-button";
 import { useAutomationCreateInterview } from "#/hooks/use-automation-create-interview";
 import { useLeaveAutomationInterview } from "#/hooks/use-leave-automation-interview";
 import { I18nKey } from "#/i18n/declaration";
-import SparkleIcon from "#/icons/sparkle.svg?react";
+import BlockDrawerLeftIcon from "#/icons/block-drawer-left.svg?react";
+import { cn } from "#/utils/utils";
+import { mobileTopBarIconButtonClassName } from "#/utils/mobile-top-bar-icon-button-classes";
 
 interface AutomationInterviewHeaderProps {
   conversationId: string;
@@ -41,27 +44,13 @@ export function AutomationInterviewHeader({
         <BackNavButton
           testId="automation-interview-back"
           className="!p-1.5"
+          ariaLabel={t(I18nKey.BUTTON$BACK)}
           onClick={leaveInterview.leave}
-        >
-          {t(I18nKey.BUTTON$BACK)}
-        </BackNavButton>
+        />
         <h2 className="min-w-0 truncate text-sm font-medium text-content">
           {interview.draft.name.trim() ||
             t(I18nKey.AUTOMATIONS$INTERVIEW_DRAWER_TITLE)}
         </h2>
-        {onToggleChat ? (
-          <BrandButton
-            type="button"
-            variant="secondary"
-            testId="automation-interview-chat-toggle"
-            ariaLabel={chatToggleLabel}
-            className="!h-7 !min-h-7 !px-2.5 !text-xs shrink-0"
-            onClick={onToggleChat}
-          >
-            {chatToggleLabel}
-            <SparkleIcon className="size-3.5 shrink-0" />
-          </BrandButton>
-        ) : null}
       </div>
       <div className="flex shrink-0 items-center gap-1.5">
         <BrandButton
@@ -75,11 +64,27 @@ export function AutomationInterviewHeader({
         </BrandButton>
         <BrandButton
           type="button"
+          variant="secondary"
+          testId="automation-interview-drawer-test"
+          className="!h-7 !min-h-7 !px-2.5 !text-xs"
+          isDisabled={
+            !interview.draft.isSaved ||
+            interview.isCreating ||
+            interview.isTesting
+          }
+          aria-busy={interview.isTesting}
+          onClick={interview.testDraft}
+        >
+          {t(I18nKey.AUTOMATIONS$INTERVIEW_TEST)}
+        </BrandButton>
+        <BrandButton
+          type="button"
           variant="primary"
           testId="automation-interview-drawer-create"
           className="!h-7 !min-h-7 !px-2.5 !text-xs"
           isDisabled={
             interview.isCreating ||
+            interview.isTesting ||
             interview.draft.status === "created" ||
             !interview.canCreate
           }
@@ -88,6 +93,26 @@ export function AutomationInterviewHeader({
         >
           {t(I18nKey.AUTOMATIONS$INTERVIEW_REVIEW_CREATE)}
         </BrandButton>
+        {onToggleChat ? (
+          <ChatActionTooltip
+            tooltip={chatToggleLabel}
+            ariaLabel={chatToggleLabel}
+          >
+            <button
+              type="button"
+              data-testid="automation-interview-chat-toggle"
+              aria-label={chatToggleLabel}
+              aria-pressed={isChatShown}
+              onClick={onToggleChat}
+              className={cn(
+                mobileTopBarIconButtonClassName,
+                "size-7 self-center",
+              )}
+            >
+              <BlockDrawerLeftIcon className="size-5 shrink-0" />
+            </button>
+          </ChatActionTooltip>
+        ) : null}
       </div>
       {leaveInterview.isConfirmOpen ? (
         <ConfirmDeleteModal

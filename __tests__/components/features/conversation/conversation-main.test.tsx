@@ -254,6 +254,17 @@ describe("ConversationMain - Layout Transition Stability", () => {
     );
   });
 
+  it("shows a left divider on the files pane when the right panel is open", () => {
+    mockIsRightPanelShown = true;
+    renderConversationMain();
+
+    expect(screen.getByTestId("conversation-tabs")).toBeInTheDocument();
+    const handle = screen.getByTestId("conversation-panel-resize-handle");
+    expect(
+      handle.querySelector(".bg-\\[var\\(--oh-border\\)\\]"),
+    ).not.toBeNull();
+  });
+
   it("defaults the conversation column narrower for an automate conversation", () => {
     useAutomationCreateDraftStore.getState().ensureDraft("test-conversation-id");
 

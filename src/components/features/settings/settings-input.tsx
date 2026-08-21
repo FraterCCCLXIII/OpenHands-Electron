@@ -93,7 +93,7 @@ export const SettingsInput = forwardRef<HTMLInputElement, SettingsInputProps>(
     const errorId = error && testId ? `${testId}-error` : undefined;
     return (
       <label className={cn("flex flex-col gap-2.5 w-full min-w-0", className)}>
-        <div className="flex items-center gap-2">
+        <div className={cn("flex items-center gap-2", labelEnd && "w-full")}>
           {startContent}
           <span className={cn("text-sm", labelClassName)}>{label}</span>
           {showRequiredTag && (

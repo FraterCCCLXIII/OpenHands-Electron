@@ -26,6 +26,8 @@ interface AutomationCreateDraftActions {
     patch: Partial<AutomationCreateDraft>,
   ) => void;
   markCreated: (conversationId: string, automationId: string) => void;
+  /** Move a draft from a provisional task URL id to the real conversation id. */
+  reassignDraft: (fromConversationId: string, toConversationId: string) => void;
   clearDraft: (conversationId: string) => void;
 }
 
@@ -98,6 +100,22 @@ export const useAutomationCreateDraftStore =
                     status: "created",
                     createdAutomationId: automationId,
                     tokensResolved: true,
+                  },
+                },
+              };
+            }),
+          reassignDraft: (fromConversationId, toConversationId) =>
+            set((state) => {
+              if (fromConversationId === toConversationId) return state;
+              const draft = state.drafts[fromConversationId];
+              if (!draft) return state;
+              const { [fromConversationId]: _removed, ...rest } = state.drafts;
+              return {
+                drafts: {
+                  ...rest,
+                  [toConversationId]: {
+                    ...draft,
+                    conversationId: toConversationId,
                   },
                 },
               };

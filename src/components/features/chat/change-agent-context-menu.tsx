@@ -15,6 +15,7 @@ interface ChangeAgentContextMenuProps {
   onClose: () => void;
   onCodeClick?: (event: React.MouseEvent<HTMLButtonElement>) => void;
   onPlanClick?: (event: React.MouseEvent<HTMLButtonElement>) => void;
+  className?: string;
 }
 
 export function ChangeAgentContextMenu({
@@ -22,6 +23,7 @@ export function ChangeAgentContextMenu({
   onClose,
   onCodeClick,
   onPlanClick,
+  className,
 }: ChangeAgentContextMenuProps) {
   const { t } = useTranslation("openhands");
   const menuRef = useClickOutsideElement<HTMLUListElement>(onClose);
@@ -46,7 +48,7 @@ export function ChangeAgentContextMenu({
       testId="change-agent-context-menu"
       position="top"
       alignment="left"
-      className="min-h-fit mb-2 min-w-[195px] max-w-[195px]"
+      className={cn("min-h-fit mb-2 min-w-[195px] max-w-[195px]", className)}
     >
       <ContextMenuListItem
         testId="code-option"
