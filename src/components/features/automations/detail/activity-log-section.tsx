@@ -11,6 +11,8 @@ import { getApiErrorMessage } from "#/utils/api-error-message";
 import { downloadActivityLogExport } from "#/utils/automation-activity-log-export";
 import type { ActivityLogExportFormat, Automation } from "#/types/automation";
 import { ActivityLogItem } from "./activity-log-item";
+import { isActivityLogStatesPreviewAutomation } from "./activity-log-states-preview";
+import { ActivityLogStatesPreviewRows } from "./activity-log-states-preview-host";
 
 interface ActivityLogSectionProps {
   automation: Automation;
@@ -36,10 +38,12 @@ export function ActivityLogSection({
   const [limit, setLimit] = useState(PAGE_SIZE);
   const highlightedRef = useRef<HTMLDivElement | null>(null);
   const [isExporting, setIsExporting] = useState(false);
+  const isPreview = isActivityLogStatesPreviewAutomation(automation.id);
   const { data, isLoading } = useAutomationRuns({
     id: automation.id,
     limit,
     offset: 0,
+    enabled: !isPreview,
   });
 
   const hasMore = data ? data.total > data.runs.length : false;
@@ -119,7 +123,9 @@ export function ActivityLogSection({
         </div>
       </div>
 
-      {isLoading && (
+      {isPreview && <ActivityLogStatesPreviewRows />}
+
+      {!isPreview && isLoading && (
         <div className="space-y-1 p-5">
           {Array.from({ length: 3 }).map((_, i) => (
             <div
@@ -133,13 +139,13 @@ export function ActivityLogSection({
         </div>
       )}
 
-      {!isLoading && data?.runs.length === 0 && (
+      {!isPreview && !isLoading && data?.runs.length === 0 && (
         <p className="px-5 py-8 text-center text-sm text-muted">
           {t(I18nKey.AUTOMATIONS$DETAIL$NO_RUNS)}
         </p>
       )}
 
-      {!isLoading && data && data.runs.length > 0 && (
+      {!isPreview && !isLoading && data && data.runs.length > 0 && (
         <div>
           {data.runs.map((run, index) => {
             const isHighlighted = run.id === highlightedRunId;

@@ -41,6 +41,10 @@ import {
   serializeAutomation,
 } from "#/utils/automation-export";
 import { downloadBlob } from "#/utils/utils";
+import {
+  ACTIVITY_LOG_STATES_PREVIEW_AUTOMATION,
+  isActivityLogStatesPreviewAutomation,
+} from "#/components/features/automations/detail/activity-log-states-preview";
 
 /**
  * The page renders the interface manifest's copy, so without an admitted
@@ -62,6 +66,8 @@ export default function AutomationDetail() {
   const { navigate } = useNavigation();
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
+  const isActivityLogPreview =
+    isActivityLogStatesPreviewAutomation(automationId);
 
   const {
     data: healthData,
@@ -89,7 +95,7 @@ export default function AutomationDetail() {
     refetch,
   } = useAutomationDetail({
     id: automationId ?? "",
-    enabled: isBackendHealthy && !backendChanged,
+    enabled: isBackendHealthy && !backendChanged && !isActivityLogPreview,
   });
 
   const { trackPrebuiltAutomationEnabled, trackAutomationExported } =
@@ -99,9 +105,12 @@ export default function AutomationDetail() {
   const dispatchMutation = useDispatchAutomation();
 
   const is404 = isError && getErrorStatus(error) === 404;
+  const resolvedAutomation = isActivityLogPreview
+    ? ACTIVITY_LOG_STATES_PREVIEW_AUTOMATION
+    : automation;
 
   // Show loading state while checking health
-  if (isHealthLoading) {
+  if (!isActivityLogPreview && isHealthLoading) {
     return (
       <div className="min-h-full">
         <div className="p-6 max-w-4xl mx-auto">
@@ -112,7 +121,7 @@ export default function AutomationDetail() {
   }
 
   // Show backend not configured state if health check failed
-  if (!isBackendHealthy) {
+  if (!isActivityLogPreview && !isBackendHealthy) {
     return (
       <div className="min-h-full">
         <div className="p-6 max-w-4xl mx-auto">
@@ -122,7 +131,7 @@ export default function AutomationDetail() {
     );
   }
 
-  if (isLoading) {
+  if (!isActivityLogPreview && isLoading) {
     return (
       <div className="min-h-full">
         <div className="p-6 max-w-4xl mx-auto">
@@ -132,7 +141,7 @@ export default function AutomationDetail() {
     );
   }
 
-  if (is404) {
+  if (!isActivityLogPreview && is404) {
     return (
       <div className="min-h-full">
         <div className="p-6 max-w-4xl mx-auto">
@@ -142,7 +151,7 @@ export default function AutomationDetail() {
     );
   }
 
-  if (isError || !automation) {
+  if (!isActivityLogPreview && (isError || !resolvedAutomation)) {
     return (
       <div className="min-h-full">
         <div className="p-6 max-w-4xl mx-auto">
@@ -152,19 +161,25 @@ export default function AutomationDetail() {
     );
   }
 
+  if (!resolvedAutomation) {
+    return null;
+  }
+
   const handleToggle = () => {
-    const willEnable = !automation.enabled;
-    toggleMutation.mutate({ id: automation.id, enabled: willEnable });
+    if (isActivityLogPreview) return;
+    const willEnable = !resolvedAutomation.enabled;
+    toggleMutation.mutate({ id: resolvedAutomation.id, enabled: willEnable });
     if (willEnable) {
       trackPrebuiltAutomationEnabled({
-        automationId: automation.id,
-        automationName: automation.name,
+        automationId: resolvedAutomation.id,
+        automationName: resolvedAutomation.name,
       });
     }
   };
 
   const handleDelete = () => {
-    deleteMutation.mutate(automation.id, {
+    if (isActivityLogPreview) return;
+    deleteMutation.mutate(resolvedAutomation.id, {
       onSuccess: () => {
         navigate?.(automationListPath());
       },
@@ -172,7 +187,8 @@ export default function AutomationDetail() {
   };
 
   const handleRunNow = () => {
-    dispatchMutation.mutate(automation.id, {
+    if (isActivityLogPreview) return;
+    dispatchMutation.mutate(resolvedAutomation.id, {
       onSuccess: () => {
         displaySuccessToast(t(I18nKey.AUTOMATIONS$RUN_NOW_SUCCESS));
       },
@@ -185,17 +201,18 @@ export default function AutomationDetail() {
   };
 
   const handleExport = () => {
-    const contents = `${JSON.stringify(serializeAutomation(automation), null, 2)}\n`;
+    if (isActivityLogPreview) return;
+    const contents = `${JSON.stringify(serializeAutomation(resolvedAutomation), null, 2)}\n`;
     downloadBlob(
       new Blob([contents], { type: "application/json" }),
-      getAutomationExportFilename(automation),
+      getAutomationExportFilename(resolvedAutomation),
     );
     trackAutomationExported({ backendKind: active.backend.kind });
   };
 
   // Edit is a local-backend-only feature in MVP — cloud automations
   // are managed elsewhere and we don't yet surface them here.
-  const canEdit = active.backend.kind === "local";
+  const canEdit = !isActivityLogPreview && active.backend.kind === "local";
 
   return (
     <div className="min-h-full">
@@ -203,39 +220,46 @@ export default function AutomationDetail() {
         <div className="flex flex-col gap-4">
           <BackLink />
           <DetailHeader
-            automation={automation}
+            automation={resolvedAutomation}
             onToggle={handleToggle}
             onEdit={canEdit ? () => setShowEditModal(true) : undefined}
             onDelete={() => setShowDeleteModal(true)}
             onExport={handleExport}
-            onDownloadTarball={() =>
-              AutomationService.downloadTarball(automation.id, automation.name)
-            }
+            onDownloadTarball={() => {
+              if (isActivityLogPreview) return;
+              void AutomationService.downloadTarball(
+                resolvedAutomation.id,
+                resolvedAutomation.name,
+              );
+            }}
             onRunNow={handleRunNow}
             isRunningNow={dispatchMutation.isPending}
           />
-          {automation.prompt && <PromptSection prompt={automation.prompt} />}
-          <ConfigurationSection automation={automation} />
-          {automation.plugins && automation.plugins.length > 0 && (
-            <PluginsSection plugins={automation.plugins} />
+          {resolvedAutomation.prompt && (
+            <PromptSection prompt={resolvedAutomation.prompt} />
           )}
+          <ConfigurationSection automation={resolvedAutomation} />
+          {resolvedAutomation.plugins &&
+            resolvedAutomation.plugins.length > 0 && (
+              <PluginsSection plugins={resolvedAutomation.plugins} />
+            )}
           <ActivitySection
-            createdAt={automation.created_at}
-            lastRunAt={automation.last_triggered_at}
+            createdAt={resolvedAutomation.created_at}
+            lastRunAt={resolvedAutomation.last_triggered_at}
           />
           <ActivityLogSection
-            automation={automation}
+            automation={resolvedAutomation}
             highlightedRunId={highlightedRunId}
           />
           <DeleteConfirmationModal
-            automationName={automation.name}
+            automationName={resolvedAutomation.name}
             isOpen={showDeleteModal}
             onConfirm={handleDelete}
             onCancel={() => setShowDeleteModal(false)}
           />
           {canEdit && (
             <EditAutomationModal
-              automation={automation}
+              automation={resolvedAutomation}
               isOpen={showEditModal}
               onClose={() => setShowEditModal(false)}
             />

@@ -23,8 +23,8 @@ describe("RunStatusBadge", () => {
     [AutomationRunStatus.FAILED, "run-status-icon-failed"],
     [AutomationRunStatus.PENDING, "run-status-icon-pending"],
     [AutomationRunStatus.RUNNING, "run-status-icon-running"],
-    [AutomationRunStatus.CANCELLED, "run-status-icon-pending"],
-    [AutomationRunStatus.SKIPPED, "run-status-icon-pending"],
+    [AutomationRunStatus.CANCELLED, "run-status-icon-cancelled"],
+    [AutomationRunStatus.SKIPPED, "run-status-icon-skipped"],
   ])(
     "renders the %s icon variant for the matching status",
     (status, testId) => {

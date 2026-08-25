@@ -1,4 +1,4 @@
-import { Loader2 } from "lucide-react";
+import { CircleSlash, Loader2, Redo } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { StyledTooltip } from "#/components/shared/buttons/styled-tooltip";
 import { I18nKey } from "#/i18n/declaration";
@@ -85,6 +85,22 @@ function StatusIcon({
         <Loader2
           data-testid="run-status-icon-running"
           className={cn(iconClass, "animate-spin motion-reduce:animate-none")}
+          aria-hidden="true"
+        />
+      );
+    case AutomationRunStatus.CANCELLED:
+      return (
+        <CircleSlash
+          data-testid="run-status-icon-cancelled"
+          className={iconClass}
+          aria-hidden="true"
+        />
+      );
+    case AutomationRunStatus.SKIPPED:
+      return (
+        <Redo
+          data-testid="run-status-icon-skipped"
+          className={iconClass}
           aria-hidden="true"
         />
       );
