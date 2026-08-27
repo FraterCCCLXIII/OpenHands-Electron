@@ -79,10 +79,10 @@ describe("RunLogsModal", () => {
         onClose={() => {}}
       />,
     );
-    // The heading uses the LOGS_TITLE key — in the test environment
-    // the resolved value IS "Logs" because translation.json's "en"
-    // entry is "Logs". (The key itself is rendered if the runtime
-    // can't resolve it; we want the human label.)
+    expect(screen.getByRole("dialog")).toHaveAttribute(
+      "aria-label",
+      I18nKey.AUTOMATIONS$DETAIL$LOGS_TITLE,
+    );
     expect(
       screen.getByRole("heading", {
         name: I18nKey.AUTOMATIONS$DETAIL$LOGS_TITLE,
@@ -299,7 +299,7 @@ describe("RunLogsModal — run inspection summary", () => {
     ...overrides,
   });
 
-  it("labels run, task, and system details for a completed blocked task", () => {
+  it("shows run, task, and system layers for a blocked completed run", () => {
     useBashCommandLogsMock.mockReturnValue(makeHookResult());
 
     render(
@@ -328,30 +328,33 @@ describe("RunLogsModal — run inspection summary", () => {
     );
 
     expect(
-      screen.getByText(I18nKey.AUTOMATIONS$DETAIL$RUN_LABEL),
+      screen.getByRole("heading", {
+        name: I18nKey.AUTOMATIONS$DETAIL$LOGS_TITLE,
+      }),
     ).toBeInTheDocument();
-    expect(screen.getByText("COMPLETED")).toBeInTheDocument();
+    expect(screen.getByText(I18nKey.AUTOMATIONS$DETAIL$RUN_LABEL)).toBeInTheDocument();
+    expect(screen.getByText(I18nKey.AUTOMATIONS$DETAIL$TASK_LABEL)).toBeInTheDocument();
+    expect(screen.getByText(I18nKey.AUTOMATIONS$DETAIL$SYSTEM_LABEL)).toBeInTheDocument();
+    expect(screen.getByText(I18nKey.AUTOMATIONS$DETAIL$SUCCESSFUL)).toBeInTheDocument();
     expect(
-      screen.getByText(I18nKey.AUTOMATIONS$DETAIL$TASK_LABEL),
-    ).toBeInTheDocument();
-    expect(
-      screen.getByText(I18nKey.AUTOMATIONS$DETAIL$BLOCKED),
-    ).toBeInTheDocument();
+      screen.getAllByText(I18nKey.AUTOMATIONS$DETAIL$BLOCKED).length,
+    ).toBeGreaterThanOrEqual(1);
+    expect(screen.queryByText("COMPLETED")).not.toBeInTheDocument();
     expect(
       screen.getByText(
         "Attempted HubSpot CRM contact search but HUBSPOT_API_KEY was unavailable.",
       ),
     ).toBeInTheDocument();
     expect(
-      screen.getByText(I18nKey.AUTOMATIONS$DETAIL$SYSTEM_LABEL),
-    ).toBeInTheDocument();
-    expect(
       screen.getAllByText(/Environment variable HUBSPOT_API_KEY is missing/),
-    ).toHaveLength(2);
+    ).toHaveLength(1);
     expect(screen.getByText(/callback · execution_error/)).toBeInTheDocument();
+    expect(
+      screen.getByText(I18nKey.AUTOMATIONS$DETAIL$OPEN_CONVERSATION),
+    ).toBeInTheDocument();
   });
 
-  it("keeps infrastructure failures in the system section when no task outcome exists", () => {
+  it("keeps the lifecycle error under System when no task outcome exists", () => {
     useBashCommandLogsMock.mockReturnValue(makeHookResult());
 
     render(
@@ -362,19 +365,26 @@ describe("RunLogsModal — run inspection summary", () => {
         onClose={() => {}}
         run={makeRun({
           status: AutomationRunStatus.FAILED,
+          conversation_id: null,
           error_detail: "Sandbox timed out.",
         })}
       />,
     );
 
-    expect(screen.getByText("FAILED")).toBeInTheDocument();
+    expect(
+      screen.getAllByText(I18nKey.AUTOMATIONS$DETAIL$FAILED).length,
+    ).toBeGreaterThanOrEqual(1);
+    expect(screen.queryByText("FAILED")).not.toBeInTheDocument();
+    expect(screen.getByText("Sandbox timed out.")).toBeInTheDocument();
     expect(
       screen.getByText(I18nKey.AUTOMATIONS$DETAIL$NO_TASK_OUTCOME),
     ).toBeInTheDocument();
-    expect(screen.getByText(/Sandbox timed out/)).toBeInTheDocument();
+    expect(
+      screen.queryByText(I18nKey.AUTOMATIONS$DETAIL$OPEN_CONVERSATION),
+    ).not.toBeInTheDocument();
   });
 
-  it("falls back to a readable JSON block for custom task metadata", () => {
+  it("renders custom task metadata as values with raw JSON collapsed", () => {
     useBashCommandLogsMock.mockReturnValue(makeHookResult());
 
     render(
@@ -396,13 +406,27 @@ describe("RunLogsModal — run inspection summary", () => {
     );
 
     expect(
-      screen.getByText(I18nKey.AUTOMATIONS$DETAIL$NEEDS_REVIEW),
+      screen.getByRole("heading", {
+        name: I18nKey.AUTOMATIONS$DETAIL$LOGS_TITLE,
+      }),
     ).toBeInTheDocument();
     expect(
-      screen.getByText(I18nKey.AUTOMATIONS$DETAIL$CUSTOM_TASK_METADATA),
+      screen.getAllByText(I18nKey.AUTOMATIONS$DETAIL$NEEDS_REVIEW).length,
+    ).toBeGreaterThanOrEqual(1);
+    expect(
+      screen.getByText(I18nKey.AUTOMATIONS$DETAIL$NO_SYSTEM_ISSUES),
+    ).toBeInTheDocument();
+    expect(screen.getByText("Crm contacts checked")).toBeInTheDocument();
+    expect(screen.getByText("12")).toBeInTheDocument();
+    expect(screen.getByText("Acme, Globex")).toBeInTheDocument();
+    expect(
+      screen.getByText("Ask user to pick a contact."),
     ).toBeInTheDocument();
     expect(
-      screen.getByText(I18nKey.AUTOMATIONS$DETAIL$TASK_METADATA),
+      screen.queryByText(I18nKey.AUTOMATIONS$DETAIL$CUSTOM_TASK_METADATA),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.getByText(I18nKey.AUTOMATIONS$DETAIL$RAW_METADATA),
     ).toBeInTheDocument();
     const metadata = screen.getByTestId("automation-task-metadata");
     expect(metadata).toHaveTextContent('"crm_contacts_checked": 12');
@@ -432,6 +456,30 @@ describe("RunLogsModal — Debug with OpenHands button", () => {
         bashCommandId="cmd-1"
         onClose={() => {}}
         run={makeRun(AutomationRunStatus.FAILED)}
+      />,
+    );
+    expect(
+      screen.getByTestId("debug-automation-button-stub"),
+    ).toBeInTheDocument();
+  });
+
+  it("renders the debug button for a completed blocked task", () => {
+    useBashCommandLogsMock.mockReturnValue(makeHookResult());
+    render(
+      <RunLogsModal
+        isOpen
+        conversationId="conv-1"
+        bashCommandId="cmd-1"
+        onClose={() => {}}
+        run={{
+          ...makeRun(AutomationRunStatus.COMPLETED),
+          run_metadata: {
+            finish_tool_response: {
+              status: "blocked",
+              outcome_summary: "Missing API key.",
+            },
+          },
+        }}
       />,
     );
     expect(

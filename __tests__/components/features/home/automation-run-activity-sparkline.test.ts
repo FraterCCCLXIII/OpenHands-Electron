@@ -109,12 +109,10 @@ describe("barColorClassForStatus", () => {
     );
   });
 
-  it("uses warning color for partial and unknown task outcomes", () => {
+  it("softens partial success and treats needs-review as muted", () => {
     expect(barColorClassForStatus("partial_success")).toContain(
       "bg-[var(--oh-warning)]",
     );
-    expect(barColorClassForStatus("unknown")).toContain(
-      "bg-[var(--oh-warning)]",
-    );
+    expect(barColorClassForStatus("unknown")).toContain("bg-[var(--oh-muted)]");
   });
 });

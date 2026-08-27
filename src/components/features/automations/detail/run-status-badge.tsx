@@ -46,12 +46,12 @@ const statusConfig: Record<string, { style: string; iconTone: string }> = {
     iconTone: "text-[var(--oh-warning)]",
   },
   partial_success: {
-    style: "bg-[var(--oh-warning)]/10 text-[var(--oh-warning)]",
+    style: "bg-transparent text-[var(--oh-warning)]",
     iconTone: "text-[var(--oh-warning)]",
   },
   unknown: {
-    style: "bg-[var(--oh-warning)]/10 text-[var(--oh-warning)]",
-    iconTone: "text-[var(--oh-warning)]",
+    style: "bg-surface-raised text-muted",
+    iconTone: "text-muted",
   },
   [AutomationRunStatus.PENDING]: {
     style: "bg-surface-raised text-muted",

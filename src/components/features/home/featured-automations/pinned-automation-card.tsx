@@ -9,6 +9,7 @@ import {
   shouldShowRunPhase,
 } from "#/components/features/automations/detail/run-phase";
 import { RunStatusBadge } from "#/components/features/automations/detail/run-status-badge";
+import { NoConversationIndicator } from "#/components/features/automations/detail/no-conversation-indicator";
 import { AutomationRunStats } from "#/components/features/automations/automation-run-insights";
 import { toRunSummaryState } from "#/components/features/automations/to-latest-run-state";
 import { TurnOffConfirmationModal } from "#/components/features/automations/turn-off-confirmation-modal";
@@ -335,9 +336,7 @@ export function PinnedAutomationCard({
               ) : null}
 
               {!conversationId && isTerminal ? (
-                <p className="min-w-0 truncate text-[var(--oh-text-secondary)]">
-                  {t(I18nKey.AUTOMATIONS$DETAIL$NO_CONVERSATION)}
-                </p>
+                <NoConversationIndicator className="text-[var(--oh-text-secondary)]" />
               ) : null}
             </>
           ) : null}

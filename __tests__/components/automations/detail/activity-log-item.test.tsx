@@ -155,7 +155,10 @@ describe("ActivityLogItem — Conversation not created label", () => {
 
     // Assert
     expect(
-      screen.queryByText((content) => content.includes("NO_CONVERSATION")),
+      screen.queryByLabelText(I18nKey.AUTOMATIONS$DETAIL$NO_CONVERSATION),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.queryByTestId("no-conversation-indicator"),
     ).not.toBeInTheDocument();
   });
 
@@ -175,8 +178,9 @@ describe("ActivityLogItem — Conversation not created label", () => {
 
     // Assert
     expect(
-      screen.queryByText((content) => content.includes("NO_CONVERSATION")),
+      screen.getByLabelText(I18nKey.AUTOMATIONS$DETAIL$NO_CONVERSATION),
     ).toBeInTheDocument();
+    expect(screen.getByTestId("no-conversation-indicator")).toBeInTheDocument();
   });
 });
 

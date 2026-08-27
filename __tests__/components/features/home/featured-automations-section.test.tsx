@@ -428,7 +428,10 @@ describe("home automations composer layout", () => {
       await within(dashboard).findByText("sandbox timeout"),
     ).toBeInTheDocument();
     expect(
-      within(dashboard).getByText("AUTOMATIONS$DETAIL$NO_CONVERSATION"),
+      within(dashboard).getByLabelText("AUTOMATIONS$DETAIL$NO_CONVERSATION"),
+    ).toBeInTheDocument();
+    expect(
+      within(dashboard).getByTestId("no-conversation-indicator"),
     ).toBeInTheDocument();
 
     expect(getStoredPinnedIds()).toContain("auto-1");

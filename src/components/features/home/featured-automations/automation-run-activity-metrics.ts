@@ -78,9 +78,11 @@ export function barColorClassForStatus(
     case "failed":
       return "bg-[var(--oh-status-error)]";
     case "blocked":
-    case "partial_success":
-    case "unknown":
       return "bg-[var(--oh-warning)]";
+    case "partial_success":
+      return "bg-[var(--oh-warning)]/55";
+    case "unknown":
+      return "bg-[var(--oh-muted)]";
     case AutomationRunStatus.RUNNING:
       return "bg-[var(--oh-status-success)] animate-pulse motion-reduce:animate-none";
     case AutomationRunStatus.PENDING:

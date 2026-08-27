@@ -12,6 +12,7 @@ import { getAutomationRunDisplay } from "#/utils/automation-run-display";
 import { RunStatusBadge } from "./run-status-badge";
 import { RunPhase, shouldShowRunPhase } from "./run-phase";
 import { RunLogsModal } from "./run-logs-modal";
+import { NoConversationIndicator } from "./no-conversation-indicator";
 
 interface ActivityLogItemProps {
   run: AutomationRun;
@@ -112,14 +113,12 @@ export function ActivityLogItem({ run, automation }: ActivityLogItemProps) {
       <div className="min-w-0 flex-1">
         <div className="flex items-center gap-3">
           <span className="text-sm text-content">{formattedTimestamp}</span>
-          {showNoConversationLabel && (
-            <span className="text-xs text-muted">
-              {t(I18nKey.AUTOMATIONS$DETAIL$NO_CONVERSATION)}
-            </span>
-          )}
+          {showNoConversationLabel && <NoConversationIndicator />}
         </div>
         {display.summary ? (
-          <p className="mt-1 truncate text-xs text-muted">{display.summary}</p>
+          <p className="mt-1 line-clamp-2 text-sm text-content">
+            {display.summary}
+          </p>
         ) : null}
       </div>
       <div className="flex min-w-0 items-center gap-2">

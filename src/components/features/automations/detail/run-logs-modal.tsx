@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 import { I18nKey } from "#/i18n/declaration";
 import XMarkIcon from "#/icons/x-mark.svg?react";
@@ -13,11 +13,18 @@ import {
   AutomationRunStatus,
   type Automation,
   type AutomationRun,
-  type AutomationRunStatusDetail,
 } from "#/types/automation";
 import { getAutomationRunDisplay } from "#/utils/automation-run-display";
+import { NavigationLink } from "#/components/shared/navigation-link";
 import { DebugAutomationButton } from "./debug-automation-button";
 import { RunStatusBadge } from "./run-status-badge";
+import {
+  formatRunCost,
+  formatRunMetaTimestamp,
+  getMetadataEntries,
+  getSystemInspection,
+  shouldShowRunDebugAction,
+} from "./run-logs-modal-helpers";
 
 /**
  * Localized empty-state message key for each `SandboxIssue` reason.
@@ -60,129 +67,148 @@ function concatStream(outputs: BashOutput[], key: "stdout" | "stderr"): string {
     .join("");
 }
 
-function stringifyDetailValue(value: unknown): string | null {
-  if (typeof value === "string") return value.trim() || null;
-  if (typeof value === "number" || typeof value === "boolean") {
-    return String(value);
-  }
-  return null;
+function Disclosure({
+  label,
+  children,
+}: {
+  label: string;
+  children: ReactNode;
+}) {
+  return (
+    <details className="group">
+      <summary className="cursor-pointer list-none text-xs text-muted marker:content-none hover:text-foreground [&::-webkit-details-marker]:hidden">
+        {label}
+      </summary>
+      <div className="mt-2">{children}</div>
+    </details>
+  );
 }
 
-function formatStatusDetail(
-  statusDetail: AutomationRunStatusDetail | null | undefined,
-): string | null {
-  if (!statusDetail) return null;
-  const primary =
-    stringifyDetailValue(statusDetail.formatted_detail) ??
-    stringifyDetailValue(statusDetail.detail);
-  const context = [
-    stringifyDetailValue(statusDetail.phase),
-    stringifyDetailValue(statusDetail.kind),
-    stringifyDetailValue(statusDetail.source),
-    stringifyDetailValue(statusDetail.operation),
-    stringifyDetailValue(statusDetail.code),
-    stringifyDetailValue(statusDetail.status_code),
-  ].filter(Boolean);
-
-  if (primary && context.length > 0) {
-    return `${primary} (${context.join(" · ")})`;
-  }
-  if (primary) return primary;
-  if (context.length > 0) return context.join(" · ");
-  return JSON.stringify(statusDetail);
+function InspectionCell({
+  label,
+  children,
+}: {
+  label: string;
+  children: ReactNode;
+}) {
+  return (
+    <div className="flex min-w-0 items-center justify-between gap-3 bg-[var(--oh-surface)] px-3 py-3">
+      <dt className="shrink-0 text-[10px] font-medium uppercase tracking-wide text-muted">
+        {label}
+      </dt>
+      <dd className="min-w-0">{children}</dd>
+    </div>
+  );
 }
 
-function RunInspectionSummary({ run }: { run: AutomationRun | undefined }) {
-  const { t } = useTranslation("openhands");
-  if (!run) return null;
-
+function RunInspectionSummary({ run }: { run: AutomationRun }) {
+  const { t, i18n } = useTranslation("openhands");
   const display = getAutomationRunDisplay(run);
   const taskSummary = display.taskOutcome?.outcomeSummary ?? null;
-  const taskMetadataText = display.customTaskMetadataText;
   const taskStatus =
     run.status === AutomationRunStatus.COMPLETED || display.taskOutcome
       ? display.badgeStatus
       : null;
-  const systemError = run.error_detail?.trim() || null;
-  const statusDetail = formatStatusDetail(run.status_detail);
-  const hasSystemDetails = systemError || statusDetail;
+  const system = getSystemInspection(run);
+  const hasSystemDetails = Boolean(
+    system.error || system.statusDetail || system.context,
+  );
+  const metadataEntries = getMetadataEntries(display.customTaskMetadata);
+  const cost = formatRunCost(run.cost);
+  const when = formatRunMetaTimestamp(
+    run.completed_at || run.started_at,
+    i18n.language,
+  );
+  const metaParts = [cost, when].filter(Boolean);
 
   return (
-    <dl className="mt-4 grid gap-3 rounded-lg border border-[var(--oh-border)] bg-black/20 p-3 text-xs">
-      <div className="grid gap-1 sm:grid-cols-[5rem_minmax(0,1fr)] sm:items-center">
-        <dt className="text-muted">
-          {t(I18nKey.AUTOMATIONS$DETAIL$RUN_LABEL)}
-        </dt>
-        <dd>
-          <span className="inline-flex rounded-md bg-surface-raised px-2 py-0.5 font-mono text-[10px] font-medium text-muted">
-            {run.status}
-          </span>
-        </dd>
+    <div className="flex min-w-0 flex-col gap-4">
+      <div className="min-w-0 pr-8">
+        <h2 className={modalTitleLgMediumClassName}>
+          {t(I18nKey.AUTOMATIONS$DETAIL$LOGS_TITLE)}
+        </h2>
+        {metaParts.length > 0 ? (
+          <p className="mt-1 text-xs text-muted">{metaParts.join(" · ")}</p>
+        ) : null}
       </div>
-      <div className="grid gap-1 sm:grid-cols-[5rem_minmax(0,1fr)] sm:items-start">
-        <dt className="pt-0.5 text-muted">
-          {t(I18nKey.AUTOMATIONS$DETAIL$TASK_LABEL)}
-        </dt>
-        <dd className="min-w-0 space-y-2">
-          {taskStatus ? <RunStatusBadge status={taskStatus} compact /> : null}
-          {taskSummary ? (
-            <p className="break-words text-content">{taskSummary}</p>
-          ) : taskMetadataText ? (
-            <p className="text-muted">
-              {t(I18nKey.AUTOMATIONS$DETAIL$CUSTOM_TASK_METADATA)}
-            </p>
-          ) : (
-            <p className="text-muted">
+      {taskSummary ? (
+        <p className="text-sm leading-6 text-content">{taskSummary}</p>
+      ) : null}
+
+      <dl className="grid grid-cols-2 gap-px overflow-hidden rounded-lg border border-[var(--oh-border)] bg-[var(--oh-border)]">
+        <InspectionCell label={t(I18nKey.AUTOMATIONS$DETAIL$RUN_LABEL)}>
+          <RunStatusBadge status={run.status} compact />
+        </InspectionCell>
+        <InspectionCell label={t(I18nKey.AUTOMATIONS$DETAIL$TASK_LABEL)}>
+          {taskStatus ? (
+            <RunStatusBadge status={taskStatus} compact />
+          ) : !metadataEntries.length ? (
+            <p className="text-xs text-muted">
               {t(I18nKey.AUTOMATIONS$DETAIL$NO_TASK_OUTCOME)}
             </p>
-          )}
-          {taskMetadataText ? (
-            <div className="min-w-0 space-y-1">
-              <p className="text-muted">
-                {t(I18nKey.AUTOMATIONS$DETAIL$TASK_METADATA)}
+          ) : null}
+        </InspectionCell>
+      </dl>
+      {hasSystemDetails ? (
+        <div>
+          <p className="text-xs text-muted">
+            {t(I18nKey.AUTOMATIONS$DETAIL$SYSTEM_LABEL)}
+          </p>
+          {system.error ? (
+            <p className="mt-1 break-words text-sm leading-6 text-content">
+              {system.error}
+            </p>
+          ) : null}
+          {system.statusDetail ? (
+            <p className="mt-1 break-words text-sm leading-6 text-content">
+              <span className="text-muted">
+                {t(I18nKey.AUTOMATIONS$DETAIL$STATUS_DETAIL)}:{" "}
+              </span>
+              {system.statusDetail}
+            </p>
+          ) : null}
+          {system.context ? (
+            <p className="mt-1 break-words text-xs text-muted">
+              {system.context}
+            </p>
+          ) : null}
+        </div>
+      ) : (
+        <div>
+          <p className="text-xs text-muted">
+            {t(I18nKey.AUTOMATIONS$DETAIL$SYSTEM_LABEL)}
+          </p>
+          <p className="mt-1 text-xs text-muted">
+            {t(I18nKey.AUTOMATIONS$DETAIL$NO_SYSTEM_ISSUES)}
+          </p>
+        </div>
+      )}
+
+      {metadataEntries.length > 0 ? (
+        <div className="grid gap-3 sm:grid-cols-2">
+          {metadataEntries.map((entry) => (
+            <div key={entry.key} className="min-w-0">
+              <p className="text-xs text-muted">{entry.label}</p>
+              <p className="mt-0.5 break-words text-sm text-content">
+                {entry.value}
               </p>
-              <pre
-                data-testid="automation-task-metadata"
-                className="max-h-48 overflow-auto whitespace-pre-wrap break-words rounded-md border border-[var(--oh-border)] bg-black/30 p-2 font-mono text-[11px] leading-4 text-content"
-              >
-                {taskMetadataText}
-              </pre>
+            </div>
+          ))}
+          {display.customTaskMetadataText ? (
+            <div className="sm:col-span-2">
+              <Disclosure label={t(I18nKey.AUTOMATIONS$DETAIL$RAW_METADATA)}>
+                <pre
+                  data-testid="automation-task-metadata"
+                  className="max-h-40 overflow-auto whitespace-pre-wrap break-words font-mono text-[11px] leading-4 text-muted"
+                >
+                  {display.customTaskMetadataText}
+                </pre>
+              </Disclosure>
             </div>
           ) : null}
-        </dd>
-      </div>
-      <div className="grid gap-1 sm:grid-cols-[5rem_minmax(0,1fr)] sm:items-start">
-        <dt className="pt-0.5 text-muted">
-          {t(I18nKey.AUTOMATIONS$DETAIL$SYSTEM_LABEL)}
-        </dt>
-        <dd className="min-w-0 space-y-1 break-words text-content">
-          {hasSystemDetails ? (
-            <>
-              {systemError ? (
-                <p>
-                  <span className="text-muted">
-                    {t(I18nKey.COMMON$ERROR)}:{" "}
-                  </span>
-                  {systemError}
-                </p>
-              ) : null}
-              {statusDetail ? (
-                <p>
-                  <span className="text-muted">
-                    {t(I18nKey.AUTOMATIONS$DETAIL$STATUS_DETAIL)}:{" "}
-                  </span>
-                  {statusDetail}
-                </p>
-              ) : null}
-            </>
-          ) : (
-            <p className="text-muted">
-              {t(I18nKey.AUTOMATIONS$DETAIL$NO_SYSTEM_ISSUES)}
-            </p>
-          )}
-        </dd>
-      </div>
-    </dl>
+        </div>
+      ) : null}
+    </div>
   );
 }
 
@@ -238,6 +264,14 @@ export function RunLogsModal({
   const loading = isResolvingConversation || (isFetching && !outputs);
   const noBashCommand = !bashCommandId;
   const activeBody = activeTab === "stdout" ? stdout : stderr;
+  const conversationHref = run
+    ? run.conversation_id
+      ? `/conversations/${run.conversation_id}`
+      : null
+    : conversationId
+      ? `/conversations/${conversationId}`
+      : null;
+  const showDebug = run ? shouldShowRunDebugAction(run) : false;
 
   const tabBaseClass =
     "border-b-2 px-3 py-2 text-sm font-normal transition-colors focus:outline-none";
@@ -259,7 +293,7 @@ export function RunLogsModal({
         }}
         role="presentation"
       />
-      <div className="relative flex max-h-[80vh] w-full max-w-3xl flex-col rounded-xl border border-[var(--oh-border)] bg-[var(--oh-surface)] p-6">
+      <div className="relative flex max-h-[80vh] w-full max-w-2xl flex-col rounded-xl border border-[var(--oh-border)] bg-[var(--oh-surface)] p-6">
         <button
           type="button"
           onClick={onClose}
@@ -269,16 +303,18 @@ export function RunLogsModal({
           <XMarkIcon className="size-5" />
         </button>
 
-        <h2 className={cn("pr-8", modalTitleLgMediumClassName)}>
-          {t(I18nKey.AUTOMATIONS$DETAIL$LOGS_TITLE)}
-        </h2>
-
-        <RunInspectionSummary run={run} />
+        {run ? (
+          <RunInspectionSummary run={run} />
+        ) : (
+          <h2 className={cn("pr-8", modalTitleLgMediumClassName)}>
+            {t(I18nKey.AUTOMATIONS$DETAIL$LOGS_TITLE)}
+          </h2>
+        )}
 
         <div
           role="tablist"
           aria-label={t(I18nKey.AUTOMATIONS$DETAIL$LOGS_TITLE)}
-          className="mt-4 flex gap-1 border-b border-[var(--oh-border)]"
+          className="mt-5 flex gap-1"
         >
           <button
             type="button"
@@ -314,50 +350,55 @@ export function RunLogsModal({
           role="tabpanel"
           id={`run-logs-panel-${activeTab}`}
           aria-labelledby={`run-logs-tab-${activeTab}`}
-          className="mt-3 min-h-[12rem] flex-1 overflow-auto rounded-lg border border-[var(--oh-border)] bg-black/40 p-4 font-mono text-xs"
+          className={cn(
+            "mt-3 overflow-auto font-mono text-xs",
+            noBashCommand
+              ? "px-0 py-1"
+              : "max-h-64 min-h-32 rounded-lg border border-[var(--oh-border)] bg-black/40 p-4",
+          )}
         >
-          {noBashCommand && (
-            <p className="text-muted italic">
+          {noBashCommand ? (
+            <p className="text-muted">
               {t(I18nKey.AUTOMATIONS$DETAIL$LOGS_NO_COMMAND)}
             </p>
-          )}
+          ) : null}
 
-          {!noBashCommand && conversationMissing && (
+          {!noBashCommand && conversationMissing ? (
             <p className="text-muted italic">
               {t(I18nKey.AUTOMATIONS$DETAIL$LOGS_CONVERSATION_MISSING)}
             </p>
-          )}
+          ) : null}
 
-          {!noBashCommand && !conversationMissing && sandboxIssue && (
+          {!noBashCommand && !conversationMissing && sandboxIssue ? (
             <p
               data-testid={`run-logs-sandbox-issue-${sandboxIssue}`}
               className="text-muted italic"
             >
               {t(SANDBOX_ISSUE_I18N[sandboxIssue])}
             </p>
-          )}
+          ) : null}
 
           {!noBashCommand &&
-            !conversationMissing &&
-            !sandboxIssue &&
-            loading && (
-              <p className="text-muted italic">
-                {t(I18nKey.AUTOMATIONS$DETAIL$LOGS_LOADING)}
-              </p>
-            )}
+          !conversationMissing &&
+          !sandboxIssue &&
+          loading ? (
+            <p className="text-muted italic">
+              {t(I18nKey.AUTOMATIONS$DETAIL$LOGS_LOADING)}
+            </p>
+          ) : null}
 
           {!noBashCommand &&
-            !conversationMissing &&
-            !sandboxIssue &&
-            !loading &&
-            error &&
-            !outputs && (
-              <p className="text-danger">
-                {t(I18nKey.AUTOMATIONS$DETAIL$LOGS_ERROR)}: {String(error)}
-              </p>
-            )}
+          !conversationMissing &&
+          !sandboxIssue &&
+          !loading &&
+          error &&
+          !outputs ? (
+            <p className="text-danger">
+              {t(I18nKey.AUTOMATIONS$DETAIL$LOGS_ERROR)}: {String(error)}
+            </p>
+          ) : null}
 
-          {!loading && !sandboxIssue && outputs && (
+          {!loading && !sandboxIssue && outputs ? (
             <pre
               data-testid={`run-logs-output-${activeTab}`}
               className={`whitespace-pre-wrap break-words ${
@@ -372,18 +413,28 @@ export function RunLogsModal({
                 </span>
               )}
             </pre>
-          )}
+          ) : null}
         </div>
 
-        {run?.status === AutomationRunStatus.FAILED && (
-          <div className="mt-4 flex justify-end">
-            <DebugAutomationButton
-              run={run}
-              automation={automation}
-              stderr={stderr}
-            />
+        {conversationHref || showDebug ? (
+          <div className="mt-5 flex flex-wrap items-center justify-end gap-3 border-t border-[var(--oh-border)] pt-4">
+            {conversationHref ? (
+              <NavigationLink
+                to={conversationHref}
+                className="text-sm text-content transition-colors hover:text-foreground"
+              >
+                {t(I18nKey.AUTOMATIONS$DETAIL$OPEN_CONVERSATION)}
+              </NavigationLink>
+            ) : null}
+            {showDebug && run ? (
+              <DebugAutomationButton
+                run={run}
+                automation={automation}
+                stderr={stderr}
+              />
+            ) : null}
           </div>
-        )}
+        ) : null}
       </div>
     </div>
   );
