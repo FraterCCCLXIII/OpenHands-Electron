@@ -1,5 +1,12 @@
-import type { ComponentType, SVGProps } from "react";
+import {
+  useLayoutEffect,
+  useRef,
+  useState,
+  type ComponentType,
+  type SVGProps,
+} from "react";
 import { CircleHelp } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import CheckCircleIcon from "#/icons/check-circle.svg?react";
 import CheckCircleHalfIcon from "#/icons/u-check-circle-half.svg?react";
 import ExclamationCircleIcon from "#/icons/exclamation-circle.svg?react";
@@ -7,6 +14,7 @@ import XCircleIcon from "#/icons/x-circle.svg?react";
 import { NavigationLink } from "#/components/shared/navigation-link";
 import { useBackendScopedPath } from "#/hooks/use-backend-scoped-path";
 import { usePaginatedConversations } from "#/hooks/query/use-paginated-conversations";
+import { I18nKey } from "#/i18n/declaration";
 import { AutomationRunStatus } from "#/types/automation";
 import { cn } from "#/utils/utils";
 import { RunStatusBadge } from "./run-status-badge";
@@ -145,6 +153,85 @@ const TASK_BADGE: Record<
   },
 };
 
+function PreviewLogSecondary({
+  summary,
+  error,
+}: {
+  summary?: string;
+  error?: string;
+}) {
+  const { t } = useTranslation("openhands");
+  const textRef = useRef<HTMLParagraphElement>(null);
+  const [expanded, setExpanded] = useState(false);
+  const [overflows, setOverflows] = useState(false);
+
+  useLayoutEffect(() => {
+    const el = textRef.current;
+    if (!el || expanded) return undefined;
+
+    const measure = () => {
+      setOverflows(el.scrollWidth - el.clientWidth > 1);
+    };
+    measure();
+
+    const observer = new ResizeObserver(measure);
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [summary, error, expanded]);
+
+  if (!summary && !error) return null;
+
+  const collapsedWithToggle = overflows && !expanded;
+
+  return (
+    <div
+      className={cn(
+        "mt-1 min-w-0",
+        collapsedWithToggle &&
+          "grid grid-cols-[minmax(0,1fr)_auto] items-baseline",
+      )}
+    >
+      <p
+        ref={textRef}
+        data-testid="activity-log-secondary"
+        className={cn(
+          "min-w-0 w-full text-xs leading-normal",
+          !expanded && "truncate",
+        )}
+      >
+        {summary ? <span className="text-muted">{summary}</span> : null}
+        {summary && error ? " " : null}
+        {error ? (
+          <span data-testid="activity-log-error-row" className="text-danger">
+            {error}
+          </span>
+        ) : null}
+      </p>
+      {overflows ? (
+        <button
+          type="button"
+          data-testid="activity-log-read-more"
+          aria-expanded={expanded}
+          className={cn(
+            "shrink-0 cursor-pointer p-0 text-xs leading-normal text-[var(--oh-text-secondary)] transition-colors hover:text-[var(--oh-foreground)]",
+            expanded && "mt-0.5",
+          )}
+          onClick={(event) => {
+            event.preventDefault();
+            event.stopPropagation();
+            setExpanded((current) => !current);
+          }}
+          onMouseDown={(event) => {
+            event.stopPropagation();
+          }}
+        >
+          {expanded ? t(I18nKey.COMMON$VIEW_LESS) : t(I18nKey.COMMON$READ_MORE)}
+        </button>
+      ) : null}
+    </div>
+  );
+}
+
 function TaskOutcomeBadge({ status }: { status: TaskOutcomeStatus }) {
   const { label, style, Icon } = TASK_BADGE[status];
   return (
@@ -170,21 +257,18 @@ function PreviewLogRow({
   conversationHref: string | null;
 }) {
   const showTaskBadge = badgeMode === "task" && row.task;
+  const hasSecondary = Boolean(row.summary || row.error);
   const label = `View conversation for run at ${row.time}`;
   const content = (
     <>
       <div className="min-w-0 flex-1">
         <p className="text-sm text-content">{row.time}</p>
-        {row.summary ? (
-          <p className="mt-1 line-clamp-2 text-xs leading-relaxed text-muted">
-            {row.summary}
-          </p>
-        ) : null}
+        <PreviewLogSecondary summary={row.summary} error={row.error} />
       </div>
       <div
         className={cn(
           "flex shrink-0 items-center gap-2.5",
-          row.summary && "pt-0.5",
+          hasSecondary && "pt-0.5",
         )}
       >
         {row.cost ? (
@@ -201,7 +285,7 @@ function PreviewLogRow({
   const rowClassName = cn(
     "flex justify-between gap-6 border-t border-[var(--oh-border)] px-5 py-3.5 transition-colors first:border-t-0",
     "hover:bg-surface-raised focus:bg-surface-raised focus:outline-none",
-    row.summary ? "items-start" : "items-center",
+    hasSecondary ? "items-start" : "items-center",
     conversationHref ? "cursor-pointer" : "cursor-default",
   );
 

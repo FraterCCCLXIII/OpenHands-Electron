@@ -1,7 +1,9 @@
-import { render, screen, waitFor } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { ActivityLogSection } from "#/components/features/automations/detail/activity-log-section";
+import { ACTIVITY_LOG_STATES_PREVIEW_AUTOMATION } from "#/components/features/automations/detail/activity-log-states-preview";
+import { I18nKey } from "#/i18n/declaration";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import {
   AutomationRunStatus,
@@ -176,6 +178,7 @@ describe("ActivityLogSection ?run= highlight", () => {
         id: "a1",
         limit: 100,
         offset: 0,
+        enabled: true,
       });
     });
 
@@ -184,5 +187,54 @@ describe("ActivityLogSection ?run= highlight", () => {
       .mock.calls.map(([options]) => options.limit ?? 0);
     expect(Math.max(...requestedLimits)).toBe(100);
     expect(window.HTMLElement.prototype.scrollIntoView).not.toHaveBeenCalled();
+  });
+});
+
+describe("ActivityLogSection preview catalog", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    vi.mocked(useAutomationRuns).mockReturnValue({
+      data: { runs: [], total: 0 },
+      isLoading: false,
+    } as unknown as ReturnType<typeof useAutomationRuns>);
+  });
+
+  it("expands a one-line clamped message with Read more", async () => {
+    Object.defineProperty(HTMLElement.prototype, "clientWidth", {
+      configurable: true,
+      get() {
+        return 200;
+      },
+    });
+    Object.defineProperty(HTMLElement.prototype, "scrollWidth", {
+      configurable: true,
+      get() {
+        if (this.dataset.testid !== "activity-log-secondary") return 200;
+        return (this.textContent?.length ?? 0) > 80 ? 400 : 200;
+      },
+    });
+
+    const client = new QueryClient({
+      defaultOptions: { queries: { retry: false } },
+    });
+    render(
+      <QueryClientProvider client={client}>
+        <ActivityLogSection
+          automation={ACTIVITY_LOG_STATES_PREVIEW_AUTOMATION}
+        />
+      </QueryClientProvider>,
+    );
+
+    const toggles = await screen.findAllByTestId("activity-log-read-more");
+    expect(toggles.length).toBeGreaterThan(0);
+    expect(toggles[0]).toHaveAttribute("aria-expanded", "false");
+
+    fireEvent.click(toggles[0]);
+    expect(
+      await screen.findByText(I18nKey.COMMON$VIEW_LESS),
+    ).toBeInTheDocument();
+
+    delete (HTMLElement.prototype as { clientWidth?: number }).clientWidth;
+    delete (HTMLElement.prototype as { scrollWidth?: number }).scrollWidth;
   });
 });
